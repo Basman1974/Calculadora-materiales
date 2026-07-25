@@ -3,194 +3,532 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Rendimientos y Materiales</title>
-    <!-- Tailwind CSS para un diseño limpio y responsive -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Calculadora de Materiales</title>
     <style>
-        body {
-            -webkit-tap-highlight-color: transparent;
+        :root {
+            --color-primario: #0056b3;
+            --color-secundario: #ff6600;
+            --color-resultado: #059669;
+            --color-whatsapp: #25D366;
+            --color-fondo-pantalla: #e2e8f0; 
+            --color-fondo-app: #f8fafc; 
+            --color-texto: #333;
+            --color-etiquetas: #111; 
+            --color-borde: #cbd5e1;
         }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            max-width: 550px;
+            margin: 0 auto;
+            background-color: var(--color-fondo-pantalla);
+            color: var(--color-texto);
+        }
+
+        .contenedor-app {
+            background-color: var(--color-fondo-app);
+            padding: 30px 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo-container img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        .encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--color-borde);
+            padding-bottom: 15px;
+        }
+
+        h2 { 
+            color: var(--color-primario); 
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .btn-ayuda-ico {
+            background-color: #e2e8f0;
+            color: var(--color-primario);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+        .btn-ayuda-ico:hover {
+            background-color: #cbd5e1;
+        }
+
+        .grupo-formulario {
+            margin-bottom: 20px;
+        }
+
+        label { 
+            font-weight: 800; 
+            display: block; 
+            margin-bottom: 10px; 
+            font-size: 16px; 
+            color: var(--color-etiquetas);
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid var(--color-borde);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            background-color: #ffffff; 
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--color-secundario);
+            box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
+        }
+
+        /* DISEÑO PARA LARGO Y ALTO EN COLUMNAS */
+        .fila-medidas {
+            display: flex;
+            gap: 15px;
+        }
+        .columna-mitad {
+            flex: 1;
+        }
+
+        /* ESTRUCTURA DE BOTONES PRINCIPALES */
+        .botones-formulario {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        .btn-primario {
+            flex: 2;
+            background-color: var(--color-primario);
+            color: white;
+        }
+        .btn-primario:hover { background-color: #004494; }
+
+        .btn-secundario {
+            flex: 1;
+            background-color: transparent;
+            color: var(--color-primario);
+            border: 2px solid var(--color-primario);
+            padding: 14px; 
+        }
+        .btn-secundario:hover { background-color: #e6f0ff; }
+
+        /* ZONA DE RESULTADOS */
+        .resultado-container {
+            margin-top: 30px;
+            display: none;
+            padding-top: 20px;
+            border-top: 2px dashed var(--color-borde);
+        }
+
+        .resultado-titulo {
+            text-align: center;
+            color: var(--color-resultado);
+            font-size: 20px;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .resultado-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .casilla {
+            background-color: rgba(5, 150, 105, 0.05);
+            border: 2px solid var(--color-resultado);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .casilla-etiqueta {
+            font-size: 12px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .casilla-valor {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--color-resultado);
+        }
+
+        .casilla-nota {
+            font-size: 11px;
+            color: #555;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        
+        .casilla-destacada {
+            background-color: var(--color-resultado);
+            color: white;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+        }
+
+        .casilla-destacada .casilla-etiqueta, 
+        .casilla-destacada .casilla-valor,
+        .casilla-destacada .casilla-nota { color: white; }
+
+        /* BOTONES DE EXPORTACIÓN */
+        .botones-exportacion {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-copiar, .btn-whatsapp {
+            flex: 1;
+            padding: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .btn-copiar {
+            background-color: #e2e8f0;
+            color: #333;
+        }
+        .btn-copiar:hover { background-color: #cbd5e1; }
+
+        .btn-whatsapp {
+            background-color: var(--color-whatsapp);
+            color: white;
+        }
+        .btn-whatsapp:hover { background-color: #1ebe57; }
+
+        /* VENTANA MODAL DE AYUDA */
+        .modal-fondo {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-contenido {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .modal-titulo {
+            color: var(--color-primario);
+            margin-top: 0;
+            font-size: 20px;
+            border-bottom: 2px solid var(--color-borde);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .modal-texto {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        .modal-texto ol {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .modal-texto li {
+            margin-bottom: 12px;
+        }
+
+        .btn-cerrar-modal {
+            background-color: var(--color-primario);
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-main flex flex-col justify-between">
+<body>
 
-    <!-- Cabecera -->
-    <header class="bg-slate-900 text-white shadow-md py-4 px-6 sticky top-0 z-50">
-        <div class="max-w-xl mx-auto flex justify-between items-center">
-            <h1 class="text-lg font-bold tracking-tight">Calculadora de Rendimientos</h1>
-            <span class="text-xs bg-blue-600 px-2.5 py-1 rounded-full font-medium">Versión Comercial</span>
+    <div class="contenedor-app">
+        <div class="logo-container">
+            <img src="LOGO OBRAMAT.PNG" alt="Logo">
         </div>
-    </header>
 
-    <!-- Contenido Principal -->
-    <main class="max-w-xl w-full mx-auto p-4 sm:p-6 flex-grow">
-        
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-5">
-            
-            <!-- Selector de Categoría -->
-            <div>
-                <label for="categoria" class="block text-sm font-semibold text-slate-700 mb-1.5">Categoría Constructiva</label>
-                <select id="categoria" onchange="actualizarProductos()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
-                    <option value="puentes_union">Puentes de Unión / Imprimaciones</option>
-                    <option value="revestimientos">Revestimientos y Morteros</option>
-                    <option value="aislamientos">Aislamientos (SATE / EPS / XPS)</option>
+        <div class="encabezado">
+            <h2>Calculadora</h2>
+            <button class="btn-ayuda-ico" onclick="abrirAyuda()" title="¿Cómo funciona?">?</button>
+        </div>
+
+        <div class="grupo-formulario">
+            <label for="categoria">Categoría constructiva:</label>
+            <select id="categoria" onchange="actualizarOpciones()" oninput="ocultarResultados()">
+                <option value="">Selecciona una categoría...</option>
+                <option value="ladrillos">Ladrillos</option>
+                <option value="bloques">Bloques de Hormigón</option>
+                <option value="revestimientos">Revestimientos</option>
+                <option value="puentes">Puentes de Unión</option>
+            </select>
+        </div>
+
+        <div class="grupo-formulario">
+            <label for="producto">Producto específico:</label>
+            <select id="producto" oninput="ocultarResultados()">
+                <option value="">Selecciona un producto...</option>
+            </select>
+        </div>
+
+        <!-- CONTENEDOR DE MEDIDAS DINÁMICO -->
+        <div id="contenedor-medidas" style="display:none;">
+            <div class="grupo-formulario">
+                <label for="modo-medida">Cálculo de superficie:</label>
+                <select id="modo-medida" onchange="cambiarModoMedida()" oninput="ocultarResultados()">
+                    <option value="directo">Introducir m² totales directamente</option>
+                    <option value="dimensiones">Calcular por medidas (Largo x Alto)</option>
                 </select>
             </div>
 
-            <!-- Selector de Producto -->
-            <div>
-                <label for="producto" class="block text-sm font-semibold text-slate-700 mb-1.5">Producto Específico</label>
-                <select id="producto" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
-                    <!-- Dinámico según categoría -->
-                </select>
+            <!-- Opción 1: m2 directos -->
+            <div id="div-m2-directo" class="grupo-formulario">
+                <label for="medida">Metros Cuadrados Totales (m²):</label>
+                <input type="number" id="medida" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
             </div>
 
-            <!-- Superficie -->
-            <div>
-                <label for="superficie" class="block text-sm font-semibold text-slate-700 mb-1.5">Superficie a aplicar (m²)</label>
-                <input type="number" id="superficie" placeholder="Ej. 50" min="0" step="any" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+            <!-- Opción 2: Largo x Alto -->
+            <div id="div-dimensiones" class="grupo-formulario fila-medidas" style="display:none;">
+                <div class="columna-mitad">
+                    <label for="largo">Largo (m):</label>
+                    <input type="number" id="largo" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
+                </div>
+                <div class="columna-mitad">
+                    <label for="alto">Alto (m):</label>
+                    <input type="number" id="alto" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
+                </div>
             </div>
-
-            <!-- Merma -->
-            <div>
-                <label for="merma" class="block text-sm font-semibold text-slate-700 mb-1.5">Porcentaje de Merma / Desperdicio (%)</label>
-                <select id="merma" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
-                    <option value="5">5% (Obra optimizada)</option>
-                    <option value="10" selected>10% (Estándar recomendada)</option>
-                    <option value="15">15% (Superficies irregulares)</option>
-                    <option value="20">20% (Alta complejidad)</option>
-                </select>
-            </div>
-
-            <!-- Botón Calcular -->
-            <button onclick="calcularMateriales()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold py-3.5 px-6 rounded-xl shadow-md transition duration-150">
-                Calcular Materiales
-            </button>
         </div>
 
-        <!-- Resultados -->
-        <div id="resultadoContainer" class="hidden mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
-            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Resultado del Cálculo</h2>
-            <div id="resultadoTexto" class="text-2xl font-black text-slate-900">
-                <!-- Salida dinámica -->
-            </div>
-            <div id="detalleTexto" class="text-sm text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-                <!-- Detalles del rendimiento medio y merma -->
-            </div>
-            <button onclick="copiarResultado()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
-                <span>Copiar Resultado para WhatsApp</span>
-            </button>
+        <div id="div-espesor" class="grupo-formulario" style="display:none;">
+            <label for="espesor">Espesor de aplicación (mm):</label>
+            <input type="number" id="espesor" min="1" value="1" inputmode="decimal" oninput="ocultarResultados()">
         </div>
 
-    </main>
+        <div id="div-merma" class="grupo-formulario" style="display:none;">
+            <label for="merma">Margen de merma:</label>
+            <select id="merma" oninput="ocultarResultados()">
+                <option value="0">0% (Teórico)</option>
+                <option value="5">5% (Mínima)</option>
+                <option value="8" selected>8% (Estándar)</option>
+                <option value="10">10% (Alta)</option>
+            </select>
+        </div>
 
-    <!-- Pie -->
-    <footer class="text-center py-6 text-xs text-slate-400">
-        Calculadora de Rendimientos &copy; 2026 - Uso Comercial y Técnico
-    </footer>
+        <div class="botones-formulario">
+            <button class="btn-primario" onclick="calcular()">Calcular</button>
+            <button class="btn-secundario" onclick="limpiarCalculadora()">Limpiar</button>
+        </div>
 
-    <!-- Lógica de la Aplicación -->
+        <div id="resultado" class="resultado-container"></div>
+    </div>
+
+    <!-- VENTANA MODAL DE AYUDA -->
+    <div id="modalAyuda" class="modal-fondo" onclick="cerrarAyudaFondo(event)">
+        <div class="modal-contenido">
+            <h3 class="modal-titulo">¿Cómo usar la calculadora?</h3>
+            <div class="modal-texto">
+                <p>Esta herramienta te dice exactamente cuánto material necesitas comprar para tu obra, sin que tengas que hacer números.</p>
+                <ol>
+                    <li><strong>Elige qué vas a hacer:</strong> Selecciona si necesitas ladrillos, bloques o materiales para revestir.</li>
+                    <li><strong>Busca tu producto:</strong> Escoge el modelo exacto que quieres utilizar.</li>
+                    <li><strong>Pon tus medidas:</strong> Puedes escribir los m² totales si ya los sabes, o elegir la opción de introducir el largo y el alto de la pared para que la aplicación calcule los metros cuadrados por ti.</li>
+                    <li><strong>Calcula:</strong> Toca el botón azul. Al instante sabrás cuántas piezas o sacos completos tienes que llevarte.</li>
+                </ol>
+                <p>💡 <em>Nota: La calculadora hace el trabajo duro por ti. Incluso calcula automáticamente cuántos sacos de mortero (cemento) necesitas para pegar los bloques, o añade un pequeño margen extra para que no te falte material si hay cortes.</em></p>
+            </div>
+            <button class="btn-cerrar-modal" onclick="cerrarAyuda()">Entendido</button>
+        </div>
+    </div>
+
     <script>
-        // Base de datos de productos con consumos mínimos y máximos por m²
-        const baseDatosMateriales = {
-            "puentes_union": {
-                nombreCategoria: "Puentes de Unión / Imprimaciones",
-                productos: [
-                    { id: "resina_epoxi", nombre: "Resina Epoxi de Adherencia", min: 0.20, max: 0.40, unidad: "Litros" },
-                    { id: "latex_puente", nombre: "Látex Líquido para Adherencia", min: 0.15, max: 0.30, unidad: "Litros" },
-                    { id: "imprimacion_acrilica", nombre: "Imprimación Acrílica Multiuso", min: 0.10, max: 0.20, unidad: "Litros" }
-                ]
+        const datos = {
+            ladrillos: {
+                "Hueco sencillo 33x16.5x4": { udsM2: 18, mortero: 18, palet: 630, peso: 1.5 },
+                "Hueco doble 33x20x7": { udsM2: 15, mortero: 23, palet: 270, peso: 3.1 },
+                "Hueco triple 33x20x11": { udsM2: 15, mortero: 30, palet: 180, peso: 4.87 },
+                "Termocerámico 14 cm": { udsM2: 15, mortero: 40, palet: 135, peso: 6.5 },
+                "Termocerámico 20 cm": { udsM2: 15, mortero: 56, palet: 105, peso: 9.0 },
+                "Termocerámico 24 cm": { udsM2: 15, mortero: 67, palet: 90, peso: 10.1 },
+                "Termocerámico 29 cm": { udsM2: 15, mortero: 81, palet: 75, peso: 12.20 },
+                "Perforado 10 cm": { udsM2: 40, mortero: 60, palet: 360, peso: 2.3 },
+                "Perforado 20 cm": { udsM2: 20, mortero: 35, palet: 180, peso: 4.2 },
+                "Rojo liso caravista 24x12x5": { udsM2: 67, mortero: null, palet: 578, peso: 1.15 }
             },
-            "revestimientos": {
-                nombreCategoria: "Revestimientos y Morteros",
-                productos: [
-                    { id: "mortero_monocapa", nombre: "Mortero Monocapa (por cm de espesor)", min: 14.0, max: 18.0, unidad: "kg" },
-                    { id: "enlucido_yeso", nombre: "Enlucido de Yeso Fino", min: 8.0, max: 10.0, unidad: "kg" }
-                ]
+            bloques: {
+                "Bloque ligero gris 39x19x19": { udsM2: 13.5, peso: 14.1, palet: 90, mortero: 100 },
+                "Bloque tapado gris 39x19x19": { udsM2: 13.5, peso: 13.0, palet: 90, mortero: 87.5 },
+                "Bloque redondo gris 39x19x19": { udsM2: 13.5, peso: 16.0, palet: 75, mortero: 87.5 },
+                "Bloque ligero blanco 39x19x19": { udsM2: 13.5, peso: 14.1, palet: 90, mortero: 100 },
+                "Bloque tapado gris 39x19x15": { udsM2: 13.5, peso: 12.48, palet: 105, mortero: 75 },
+                "Bloque gris 39x19x10": { udsM2: 13.5, peso: 9.0, palet: 132, mortero: 50 }
             },
-            "aislamientos": {
-                nombreCategoria: "Aislamientos (SATE / EPS / XPS)",
-                productos: [
-                    { id: "mortero_adhesivo_sate", nombre: "Mortero Adhesivo Placas SATE", min: 4.0, max: 6.0, unidad: "kg" },
-                    { id: "mortero_mallas_sate", nombre: "Mortero Armado para Malla SATE", min: 3.5, max: 5.0, unidad: "kg" }
-                ]
+            revestimientos: {
+                "weber.rev fino": { kgMm: 1.7, maxMm: 5 },
+                "weberpral prisma": { kgMm: 1.5, maxMm: 30 },
+                "weberev hidro PLUS": { kgMm: 1.8, maxMm: 20 },
+                "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
+            },
+            puentes: {
+                "Puente de unión PLUS (MH)": { consumo: "200-250 g/m²" },
+                "SikaTop-30": { consumo: "150-175 g/m²" },
+                "SikaTop-50": { consumo: "125-150 g/m²" },
+                "SikaTop10-": { consumo: "0,8 kg/m²" }
             }
         };
 
-        function actualizarProductos() {
-            const categoriaSelect = document.getElementById("categoria").value;
+        let textoPortapapeles = "";
+
+        // Funciones de la Ventana de Ayuda
+        function abrirAyuda() { document.getElementById("modalAyuda").style.display = "flex"; }
+        function cerrarAyuda() { document.getElementById("modalAyuda").style.display = "none"; }
+        function cerrarAyudaFondo(event) { if (event.target === document.getElementById("modalAyuda")) cerrarAyuda(); }
+
+        function ocultarResultados() {
+            document.getElementById("resultado").style.display = "none";
+        }
+
+        // Gestión del tipo de medida (m2 directo vs dimensiones)
+        function cambiarModoMedida() {
+            const modo = document.getElementById("modo-medida").value;
+            document.getElementById("div-m2-directo").style.display = modo === "directo" ? "block" : "none";
+            document.getElementById("div-dimensiones").style.display = modo === "dimensiones" ? "flex" : "none";
+            ocultarResultados();
+        }
+
+        function limpiarCalculadora() {
+            document.getElementById("categoria").value = "";
+            document.getElementById("producto").innerHTML = '<option value="">Selecciona un producto...</option>';
+            document.getElementById("modo-medida").value = "directo";
+            document.getElementById("medida").value = "1";
+            document.getElementById("largo").value = "1";
+            document.getElementById("alto").value = "1";
+            document.getElementById("espesor").value = "1";
+            document.getElementById("merma").value = "8";
+            
+            document.getElementById("contenedor-medidas").style.display = "none";
+            document.getElementById("div-espesor").style.display = "none";
+            document.getElementById("div-merma").style.display = "none";
+            
+            cambiarModoMedida(); // Resetea visualmente el bloque de medidas
+            ocultarResultados();
+        }
+
+        function actualizarOpciones() {
+            const categoria = document.getElementById("categoria").value;
             const productoSelect = document.getElementById("producto");
+            const contenedorMedidas = document.getElementById("contenedor-medidas");
+            const divEspesor = document.getElementById("div-espesor");
+            const divMerma = document.getElementById("div-merma");
             
-            productoSelect.innerHTML = "";
-            const productosCat = baseDatosMateriales[categoriaSelect].productos;
+            productoSelect.innerHTML = '<option value="">Selecciona un producto...</option>';
+            ocultarResultados();
+            
+            contenedorMedidas.style.display = categoria ? "block" : "none";
+            divEspesor.style.display = categoria === "revestimientos" ? "block" : "none";
+            divMerma.style.display = categoria === "revestimientos" ? "block" : "none";
 
-            productosCat.forEach(prod => {
-                const option = document.createElement("option");
-                option.value = prod.id;
-                option.textContent = prod.nombre;
-                productoSelect.appendChild(option);
-            });
+            if (categoria && datos[categoria]) {
+                for (const key in datos[categoria]) {
+                    let option = document.createElement("option");
+                    option.value = key;
+                    option.text = key;
+                    productoSelect.appendChild(option);
+                }
+            }
         }
 
-        function calcularMateriales() {
-            const categoriaKey = document.getElementById("categoria").value;
-            const productoId = document.getElementById("producto").value;
-            const superficieInput = parseFloat(document.getElementById("superficie").value);
-            const porcentajeMerma = parseFloat(document.getElementById("merma").value);
+        function calcular() {
+            const categoria = document.getElementById("categoria").value;
+            const producto = document.getElementById("producto").value;
+            
+            // Lógica para determinar los m2 totales según el modo seleccionado
+            const modoMedida = document.getElementById("modo-medida").value;
+            let medida = 0;
+            let textoMedida = "";
 
-            if (isNaN(superficieInput) || superficieInput <= 0) {
-                alert("Por favor, introduce una superficie válida en metros cuadrados.");
-                return;
+            if (modoMedida === "directo") {
+                medida = parseFloat(document.getElementById("medida").value) || 0;
+                textoMedida = `${medida} m²`;
+            } else {
+                const largo = parseFloat(document.getElementById("largo").value) || 0;
+                const alto = parseFloat(document.getElementById("alto").value) || 0;
+                medida = parseFloat((largo * alto).toFixed(2));
+                textoMedida = `${medida} m² (Pared de ${largo}m x ${alto}m)`;
             }
 
-            // Buscar producto seleccionado
-            const productosCat = baseDatosMateriales[categoriaKey].productos;
-            const producto = productosCat.find(p => p.id === productoId);
-
-            if (!producto) return;
-
-            // Cálculo de la media entre consumo mínimo y máximo por m²
-            const consumoMedioPorM2 = (producto.min + producto.max) / 2;
-
-            // Aplicar superficie y porcentaje de merma
-            const superficieConMerma = superficieInput * (1 + (porcentajeMerma / 100));
-            const totalCalculado = superficieConMerma * consumoMedioPorM2;
-
-            // Mostrar resultados
-            const contenedorResultado = document.getElementById("resultadoContainer");
-            const textoResultado = document.getElementById("resultadoTexto");
-            const textoDetalle = document.getElementById("detalleTexto");
-
-            contenedorResultado.classList.remove("hidden");
-            
-            // Redondear hacia arriba para cantidades comerciales prácticas
-            const totalRedondeado = Math.ceil(totalCalculado);
-
-            textoResultado.textContent = `${totalRedondeado} ${producto.unidad}`;
-            textoDetalle.innerHTML = `
-                <strong>Producto:</strong> ${producto.nombre}<br>
-                <strong>Superficie neta:</strong> ${superficieInput} m² (+${porcentajeMerma}% merma)<br>
-                <strong>Consumo medio aplicado:</strong> ${consumoMedioPorM2.toFixed(2)} ${producto.unidad}/m² (Rango técnico: ${producto.min} - ${producto.max})
-            `;
-        }
-
-        function copiarResultado() {
-            const textoResultado = document.getElementById("resultadoTexto").textContent;
-            const detalle = document.getElementById("detalleTexto").innerText;
-            
-            const mensajeWp = `📋 *Cálculo de Material*\n${detalle}\n👉 *Total necesario:* ${textoResultado}`;
-
-            navigator.clipboard.writeText(mensajeWp).then(() => {
-                alert("¡Resultado copiado al portapapeles listo para pegar en WhatsApp!");
-            }).catch(err => {
-                console.error("Error al copiar: ", err);
-            });
-        }
-
-        // Inicializar selector al cargar la página
-        window.onload = function() {
-            actualizarProductos();
-        };
-    </script>
-</body>
-</html>
+            const espe
