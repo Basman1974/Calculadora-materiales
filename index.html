@@ -1,20 +1,196 @@
-﻿// Ejemplo de la categoría de Puentes de Unión con consumo min y max
-"puentes_union": {
-    "nombre": "Puentes de Unión / Imprimaciones",
-    "productos": [
-        {
-            "id": "resina_epoxi_puente",
-            "nombre": "Resina Epoxi de Adherencia",
-            "consumoMin": 0.20, // litros o kg/m2 mínimo
-            "consumoMax": 0.40, // litros o kg/m2 máximo
-            "unidadSalida": "litros"
-        },
-        {
-            "id": "latex_adherencia",
-            "nombre": "Látex para Puentes de Unión",
-            "consumoMin": 0.10,
-            "consumoMax": 0.25,
-            "unidadSalida": "litros"
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Rendimientos y Materiales</title>
+    <!-- Tailwind CSS para un diseño limpio y responsive -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
         }
-    ]
-}
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-main flex flex-col justify-between">
+
+    <!-- Cabecera -->
+    <header class="bg-slate-900 text-white shadow-md py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-xl mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-bold tracking-tight">Calculadora de Rendimientos</h1>
+            <span class="text-xs bg-blue-600 px-2.5 py-1 rounded-full font-medium">Versión Comercial</span>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-xl w-full mx-auto p-4 sm:p-6 flex-grow">
+        
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-5">
+            
+            <!-- Selector de Categoría -->
+            <div>
+                <label for="categoria" class="block text-sm font-semibold text-slate-700 mb-1.5">Categoría Constructiva</label>
+                <select id="categoria" onchange="actualizarProductos()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+                    <option value="puentes_union">Puentes de Unión / Imprimaciones</option>
+                    <option value="revestimientos">Revestimientos y Morteros</option>
+                    <option value="aislamientos">Aislamientos (SATE / EPS / XPS)</option>
+                </select>
+            </div>
+
+            <!-- Selector de Producto -->
+            <div>
+                <label for="producto" class="block text-sm font-semibold text-slate-700 mb-1.5">Producto Específico</label>
+                <select id="producto" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+                    <!-- Dinámico según categoría -->
+                </select>
+            </div>
+
+            <!-- Superficie -->
+            <div>
+                <label for="superficie" class="block text-sm font-semibold text-slate-700 mb-1.5">Superficie a aplicar (m²)</label>
+                <input type="number" id="superficie" placeholder="Ej. 50" min="0" step="any" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+            </div>
+
+            <!-- Merma -->
+            <div>
+                <label for="merma" class="block text-sm font-semibold text-slate-700 mb-1.5">Porcentaje de Merma / Desperdicio (%)</label>
+                <select id="merma" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition">
+                    <option value="5">5% (Obra optimizada)</option>
+                    <option value="10" selected>10% (Estándar recomendada)</option>
+                    <option value="15">15% (Superficies irregulares)</option>
+                    <option value="20">20% (Alta complejidad)</option>
+                </select>
+            </div>
+
+            <!-- Botón Calcular -->
+            <button onclick="calcularMateriales()" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold py-3.5 px-6 rounded-xl shadow-md transition duration-150">
+                Calcular Materiales
+            </button>
+        </div>
+
+        <!-- Resultados -->
+        <div id="resultadoContainer" class="hidden mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider">Resultado del Cálculo</h2>
+            <div id="resultadoTexto" class="text-2xl font-black text-slate-900">
+                <!-- Salida dinámica -->
+            </div>
+            <div id="detalleTexto" class="text-sm text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                <!-- Detalles del rendimiento medio y merma -->
+            </div>
+            <button onclick="copiarResultado()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
+                <span>Copiar Resultado para WhatsApp</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Pie -->
+    <footer class="text-center py-6 text-xs text-slate-400">
+        Calculadora de Rendimientos &copy; 2026 - Uso Comercial y Técnico
+    </footer>
+
+    <!-- Lógica de la Aplicación -->
+    <script>
+        // Base de datos de productos con consumos mínimos y máximos por m²
+        const baseDatosMateriales = {
+            "puentes_union": {
+                nombreCategoria: "Puentes de Unión / Imprimaciones",
+                productos: [
+                    { id: "resina_epoxi", nombre: "Resina Epoxi de Adherencia", min: 0.20, max: 0.40, unidad: "Litros" },
+                    { id: "latex_puente", nombre: "Látex Líquido para Adherencia", min: 0.15, max: 0.30, unidad: "Litros" },
+                    { id: "imprimacion_acrilica", nombre: "Imprimación Acrílica Multiuso", min: 0.10, max: 0.20, unidad: "Litros" }
+                ]
+            },
+            "revestimientos": {
+                nombreCategoria: "Revestimientos y Morteros",
+                productos: [
+                    { id: "mortero_monocapa", nombre: "Mortero Monocapa (por cm de espesor)", min: 14.0, max: 18.0, unidad: "kg" },
+                    { id: "enlucido_yeso", nombre: "Enlucido de Yeso Fino", min: 8.0, max: 10.0, unidad: "kg" }
+                ]
+            },
+            "aislamientos": {
+                nombreCategoria: "Aislamientos (SATE / EPS / XPS)",
+                productos: [
+                    { id: "mortero_adhesivo_sate", nombre: "Mortero Adhesivo Placas SATE", min: 4.0, max: 6.0, unidad: "kg" },
+                    { id: "mortero_mallas_sate", nombre: "Mortero Armado para Malla SATE", min: 3.5, max: 5.0, unidad: "kg" }
+                ]
+            }
+        };
+
+        function actualizarProductos() {
+            const categoriaSelect = document.getElementById("categoria").value;
+            const productoSelect = document.getElementById("producto");
+            
+            productoSelect.innerHTML = "";
+            const productosCat = baseDatosMateriales[categoriaSelect].productos;
+
+            productosCat.forEach(prod => {
+                const option = document.createElement("option");
+                option.value = prod.id;
+                option.textContent = prod.nombre;
+                productoSelect.appendChild(option);
+            });
+        }
+
+        function calcularMateriales() {
+            const categoriaKey = document.getElementById("categoria").value;
+            const productoId = document.getElementById("producto").value;
+            const superficieInput = parseFloat(document.getElementById("superficie").value);
+            const porcentajeMerma = parseFloat(document.getElementById("merma").value);
+
+            if (isNaN(superficieInput) || superficieInput <= 0) {
+                alert("Por favor, introduce una superficie válida en metros cuadrados.");
+                return;
+            }
+
+            // Buscar producto seleccionado
+            const productosCat = baseDatosMateriales[categoriaKey].productos;
+            const producto = productosCat.find(p => p.id === productoId);
+
+            if (!producto) return;
+
+            // Cálculo de la media entre consumo mínimo y máximo por m²
+            const consumoMedioPorM2 = (producto.min + producto.max) / 2;
+
+            // Aplicar superficie y porcentaje de merma
+            const superficieConMerma = superficieInput * (1 + (porcentajeMerma / 100));
+            const totalCalculado = superficieConMerma * consumoMedioPorM2;
+
+            // Mostrar resultados
+            const contenedorResultado = document.getElementById("resultadoContainer");
+            const textoResultado = document.getElementById("resultadoTexto");
+            const textoDetalle = document.getElementById("detalleTexto");
+
+            contenedorResultado.classList.remove("hidden");
+            
+            // Redondear hacia arriba para cantidades comerciales prácticas
+            const totalRedondeado = Math.ceil(totalCalculado);
+
+            textoResultado.textContent = `${totalRedondeado} ${producto.unidad}`;
+            textoDetalle.innerHTML = `
+                <strong>Producto:</strong> ${producto.nombre}<br>
+                <strong>Superficie neta:</strong> ${superficieInput} m² (+${porcentajeMerma}% merma)<br>
+                <strong>Consumo medio aplicado:</strong> ${consumoMedioPorM2.toFixed(2)} ${producto.unidad}/m² (Rango técnico: ${producto.min} - ${producto.max})
+            `;
+        }
+
+        function copiarResultado() {
+            const textoResultado = document.getElementById("resultadoTexto").textContent;
+            const detalle = document.getElementById("detalleTexto").innerText;
+            
+            const mensajeWp = `📋 *Cálculo de Material*\n${detalle}\n👉 *Total necesario:* ${textoResultado}`;
+
+            navigator.clipboard.writeText(mensajeWp).then(() => {
+                alert("¡Resultado copiado al portapapeles listo para pegar en WhatsApp!");
+            }).catch(err => {
+                console.error("Error al copiar: ", err);
+            });
+        }
+
+        // Inicializar selector al cargar la página
+        window.onload = function() {
+            actualizarProductos();
+        };
+    </script>
+</body>
+</html>
