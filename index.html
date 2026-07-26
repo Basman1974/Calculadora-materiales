@@ -113,7 +113,6 @@
             box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
         }
 
-        /* DISEÑO PARA LARGO Y ALTO EN COLUMNAS */
         .fila-medidas {
             display: flex;
             gap: 15px;
@@ -122,7 +121,6 @@
             flex: 1;
         }
 
-        /* ESTRUCTURA DE BOTONES PRINCIPALES */
         .botones-formulario {
             display: flex;
             gap: 10px;
@@ -159,7 +157,6 @@
         }
         .btn-secundario:hover { background-color: #e6f0ff; }
 
-        /* ZONA DE RESULTADOS */
         .resultado-container {
             margin-top: 30px;
             display: none;
@@ -225,7 +222,6 @@
         .casilla-destacada .casilla-valor,
         .casilla-destacada .casilla-nota { color: white; }
 
-        /* BOTONES DE EXPORTACIÓN */
         .botones-exportacion {
             display: flex;
             gap: 10px;
@@ -256,7 +252,6 @@
         }
         .btn-whatsapp:hover { background-color: #1ebe57; }
 
-        /* VENTANA MODAL DE AYUDA */
         .modal-fondo {
             display: none;
             position: fixed;
@@ -312,7 +307,6 @@
             width: 100%;
             margin-top: 10px;
         }
-
     </style>
 </head>
 <body>
@@ -345,7 +339,6 @@
             </select>
         </div>
 
-        <!-- CONTENEDOR DE MEDIDAS DINÁMICO -->
         <div id="contenedor-medidas" style="display:none;">
             <div class="grupo-formulario">
                 <label for="modo-medida">Cálculo de superficie:</label>
@@ -355,13 +348,11 @@
                 </select>
             </div>
 
-            <!-- Opción 1: m2 directos -->
             <div id="div-m2-directo" class="grupo-formulario">
                 <label for="medida">Metros Cuadrados Totales (m²):</label>
                 <input type="number" id="medida" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
             </div>
 
-            <!-- Opción 2: Largo x Alto -->
             <div id="div-dimensiones" class="grupo-formulario fila-medidas" style="display:none;">
                 <div class="columna-mitad">
                     <label for="largo">Largo (m):</label>
@@ -404,12 +395,12 @@
             <div class="modal-texto">
                 <p>Esta herramienta te dice exactamente cuánto material necesitas comprar para tu obra, sin que tengas que hacer números.</p>
                 <ol>
-                    <li><strong>Elige qué vas a hacer:</strong> Selecciona si necesitas ladrillos, bloques o materiales para revestir.</li>
+                    <li><strong>Elige qué vas a hacer:</strong> Selecciona si necesitas ladrillos, bloques, revestimientos o puentes de unión.</li>
                     <li><strong>Busca tu producto:</strong> Escoge el modelo exacto que quieres utilizar.</li>
-                    <li><strong>Pon tus medidas:</strong> Puedes escribir los m² totales si ya los sabes, o elegir la opción de introducir el largo y el alto de la pared para que la aplicación calcule los metros cuadrados por ti.</li>
-                    <li><strong>Calcula:</strong> Toca el botón azul. Al instante sabrás cuántas piezas o sacos completos tienes que llevarte.</li>
+                    <li><strong>Pon tus medidas:</strong> Puedes escribir los m² totales si ya los sabes, o elegir la opción de introducir el largo y el alto de la pared.</li>
+                    <li><strong>Calcula:</strong> Toca el botón azul para ver el desglose exacto de materiales y consumos.</li>
                 </ol>
-                <p>💡 <em>Nota: La calculadora hace el trabajo duro por ti. Incluso calcula automáticamente cuántos sacos de mortero (cemento) necesitas para pegar los bloques, o añade un pequeño margen extra para que no te falte material si hay cortes.</em></p>
+                <p>💡 <em>Nota: La calculadora hace el trabajo duro por ti, calculando mortero, palets, pesos o los litros exactos en puentes de unión basados en la media técnica.</em></p>
             </div>
             <button class="btn-cerrar-modal" onclick="cerrarAyuda()">Entendido</button>
         </div>
@@ -444,16 +435,15 @@
                 "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
             },
             puentes: {
-                "Puente de unión PLUS (MH)": { consumo: "200-250 g/m²" },
-                "SikaTop-30": { consumo: "150-175 g/m²" },
-                "SikaTop-50": { consumo: "125-150 g/m²" },
-                "SikaTop10-": { consumo: "0,8 kg/m²" }
+                "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250 },
+                "SikaTop-30": { min: 0.150, max: 0.175 },
+                "SikaTop-50": { min: 0.125, max: 0.150 },
+                "Imprimación Epoxi Standard": { min: 0.250, max: 0.400 }
             }
         };
 
         let textoPortapapeles = "";
 
-        // Funciones de la Ventana de Ayuda
         function abrirAyuda() { document.getElementById("modalAyuda").style.display = "flex"; }
         function cerrarAyuda() { document.getElementById("modalAyuda").style.display = "none"; }
         function cerrarAyudaFondo(event) { if (event.target === document.getElementById("modalAyuda")) cerrarAyuda(); }
@@ -462,7 +452,6 @@
             document.getElementById("resultado").style.display = "none";
         }
 
-        // Gestión del tipo de medida (m2 directo vs dimensiones)
         function cambiarModoMedida() {
             const modo = document.getElementById("modo-medida").value;
             document.getElementById("div-m2-directo").style.display = modo === "directo" ? "block" : "none";
@@ -484,7 +473,7 @@
             document.getElementById("div-espesor").style.display = "none";
             document.getElementById("div-merma").style.display = "none";
             
-            cambiarModoMedida(); // Resetea visualmente el bloque de medidas
+            cambiarModoMedida();
             ocultarResultados();
         }
 
@@ -500,7 +489,7 @@
             
             contenedorMedidas.style.display = categoria ? "block" : "none";
             divEspesor.style.display = categoria === "revestimientos" ? "block" : "none";
-            divMerma.style.display = categoria === "revestimientos" ? "block" : "none";
+            divMerma.style.display = (categoria === "ladrillos" || categoria === "bloques" || categoria === "revestimientos" || categoria === "puentes") ? "block" : "none";
 
             if (categoria && datos[categoria]) {
                 for (const key in datos[categoria]) {
@@ -516,7 +505,6 @@
             const categoria = document.getElementById("categoria").value;
             const producto = document.getElementById("producto").value;
             
-            // Lógica para determinar los m2 totales según el modo seleccionado
             const modoMedida = document.getElementById("modo-medida").value;
             let medida = 0;
             let textoMedida = "";
@@ -549,15 +537,16 @@
             textoPortapapeles = `*Cotización de Materiales:*\n📦 Producto: ${producto}\n📏 Superficie: ${textoMedida}\n\n`;
 
             if (categoria === "ladrillos" || categoria === "bloques") {
-                const totalUds = Math.ceil(item.udsM2 * medida); 
+                const totalUds = Math.ceil((item.udsM2 * medida) * factorMerma); 
                 const pesoTotal = (totalUds * item.peso).toFixed(2);
                 
-                textoPortapapeles += `🔸 Unidades requeridas: ${totalUds} uds\n🔸 Peso total: ${pesoTotal} kg\n`;
+                textoPortapapeles += `🔸 Unidades requeridas: ${totalUds} uds (Inc. ${mermaSeleccionada}% merma)\n🔸 Peso total: ${pesoTotal} kg\n`;
 
                 html += `
                     <div class="casilla">
                         <div class="casilla-etiqueta">Unidades Requeridas</div>
                         <div class="casilla-valor">${totalUds}</div>
+                        <div class="casilla-nota">Inc. ${mermaSeleccionada}% merma</div>
                     </div>
                     <div class="casilla">
                         <div class="casilla-etiqueta">Peso Total</div>
@@ -575,7 +564,7 @@
                 }
                 
                 if (item.mortero) {
-                    const totalMorteroKilos = item.mortero * medida;
+                    const totalMorteroKilos = (item.mortero * medida) * factorMerma;
                     const sacosMortero = Math.ceil(totalMorteroKilos / 25);
                     textoPortapapeles += `🔸 Sacos de mortero (25kg): *${sacosMortero}*\n`;
                     html += `
@@ -589,7 +578,7 @@
                         <div class="casilla-nota">Sacos de 25 kg</div>
                     </div>`;
                 }
-                                  
+                            
             } else if (categoria === "revestimientos") {
                 if (espesor > item.maxMm) {
                     alert(`Atención: El espesor máximo recomendado para ${producto} es ${item.maxMm} mm.`);
@@ -620,14 +609,23 @@
                         <div class="casilla-valor">${sacosNecesarios}</div>
                         <div class="casilla-nota">Sacos de 25 kg incl. merma</div>
                     </div>`;
-                                  
+                            
             } else if (categoria === "puentes") {
-                textoPortapapeles += `🔸 Consumo estimado: ${item.consumo}\n`;
+                // Cálculo de la media entre el consumo mínimo y máximo por m², aplicando merma y redondeando a litros
+                const consumoMedioPorM2 = (item.min + item.max) / 2;
+                const totalLitros = Math.ceil((medida * consumoMedioPorM2) * factorMerma);
+
+                textoPortapapeles += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} L/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
                 html += `
-                    <div class="casilla casilla-destacada" style="grid-column: 1 / -1;">
-                        <div class="casilla-etiqueta">Factor de Consumo Estimado</div>
-                        <div class="casilla-valor">${item.consumo}</div>
-                        <div class="casilla-nota">Multiplica tu área total por este factor</div>
+                    <div class="casilla casilla-destacada">
+                        <div class="casilla-etiqueta">Consumo en Litros</div>
+                        <div class="casilla-valor">${totalLitros} L</div>
+                        <div class="casilla-nota">Media: ${consumoMedioPorM2.toFixed(3)} L/m²</div>
+                    </div>
+                    <div class="casilla">
+                        <div class="casilla-etiqueta">Rango Técnico</div>
+                        <div class="casilla-valor" style="font-size: 16px; margin-top: 5px;">${item.min} - ${item.max}</div>
+                        <div class="casilla-nota">Litros/kg por m²</div>
                     </div>`;
             }
 
