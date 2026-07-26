@@ -435,7 +435,10 @@
                 "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
             },
             puentes: {
-                "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32 }
+                "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros" },
+                "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros" },
+                "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros" },
+                "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10" }
             }
         };
 
@@ -608,22 +611,39 @@
                     </div>`;
                             
             } else if (categoria === "puentes") {
-                const consumoMedioPorM2 = (item.min + item.max) / 2;
-                const totalKgKilos = (medida * consumoMedioPorM2) * factorMerma;
-                const totalLitros = Math.ceil(totalKgKilos / item.densidad);
+                if (item.tipo === "sikatop10") {
+                    const totalKgKilos = (medida * item.min) * factorMerma;
+                    const totalLitros = Math.ceil(totalKgKilos / item.densidad);
 
-                textoPortapapeles += `🔸 Consumo medio: ${consumoMedioPorM2} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
-                html += `
-                    <div class="casilla casilla-destacada">
-                        <div class="casilla-etiqueta">Consumo en Litros</div>
-                        <div class="casilla-valor">${totalLitros} L</div>
-                        <div class="casilla-nota">Media: ${consumoMedioPorM2} kg/m²</div>
-                    </div>
-                    <div class="casilla">
-                        <div class="casilla-etiqueta">Consumo en Kilos</div>
-                        <div class="casilla-valor">${totalKgKilos.toFixed(2)} kg</div>
-                        <div class="casilla-nota">Densidad: ~${item.densidad} kg/l</div>
-                    </div>`;
+                    textoPortapapeles += `🔸 Consumo: ${item.min} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
+                    html += `
+                        <div class="casilla casilla-destacada">
+                            <div class="casilla-etiqueta">Consumo en Litros</div>
+                            <div class="casilla-valor">${totalLitros} L</div>
+                            <div class="casilla-nota">Consumo: ${item.min} kg/m²</div>
+                        </div>
+                        <div class="casilla">
+                            <div class="casilla-etiqueta">Consumo en Kilos</div>
+                            <div class="casilla-valor">${totalKgKilos.toFixed(2)} kg</div>
+                            <div class="casilla-nota">Densidad: ~${item.densidad} kg/l[cite: 1]</div>
+                        </div>`;
+                } else {
+                    const consumoMedioPorM2 = (item.min + item.max) / 2;
+                    const totalLitros = Math.ceil((medida * consumoMedioPorM2) * factorMerma);
+
+                    textoPortapapeles += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} L/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
+                    html += `
+                        <div class="casilla casilla-destacada">
+                            <div class="casilla-etiqueta">Consumo en Litros</div>
+                            <div class="casilla-valor">${totalLitros} L</div>
+                            <div class="casilla-nota">Media: ${consumoMedioPorM2.toFixed(3)} L/m²</div>
+                        </div>
+                        <div class="casilla">
+                            <div class="casilla-etiqueta">Rango Técnico</div>
+                            <div class="casilla-valor" style="font-size: 16px; margin-top: 5px;">${item.min} - ${item.max}</div>
+                            <div class="casilla-nota">Litros/kg por m²</div>
+                        </div>`;
+                }
             }
 
             html += `</div>`;
