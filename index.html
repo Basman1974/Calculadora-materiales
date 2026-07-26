@@ -113,6 +113,7 @@
             box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.15);
         }
 
+        /* DISEÑO PARA LARGO Y ALTO EN COLUMNAS */
         .fila-medidas {
             display: flex;
             gap: 15px;
@@ -121,6 +122,7 @@
             flex: 1;
         }
 
+        /* ESTRUCTURA DE BOTONES PRINCIPALES */
         .botones-formulario {
             display: flex;
             gap: 10px;
@@ -157,6 +159,7 @@
         }
         .btn-secundario:hover { background-color: #e6f0ff; }
 
+        /* ZONA DE RESULTADOS */
         .resultado-container {
             margin-top: 30px;
             display: none;
@@ -222,6 +225,7 @@
         .casilla-destacada .casilla-valor,
         .casilla-destacada .casilla-nota { color: white; }
 
+        /* BOTONES DE EXPORTACIÓN */
         .botones-exportacion {
             display: flex;
             gap: 10px;
@@ -252,6 +256,7 @@
         }
         .btn-whatsapp:hover { background-color: #1ebe57; }
 
+        /* VENTANA MODAL DE AYUDA */
         .modal-fondo {
             display: none;
             position: fixed;
@@ -307,14 +312,14 @@
             width: 100%;
             margin-top: 10px;
         }
+
     </style>
 </head>
 <body>
 
     <div class="contenedor-app">
-        <!-- Logotipo integrado -->
         <div class="logo-container">
-            <img src="LOGO OBRAMAT.PNG" alt="Logo Obramat">
+            <img src="LOGO OBRAMAT.PNG" alt="Logo">
         </div>
 
         <div class="encabezado">
@@ -340,6 +345,7 @@
             </select>
         </div>
 
+        <!-- CONTENEDOR DE MEDIDAS DINÁMICO -->
         <div id="contenedor-medidas" style="display:none;">
             <div class="grupo-formulario">
                 <label for="modo-medida">Cálculo de superficie:</label>
@@ -349,11 +355,13 @@
                 </select>
             </div>
 
+            <!-- Opción 1: m2 directos -->
             <div id="div-m2-directo" class="grupo-formulario">
                 <label for="medida">Metros Cuadrados Totales (m²):</label>
                 <input type="number" id="medida" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
             </div>
 
+            <!-- Opción 2: Largo x Alto -->
             <div id="div-dimensiones" class="grupo-formulario fila-medidas" style="display:none;">
                 <div class="columna-mitad">
                     <label for="largo">Largo (m):</label>
@@ -396,12 +404,12 @@
             <div class="modal-texto">
                 <p>Esta herramienta te dice exactamente cuánto material necesitas comprar para tu obra, sin que tengas que hacer números.</p>
                 <ol>
-                    <li><strong>Elige qué vas a hacer:</strong> Selecciona si necesitas ladrillos, bloques, revestimientos o puentes de unión.</li>
+                    <li><strong>Elige qué vas a hacer:</strong> Selecciona si necesitas ladrillos, bloques o materiales para revestir.</li>
                     <li><strong>Busca tu producto:</strong> Escoge el modelo exacto que quieres utilizar.</li>
-                    <li><strong>Pon tus medidas:</strong> Puedes escribir los m² totales directamente o elegir la opción de introducir el largo y el alto de la pared.</li>
-                    <li><strong>Calcula:</strong> Toca el botón azul para ver el desglose exacto de materiales.</li>
+                    <li><strong>Pon tus medidas:</strong> Puedes escribir los m² totales si ya los sabes, o elegir la opción de introducir el largo y el alto de la pared para que la aplicación calcule los metros cuadrados por ti.</li>
+                    <li><strong>Calcula:</strong> Toca el botón azul. Al instante sabrás cuántas piezas o sacos completos tienes que llevarte.</li>
                 </ol>
-                <p>💡 <em>Nota: En los puentes de unión, el consumo se calcula automáticamente tomando la media en litros entre los valores mínimo y máximo por m².</em></p>
+                <p>💡 <em>Nota: La calculadora hace el trabajo duro por ti. Incluso calcula automáticamente cuántos sacos de mortero (cemento) necesitas para pegar los bloques, o añade un pequeño margen extra para que no te falte material si hay cortes.</em></p>
             </div>
             <button class="btn-cerrar-modal" onclick="cerrarAyuda()">Entendido</button>
         </div>
@@ -436,15 +444,16 @@
                 "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
             },
             puentes: {
-                "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250 },
-                "SikaTop-30": { min: 0.150, max: 0.175 },
-                "SikaTop-50": { min: 0.125, max: 0.150 },
-                "Imprimación Epoxi Standard": { min: 0.250, max: 0.400 }
+                "Puente de unión PLUS (MH)": { consumo: "200-250 g/m²" },
+                "SikaTop-30": { consumo: "150-175 g/m²" },
+                "SikaTop-50": { consumo: "125-150 g/m²" },
+                "SikaTop10-": { consumo: "0,8 kg/m²" }
             }
         };
 
         let textoPortapapeles = "";
 
+        // Funciones de la Ventana de Ayuda
         function abrirAyuda() { document.getElementById("modalAyuda").style.display = "flex"; }
         function cerrarAyuda() { document.getElementById("modalAyuda").style.display = "none"; }
         function cerrarAyudaFondo(event) { if (event.target === document.getElementById("modalAyuda")) cerrarAyuda(); }
@@ -453,6 +462,7 @@
             document.getElementById("resultado").style.display = "none";
         }
 
+        // Gestión del tipo de medida (m2 directo vs dimensiones)
         function cambiarModoMedida() {
             const modo = document.getElementById("modo-medida").value;
             document.getElementById("div-m2-directo").style.display = modo === "directo" ? "block" : "none";
@@ -474,7 +484,7 @@
             document.getElementById("div-espesor").style.display = "none";
             document.getElementById("div-merma").style.display = "none";
             
-            cambiarModoMedida();
+            cambiarModoMedida(); // Resetea visualmente el bloque de medidas
             ocultarResultados();
         }
 
@@ -490,7 +500,7 @@
             
             contenedorMedidas.style.display = categoria ? "block" : "none";
             divEspesor.style.display = categoria === "revestimientos" ? "block" : "none";
-            divMerma.style.display = (categoria === "ladrillos" || categoria === "bloques" || categoria === "revestimientos" || categoria === "puentes") ? "block" : "none";
+            divMerma.style.display = categoria === "revestimientos" ? "block" : "none";
 
             if (categoria && datos[categoria]) {
                 for (const key in datos[categoria]) {
@@ -506,11 +516,7 @@
             const categoria = document.getElementById("categoria").value;
             const producto = document.getElementById("producto").value;
             
-            if (!categoria || !producto) {
-                alert("Por favor, selecciona una categoría y un producto.");
-                return;
-            }
-
+            // Lógica para determinar los m2 totales según el modo seleccionado
             const modoMedida = document.getElementById("modo-medida").value;
             let medida = 0;
             let textoMedida = "";
@@ -525,14 +531,135 @@
                 textoMedida = `${medida} m² (Pared de ${largo}m x ${alto}m)`;
             }
 
-            if (medida <= 0) {
-                alert("Introduce una superficie válida mayor que 0.");
+            const espesor = parseFloat(document.getElementById("espesor").value) || 0;
+            const mermaSeleccionada = parseFloat(document.getElementById("merma").value) || 0;
+            const factorMerma = 1 + (mermaSeleccionada / 100);
+
+            const resultadoDiv = document.getElementById("resultado");
+
+            if (!categoria || !producto || medida <= 0) {
+                alert("Por favor, completa los campos correctamente.");
                 return;
             }
 
-            const porcentajeMerma = parseFloat(document.getElementById("merma").value) || 0;
-            const superficieConMerma = medida * (1 + (porcentajeMerma / 100));
-
+            let html = `<h3 class="resultado-titulo">RESULTADO: ${producto} <br><small style="font-size:14px; color:#555;">${textoMedida}</small></h3>`;
+            html += `<div class="resultado-grid">`;
             const item = datos[categoria][producto];
-            let htmlResultado = "";
-            let txtWp = `*CÁLCULO DE MATERIALES*\n\n*Categoría:* ${c 
+            
+            textoPortapapeles = `*Cotización de Materiales:*\n📦 Producto: ${producto}\n📏 Superficie: ${textoMedida}\n\n`;
+
+            if (categoria === "ladrillos" || categoria === "bloques") {
+                const totalUds = Math.ceil(item.udsM2 * medida); 
+                const pesoTotal = (totalUds * item.peso).toFixed(2);
+                
+                textoPortapapeles += `🔸 Unidades requeridas: ${totalUds} uds\n🔸 Peso total: ${pesoTotal} kg\n`;
+
+                html += `
+                    <div class="casilla">
+                        <div class="casilla-etiqueta">Unidades Requeridas</div>
+                        <div class="casilla-valor">${totalUds}</div>
+                    </div>
+                    <div class="casilla">
+                        <div class="casilla-etiqueta">Peso Total</div>
+                        <div class="casilla-valor">${pesoTotal} kg</div>
+                    </div>`;
+                
+                if (item.palet) {
+                    const totalPalets = (totalUds / item.palet).toFixed(2);
+                    textoPortapapeles += `🔸 Palets enteros (aprox): ${totalPalets}\n`;
+                    html += `
+                    <div class="casilla">
+                        <div class="casilla-etiqueta">Palets (Aprox.)</div>
+                        <div class="casilla-valor">${totalPalets}</div>
+                    </div>`;
+                }
+                
+                if (item.mortero) {
+                    const totalMorteroKilos = item.mortero * medida;
+                    const sacosMortero = Math.ceil(totalMorteroKilos / 25);
+                    textoPortapapeles += `🔸 Sacos de mortero (25kg): *${sacosMortero}*\n`;
+                    html += `
+                    <div class="casilla">
+                        <div class="casilla-etiqueta">Mortero Total</div>
+                        <div class="casilla-valor">${totalMorteroKilos.toFixed(2)} kg</div>
+                    </div>
+                    <div class="casilla casilla-destacada">
+                        <div class="casilla-etiqueta">Sacos de Mortero</div>
+                        <div class="casilla-valor">${sacosMortero}</div>
+                        <div class="casilla-nota">Sacos de 25 kg</div>
+                    </div>`;
+                }
+                                  
+            } else if (categoria === "revestimientos") {
+                if (espesor > item.maxMm) {
+                    alert(`Atención: El espesor máximo recomendado para ${producto} es ${item.maxMm} mm.`);
+                }
+                
+                const consumoPorM2 = item.kgMm * espesor;
+                const totalKilos = consumoPorM2 * medida;
+                const totalKilosConMerma = totalKilos * factorMerma; 
+                const sacosNecesarios = Math.ceil(totalKilosConMerma / 25); 
+                
+                textoPortapapeles += `🔸 Espesor de aplicación: ${espesor} mm\n🔸 Consumo total (Neto): ${totalKilos.toFixed(2)} kg\n🔸 Sacos necesarios (25kg): *${sacosNecesarios}* (Incluye ${mermaSeleccionada}% de merma)\n`;
+
+                html += `
+                    <div class="casilla">
+                        <div class="casilla-etiqueta">Consumo / m²</div>
+                        <div class="casilla-valor">${consumoPorM2.toFixed(2)} kg</div>
+                    </div>
+                    <div class="casilla">
+                        <div class="casilla-etiqueta">Kilos (Neto)</div>
+                        <div class="casilla-valor">${totalKilos.toFixed(2)}</div>
+                    </div>
+                    <div class="casilla">
+                        <div class="casilla-etiqueta">Kilos (+${mermaSeleccionada}% merma)</div>
+                        <div class="casilla-valor">${totalKilosConMerma.toFixed(2)}</div>
+                    </div>
+                    <div class="casilla casilla-destacada">
+                        <div class="casilla-etiqueta">Sacos a pedir</div>
+                        <div class="casilla-valor">${sacosNecesarios}</div>
+                        <div class="casilla-nota">Sacos de 25 kg incl. merma</div>
+                    </div>`;
+                                  
+            } else if (categoria === "puentes") {
+                textoPortapapeles += `🔸 Consumo estimado: ${item.consumo}\n`;
+                html += `
+                    <div class="casilla casilla-destacada" style="grid-column: 1 / -1;">
+                        <div class="casilla-etiqueta">Factor de Consumo Estimado</div>
+                        <div class="casilla-valor">${item.consumo}</div>
+                        <div class="casilla-nota">Multiplica tu área total por este factor</div>
+                    </div>`;
+            }
+
+            html += `</div>`;
+            
+            html += `
+                <div class="botones-exportacion">
+                    <button class="btn-copiar" onclick="copiarAlPortapapeles()">📋 Copiar</button>
+                    <button class="btn-whatsapp" onclick="enviarPorWhatsApp()">💬 WhatsApp</button>
+                </div>
+            `;
+            
+            resultadoDiv.innerHTML = html;
+            resultadoDiv.style.display = "block";
+        }
+
+        function copiarAlPortapapeles() {
+            navigator.clipboard.writeText(textoPortapapeles).then(() => {
+                const btn = document.querySelector('.btn-copiar');
+                btn.innerHTML = "✅ ¡Copiado!";
+                setTimeout(() => {
+                    btn.innerHTML = "📋 Copiar";
+                }, 2000);
+            }).catch(err => {
+                alert('Error al copiar el texto. Inténtalo manualmente.');
+            });
+        }
+
+        function enviarPorWhatsApp() {
+            const urlWhatsApp = 'https://wa.me/?text=' + encodeURIComponent(textoPortapapeles);
+            window.open(urlWhatsApp, '_blank');
+        }
+    </script>
+</body>
+</html>
