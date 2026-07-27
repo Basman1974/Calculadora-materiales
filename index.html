@@ -102,6 +102,23 @@
             margin-bottom: 22px;
         }
 
+        .contenedor-imagen-centrada {
+            text-align: center;
+            margin-bottom: 22px;
+            display: none; 
+            padding: 10px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px dashed var(--color-borde);
+        }
+
+        .imagen-producto {
+            max-width: 160px;
+            height: auto;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
         label { 
             font-weight: 700; 
             display: block; 
@@ -395,6 +412,11 @@
             </select>
         </div>
 
+        <!-- NUEVO CONTENEDOR DE IMAGEN -->
+        <div id="contenedor-img" class="contenedor-imagen-centrada">
+            <img id="img-dinamica" src="" alt="Vista del producto" class="imagen-producto">
+        </div>
+
         <div id="div-soporte" class="grupo-formulario" style="display:none;">
             <label for="tipo-soporte">Tipo de Soporte (Dilución):</label>
             <select id="tipo-soporte" oninput="ocultarResultados()">
@@ -512,7 +534,7 @@
                 "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10" },
                 "Puente de Unión Morteros Henares (PTU-20)": { min: 0.400, max: 0.450, densidad: 1.4, tipo: "rango_kilos" },
                 "IMPRIMACIÓN DE ADHERENCIA APLICA PRIMER TOP 5 KG": { min: 0.125, max: 0.175, densidad: 1.43, tipo: "rango_kilos" },
-                "Imprimacion Aplica Level Primer 5 L": { tipo: "level_primer" }
+                "Imprimacion Aplica Level Primer 5 L": { tipo: "level_primer", imagen: "level-primer.jpg" }
             }
         };
 
@@ -548,6 +570,8 @@
             document.getElementById("div-espesor").style.display = "none";
             document.getElementById("div-merma").style.display = "none";
             document.getElementById("div-soporte").style.display = "none";
+            document.getElementById("contenedor-img").style.display = "none";
+            document.getElementById("img-dinamica").src = "";
             
             cambiarModoMedida();
             ocultarResultados();
@@ -564,6 +588,8 @@
             
             productoSelect.innerHTML = '<option value="">Selecciona un producto...</option>';
             divSoporte.style.display = "none";
+            document.getElementById("contenedor-img").style.display = "none";
+            document.getElementById("img-dinamica").src = "";
             ocultarResultados();
             
             contenedorMedidas.style.display = categoria ? "block" : "none";
@@ -584,13 +610,26 @@
 
         function actualizarOpcionesProducto() {
             ocultarResultados();
+            const categoria = document.getElementById("categoria").value;
             const producto = document.getElementById("producto").value;
             const divSoporte = document.getElementById("div-soporte");
+            const divImg = document.getElementById("contenedor-img");
+            const imgElemento = document.getElementById("img-dinamica");
             
+            // Lógica para desplegar el selector de soporte
             if (producto === "Imprimacion Aplica Level Primer 5 L") {
                 divSoporte.style.display = "block";
             } else {
                 divSoporte.style.display = "none";
+            }
+
+            // Lógica para mostrar la imagen si existe en la base de datos
+            if (categoria && producto && datos[categoria][producto] && datos[categoria][producto].imagen) {
+                imgElemento.src = datos[categoria][producto].imagen;
+                divImg.style.display = "block";
+            } else {
+                divImg.style.display = "none";
+                imgElemento.src = "";
             }
         }
 
