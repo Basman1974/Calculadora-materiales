@@ -35,6 +35,18 @@
             position: relative;
         }
 
+        /* ESTILO PARA LA MARCA DE AGUA SUPERIOR */
+        .marca-agua-top {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
         .logo-container {
             text-align: center;
             margin-bottom: 25px;
@@ -308,7 +320,7 @@
             margin-top: 10px;
         }
 
-        /* ESTILO PARA LA MARCA DE AGUA */
+        /* ESTILO PARA LA MARCA DE AGUA INFERIOR */
         .marca-agua {
             text-align: center;
             font-size: 11px;
@@ -325,6 +337,11 @@
 <body>
 
     <div class="contenedor-app">
+        <!-- MARCA DE AGUA SUPERIOR DERECHA -->
+        <div class="marca-agua-top">
+            © 2026 Elías López
+        </div>
+
         <div class="logo-container">
             <img src="LOGO OBRAMAT.PNG" alt="Logo">
         </div>
@@ -400,9 +417,9 @@
 
         <div id="resultado" class="resultado-container"></div>
 
-        <!-- MARCA DE AGUA INSERTADA AQUÍ -->
+        <!-- MARCA DE AGUA INFERIOR -->
         <div class="marca-agua">
-            Aplicación creada por ELIAS LOPEZ
+            © 2026 Elías López
         </div>
 
     </div>
