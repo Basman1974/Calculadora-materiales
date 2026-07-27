@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Materiales</title>
+    <!-- Librería para generar el PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --color-primario: #0056b3;
@@ -11,6 +13,7 @@
             --color-secundario-suave: #fff7f0; 
             --color-resultado: #059669;
             --color-whatsapp: #25D366;
+            --color-email: #4f46e5;
             --color-fondo-pantalla: #e2e8f0; 
             --color-fondo-app: #ffffff; 
             --color-texto: #222222;
@@ -92,7 +95,6 @@
             justify-content: center;
             transition: all 0.2s ease;
             padding: 0;
-            font-family: var(--fuente-principal);
         }
 
         .btn-ayuda-ico:hover {
@@ -117,7 +119,6 @@
             max-width: 160px;
             height: auto;
             border-radius: 6px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
         label { 
@@ -127,7 +128,6 @@
             font-size: 14px; 
             color: var(--color-etiquetas);
             text-transform: uppercase; 
-            letter-spacing: 0.5px;
         }
 
         select, input {
@@ -138,37 +138,19 @@
             border-radius: 8px;
             box-sizing: border-box;
             font-size: 16px;
-            transition: all 0.2s ease;
         }
 
         select {
             background-color: var(--color-secundario-suave);
             border-left: 5px solid var(--color-secundario);
-            color: #000000;
             font-weight: 700; 
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(255, 102, 0, 0.05);
-        }
-
-        input {
-            background-color: #ffffff; 
-            color: var(--color-texto);
-            font-weight: 500;
-        }
-
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--color-secundario);
-            box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.15);
         }
 
         .fila-medidas {
             display: flex;
             gap: 15px;
         }
-        .columna-mitad {
-            flex: 1;
-        }
+        .columna-mitad { flex: 1; }
 
         .botones-formulario {
             display: flex;
@@ -179,47 +161,17 @@
         button {
             font-family: var(--fuente-principal);
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 800;
-            padding: 16px;
+            padding: 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
             border: none;
+            text-transform: uppercase;
         }
 
-        button:active { transform: scale(0.98); }
-
-        .btn-primario {
-            flex: 2;
-            background-color: var(--color-primario);
-            color: white;
-            box-shadow: 0 4px 10px rgba(0, 86, 179, 0.2);
-        }
-        .btn-primario:hover { background-color: #004494; }
-
-        .btn-secundario {
-            flex: 1;
-            background-color: transparent;
-            color: var(--color-primario);
-            border: 2px solid var(--color-primario);
-            padding: 14px; 
-        }
-        .btn-secundario:hover { background-color: #f0f7ff; }
-
-        .btn-agregar-carrito {
-            width: 100%;
-            background-color: var(--color-secundario);
-            color: white;
-            margin-top: 20px;
-            box-shadow: 0 4px 10px rgba(255, 102, 0, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-agregar-carrito:hover { background-color: #e65c00; }
+        .btn-primario { flex: 2; background-color: var(--color-primario); color: white; }
+        .btn-secundario { flex: 1; background-color: transparent; color: var(--color-primario); border: 2px solid var(--color-primario); }
+        .btn-agregar-carrito { width: 100%; background-color: var(--color-secundario); color: white; margin-top: 20px; padding: 16px; font-size: 16px;}
 
         .resultado-container {
             margin-top: 30px;
@@ -228,21 +180,8 @@
             border-top: 2px dashed var(--color-borde);
         }
 
-        .resultado-titulo {
-            text-align: center;
-            color: var(--color-resultado);
-            font-size: 20px;
-            font-weight: 800;
-            margin-top: 0;
-            margin-bottom: 20px;
-            line-height: 1.3;
-        }
-
-        .resultado-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-        }
+        .resultado-titulo { text-align: center; color: var(--color-resultado); font-weight: 800; }
+        .resultado-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
 
         .casilla {
             background-color: rgba(5, 150, 105, 0.05);
@@ -250,44 +189,14 @@
             border-radius: 10px;
             padding: 15px;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
         }
 
-        .casilla-etiqueta {
-            font-size: 12px;
-            color: var(--color-etiquetas);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            font-weight: 800;
-        }
+        .casilla-etiqueta { font-size: 12px; color: var(--color-etiquetas); font-weight: 800; }
+        .casilla-valor { font-size: 26px; font-weight: 900; color: var(--color-resultado); }
+        .casilla-nota { font-size: 11px; color: #555; margin-top: 5px; }
+        .casilla-destacada { background-color: var(--color-resultado); color: white; }
+        .casilla-destacada .casilla-etiqueta, .casilla-destacada .casilla-valor, .casilla-destacada .casilla-nota { color: white; }
 
-        .casilla-valor {
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--color-resultado);
-        }
-
-        .casilla-nota {
-            font-size: 11px;
-            color: #555;
-            margin-top: 5px;
-            font-weight: 600;
-        }
-        
-        .casilla-destacada {
-            background-color: var(--color-resultado);
-            color: white;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.25);
-        }
-
-        .casilla-destacada .casilla-etiqueta, 
-        .casilla-destacada .casilla-valor,
-        .casilla-destacada .casilla-nota { color: white; }
-
-        /* ESTILOS DEL CARRITO MULTIPRODUCTO */
         .contenedor-carrito {
             margin-top: 40px;
             display: none;
@@ -297,167 +206,66 @@
             border-radius: 12px;
         }
 
-        .titulo-carrito {
-            color: var(--color-primario);
-            margin-top: 0;
-            font-size: 18px;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
+        .titulo-carrito { color: var(--color-primario); text-align: center; margin-top: 0;}
         .item-carrito {
             background-color: white;
             border: 1px solid var(--color-borde);
-            padding: 12px 15px;
+            padding: 12px;
             border-radius: 8px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
 
-        .item-carrito-info strong {
-            display: block;
-            font-size: 14px;
-            color: var(--color-texto);
-            margin-bottom: 4px;
-        }
+        .btn-eliminar-item { background-color: var(--color-peligro); color: white; padding: 8px; }
 
-        .item-carrito-info small {
-            color: var(--color-etiquetas);
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .btn-eliminar-item {
-            background-color: var(--color-peligro);
-            color: white;
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 14px;
-            width: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-eliminar-item:hover { background-color: #dc2626; }
-
-        .botones-exportacion {
-            display: flex;
+        .grid-botones-export {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-top: 20px;
         }
 
-        .btn-copiar, .btn-whatsapp {
-            flex: 1;
-            padding: 14px;
-            font-size: 14px;
+        .btn-export {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             text-transform: none;
-            letter-spacing: normal;
-            font-weight: 700;
-        }
-
-        .btn-copiar {
-            background-color: var(--color-fondo-pantalla);
-            color: var(--color-texto);
-        }
-        .btn-copiar:hover { background-color: var(--color-borde); }
-
-        .btn-whatsapp {
-            background-color: var(--color-whatsapp);
             color: white;
-            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
-        }
-        .btn-whatsapp:hover { background-color: #1ebe57; }
-
-        .modal-fondo {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            backdrop-filter: blur(3px);
         }
 
-        .modal-contenido {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 450px;
-            width: 100%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-            position: relative;
-        }
+        .btn-copiar { background-color: var(--color-etiquetas); }
+        .btn-pdf { background-color: #dc2626; }
+        .btn-whatsapp { background-color: var(--color-whatsapp); }
+        .btn-email { background-color: var(--color-email); }
 
-        .modal-titulo {
-            color: var(--color-primario);
-            margin-top: 0;
-            font-size: 20px;
-            font-weight: 800;
-            border-bottom: 2px solid var(--color-borde);
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-        }
+        .marca-agua { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 30px; font-weight: 600; text-transform: uppercase; }
 
-        .modal-texto {
-            font-size: 15px;
-            line-height: 1.6;
-            color: var(--color-etiquetas);
-            font-weight: 500;
+        /* Estilos específicos para el documento PDF oculto */
+        #plantilla-pdf {
+            display: none; 
+            padding: 40px; 
+            font-family: Helvetica, Arial, sans-serif;
+            color: #333;
+            background: white;
         }
+        .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-bottom: 2px solid #0056b3; padding-bottom: 20px; }
+        .pdf-logo { max-width: 180px; }
+        .pdf-meta { text-align: right; font-size: 12px; color: #666; }
+        .pdf-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .pdf-item h4 { margin: 0 0 5px 0; color: #0056b3; font-size: 16px; }
+        .pdf-item p { margin: 0 0 8px 0; font-size: 13px; color: #555; }
+        .pdf-item pre { margin: 0; font-size: 12px; color: #222; white-space: pre-wrap; font-family: inherit; line-height: 1.5; }
+        .pdf-footer { margin-top: 40px; font-size: 10px; color: #777; text-align: justify; border-top: 1px solid #ccc; padding-top: 15px; }
 
-        .modal-texto ol {
-            padding-left: 20px;
-            margin-bottom: 20px;
-        }
-
-        .modal-texto li {
-            margin-bottom: 12px;
-        }
-
-        .btn-cerrar-modal {
-            background-color: var(--color-primario);
-            color: white;
-            width: 100%;
-            margin-top: 15px;
-        }
-
-        .marca-agua {
-            text-align: center;
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid var(--color-borde);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
     </style>
 </head>
 <body>
 
     <div class="contenedor-app">
-        <div class="marca-agua-top">
-            © 2026 Elías López
-        </div>
+        <div class="marca-agua-top">© 2026 Elías López</div>
 
         <div class="logo-container">
             <img src="LOGO OBRAMAT.PNG" alt="Logo">
@@ -465,7 +273,6 @@
 
         <div class="encabezado">
             <h2>Calculadora</h2>
-            <button class="btn-ayuda-ico" onclick="abrirAyuda()" title="¿Cómo funciona?">?</button>
         </div>
 
         <div class="grupo-formulario">
@@ -503,36 +310,36 @@
             <div class="grupo-formulario">
                 <label for="modo-medida">Cálculo de superficie:</label>
                 <select id="modo-medida" onchange="cambiarModoMedida()" oninput="ocultarResultados()">
-                    <option value="directo">Introducir m² totales directamente</option>
-                    <option value="dimensiones">Calcular por medidas (Largo x Alto)</option>
+                    <option value="directo">Introducir m² totales</option>
+                    <option value="dimensiones">Calcular por medidas (L x A)</option>
                 </select>
             </div>
 
             <div id="div-m2-directo" class="grupo-formulario">
-                <label for="medida">Metros Cuadrados Totales (m²):</label>
+                <label for="medida">Metros Cuadrados (m²):</label>
                 <input type="number" id="medida" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
             </div>
 
             <div id="div-dimensiones" class="grupo-formulario fila-medidas" style="display:none;">
                 <div class="columna-mitad">
                     <label for="largo">Largo (m):</label>
-                    <input type="number" id="largo" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
+                    <input type="number" id="largo" min="0.1" value="1" inputmode="decimal" step="0.01">
                 </div>
                 <div class="columna-mitad">
                     <label for="alto">Alto (m):</label>
-                    <input type="number" id="alto" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
+                    <input type="number" id="alto" min="0.1" value="1" inputmode="decimal" step="0.01">
                 </div>
             </div>
         </div>
 
         <div id="div-espesor" class="grupo-formulario" style="display:none;">
-            <label for="espesor">Espesor de aplicación (mm):</label>
-            <input type="number" id="espesor" min="1" value="1" inputmode="decimal" oninput="ocultarResultados()">
+            <label for="espesor">Espesor (mm):</label>
+            <input type="number" id="espesor" min="1" value="1" inputmode="decimal">
         </div>
 
         <div id="div-merma" class="grupo-formulario" style="display:none;">
             <label for="merma">Margen de merma:</label>
-            <select id="merma" oninput="ocultarResultados()">
+            <select id="merma">
                 <option value="0" selected>0% (Teórico)</option>
                 <option value="5">5% (Mínima)</option>
                 <option value="8">8% (Estándar)</option>
@@ -547,37 +354,35 @@
 
         <div id="resultado" class="resultado-container"></div>
 
-        <!-- NUEVO CONTENEDOR: LISTA DE PRODUCTOS (CARRITO) -->
+        <!-- CARRITO DE OBRA -->
         <div id="contenedor-carrito" class="contenedor-carrito">
             <h3 class="titulo-carrito">🛒 Lista de Materiales</h3>
             <div id="lista-carrito"></div>
             
-            <div class="botones-exportacion">
-                <button class="btn-copiar" onclick="copiarCarrito()">📋 Copiar Lista</button>
-                <button class="btn-whatsapp" onclick="enviarCarritoWhatsApp()">💬 Enviar Lista</button>
+            <div class="grid-botones-export">
+                <button class="btn-export btn-pdf" onclick="generarPDF()">📄 Descargar PDF</button>
+                <button class="btn-export btn-copiar" onclick="copiarCarrito()">📋 Copiar</button>
+                <button class="btn-export btn-email" onclick="enviarPorEmail()">✉️ Email</button>
+                <button class="btn-export btn-whatsapp" onclick="enviarCarritoWhatsApp()">💬 WhatsApp</button>
             </div>
         </div>
 
-        <div class="marca-agua">
-            © 2026 Elías López
-        </div>
-
+        <div class="marca-agua">© 2026 Elías López</div>
     </div>
 
-    <!-- VENTANA MODAL DE AYUDA -->
-    <div id="modalAyuda" class="modal-fondo" onclick="cerrarAyudaFondo(event)">
-        <div class="modal-contenido">
-            <h3 class="modal-titulo">¿Cómo usar la calculadora?</h3>
-            <div class="modal-texto">
-                <p>Esta herramienta te dice exactamente cuánto material necesitas comprar para tu obra, sin que tengas que hacer números.</p>
-                <ol>
-                    <li><strong>Elige qué vas a hacer:</strong> Selecciona si necesitas ladrillos, bloques, revestimientos o puentes de unión.</li>
-                    <li><strong>Busca tu producto:</strong> Escoge el modelo exacto.</li>
-                    <li><strong>Calcula:</strong> Introduce las medidas y obtén el desglose.</li>
-                    <li><strong>Añade a la lista:</strong> Pulsa el botón "Añadir a la lista" para ir guardando los materiales calculados y generar un presupuesto conjunto.</li>
-                </ol>
+    <!-- PLANTILLA OCULTA PARA EL PDF -->
+    <div id="plantilla-pdf">
+        <div class="pdf-header">
+            <img src="LOGO OBRAMAT.PNG" alt="Logo" class="pdf-logo" id="logo-pdf">
+            <div class="pdf-meta">
+                <strong>Estimación de Materiales</strong><br>
+                Fecha: <span id="pdf-fecha"></span><br>
+                © 2026 Elías López
             </div>
-            <button class="btn-cerrar-modal" onclick="cerrarAyuda()">Entendido</button>
+        </div>
+        <div id="contenido-items-pdf"></div>
+        <div class="pdf-footer">
+            <strong>Cláusula:</strong> No es contractual, es solo a nivel informativo. Las cantidades expuestas son estimaciones teóricas basadas en las especificaciones técnicas de los fabricantes. El consumo real puede variar dependiendo del estado del soporte, las herramientas utilizadas y el método de aplicación.
         </div>
     </div>
 
@@ -620,13 +425,8 @@
             }
         };
 
-        // VARIABLES DE ESTADO PARA EL CARRITO MULTIPRODUCTO
         let carritoDeObra = [];
-        let calculoTemporal = null; // Almacena temporalmente el cálculo actual para poder añadirlo
-
-        function abrirAyuda() { document.getElementById("modalAyuda").style.display = "flex"; }
-        function cerrarAyuda() { document.getElementById("modalAyuda").style.display = "none"; }
-        function cerrarAyudaFondo(event) { if (event.target === document.getElementById("modalAyuda")) cerrarAyuda(); }
+        let calculoTemporal = null;
 
         function ocultarResultados() {
             document.getElementById("resultado").style.display = "none";
@@ -649,14 +449,12 @@
             document.getElementById("alto").value = "1";
             document.getElementById("espesor").value = "1";
             document.getElementById("merma").value = "0"; 
-            document.getElementById("tipo-soporte").value = "sin_absorcion";
             
             document.getElementById("contenedor-medidas").style.display = "none";
             document.getElementById("div-espesor").style.display = "none";
             document.getElementById("div-merma").style.display = "none";
             document.getElementById("div-soporte").style.display = "none";
             document.getElementById("contenedor-img").style.display = "none";
-            document.getElementById("img-dinamica").src = "";
             
             cambiarModoMedida();
             ocultarResultados();
@@ -665,29 +463,22 @@
         function actualizarOpciones() {
             const categoria = document.getElementById("categoria").value;
             const productoSelect = document.getElementById("producto");
-            const contenedorMedidas = document.getElementById("contenedor-medidas");
-            const divEspesor = document.getElementById("div-espesor");
-            const divMerma = document.getElementById("div-merma");
-            const selectMerma = document.getElementById("merma");
-            const divSoporte = document.getElementById("div-soporte");
             
             productoSelect.innerHTML = '<option value="">Selecciona un producto...</option>';
-            divSoporte.style.display = "none";
+            document.getElementById("div-soporte").style.display = "none";
             document.getElementById("contenedor-img").style.display = "none";
-            document.getElementById("img-dinamica").src = "";
             ocultarResultados();
             
-            contenedorMedidas.style.display = categoria ? "block" : "none";
-            divEspesor.style.display = categoria === "revestimientos" ? "block" : "none";
-            divMerma.style.display = (categoria === "ladrillos" || categoria === "bloques" || categoria === "revestimientos" || categoria === "puentes") ? "block" : "none";
+            document.getElementById("contenedor-medidas").style.display = categoria ? "block" : "none";
+            document.getElementById("div-espesor").style.display = categoria === "revestimientos" ? "block" : "none";
+            document.getElementById("div-merma").style.display = categoria ? "block" : "none";
 
-            selectMerma.value = (categoria === "puentes") ? "0" : "8";
+            document.getElementById("merma").value = (categoria === "puentes") ? "0" : "8";
 
             if (categoria && datos[categoria]) {
                 for (const key in datos[categoria]) {
                     let option = document.createElement("option");
-                    option.value = key;
-                    option.text = key;
+                    option.value = key; option.text = key;
                     productoSelect.appendChild(option);
                 }
             }
@@ -697,33 +488,25 @@
             ocultarResultados();
             const categoria = document.getElementById("categoria").value;
             const producto = document.getElementById("producto").value;
-            const divSoporte = document.getElementById("div-soporte");
+            
+            document.getElementById("div-soporte").style.display = (producto === "Imprimacion Aplica Level Primer 5 L") ? "block" : "none";
+
             const divImg = document.getElementById("contenedor-img");
             const imgElemento = document.getElementById("img-dinamica");
-            
-            if (producto === "Imprimacion Aplica Level Primer 5 L") {
-                divSoporte.style.display = "block";
-            } else {
-                divSoporte.style.display = "none";
-            }
-
             if (categoria && producto && datos[categoria][producto] && datos[categoria][producto].imagen) {
                 imgElemento.src = datos[categoria][producto].imagen;
                 divImg.style.display = "block";
             } else {
                 divImg.style.display = "none";
-                imgElemento.src = "";
             }
         }
 
         function calcular() {
             const categoria = document.getElementById("categoria").value;
             const producto = document.getElementById("producto").value;
-            
             const modoMedida = document.getElementById("modo-medida").value;
-            let medida = 0;
-            let textoMedida = "";
-
+            
+            let medida = 0, textoMedida = "";
             if (modoMedida === "directo") {
                 medida = parseFloat(document.getElementById("medida").value) || 0;
                 textoMedida = `${medida} m²`;
@@ -738,279 +521,146 @@
             const mermaSeleccionada = parseFloat(document.getElementById("merma").value) || 0;
             const factorMerma = 1 + (mermaSeleccionada / 100);
 
-            const resultadoDiv = document.getElementById("resultado");
+            if (!categoria || !producto || medida <= 0) return alert("Completa los campos correctamente.");
 
-            if (!categoria || !producto || medida <= 0) {
-                alert("Por favor, completa los campos correctamente.");
-                return;
-            }
-
-            let html = `<h3 class="resultado-titulo">RESULTADO: ${producto} <br><small style="font-size:14px; color:#555;">${textoMedida}</small></h3>`;
-            html += `<div class="resultado-grid">`;
             const item = datos[categoria][producto];
-            
-            // Cadena de texto para guardar en el carrito
+            let html = `<h3 class="resultado-titulo">RESULTADO<br><small style="font-size:14px; color:#555;">${textoMedida}</small></h3><div class="resultado-grid">`;
             let detallesTexto = ""; 
 
             if (categoria === "ladrillos" || categoria === "bloques") {
                 const totalUds = Math.ceil((item.udsM2 * medida) * factorMerma); 
                 const pesoTotal = (totalUds * item.peso).toFixed(2);
-                
-                detallesTexto += `🔸 Unidades requeridas: ${totalUds} uds (Inc. ${mermaSeleccionada}% merma)\n🔸 Peso total: ${pesoTotal} kg\n`;
-
-                html += `
-                    <div class="casilla">
-                        <div class="casilla-etiqueta">Unidades Requeridas</div>
-                        <div class="casilla-valor">${totalUds}</div>
-                        <div class="casilla-nota">Inc. ${mermaSeleccionada}% merma</div>
-                    </div>
-                    <div class="casilla">
-                        <div class="casilla-etiqueta">Peso Total</div>
-                        <div class="casilla-valor">${pesoTotal} kg</div>
-                    </div>`;
+                detallesTexto += `Unidades: ${totalUds} uds (Inc. ${mermaSeleccionada}% merma)\nPeso total: ${pesoTotal} kg\n`;
+                html += `<div class="casilla"><div class="casilla-etiqueta">Unidades</div><div class="casilla-valor">${totalUds}</div></div>`;
                 
                 if (item.palet) {
                     const totalPalets = (totalUds / item.palet).toFixed(2);
-                    detallesTexto += `🔸 Palets enteros (aprox): ${totalPalets}\n`;
-                    html += `
-                    <div class="casilla">
-                        <div class="casilla-etiqueta">Palets (Aprox.)</div>
-                        <div class="casilla-valor">${totalPalets}</div>
-                    </div>`;
+                    detallesTexto += `Palets (aprox): ${totalPalets}\n`;
                 }
-                
                 if (item.mortero) {
-                    const totalMorteroKilos = (item.mortero * medida) * factorMerma;
-                    const sacosMortero = Math.ceil(totalMorteroKilos / 25);
-                    detallesTexto += `🔸 Sacos de mortero (25kg): *${sacosMortero}*\n`;
-                    html += `
-                    <div class="casilla">
-                        <div class="casilla-etiqueta">Mortero Total</div>
-                        <div class="casilla-valor">${totalMorteroKilos.toFixed(2)} kg</div>
-                    </div>
-                    <div class="casilla casilla-destacada">
-                        <div class="casilla-etiqueta">Sacos de Mortero</div>
-                        <div class="casilla-valor">${sacosMortero}</div>
-                        <div class="casilla-nota">Sacos de 25 kg</div>
-                    </div>`;
+                    const sacosMortero = Math.ceil(((item.mortero * medida) * factorMerma) / 25);
+                    detallesTexto += `Sacos de mortero (25kg): ${sacosMortero}\n`;
+                    html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos Mortero</div><div class="casilla-valor">${sacosMortero}</div></div>`;
                 }
-                            
             } else if (categoria === "revestimientos") {
-                if (espesor > item.maxMm) {
-                    alert(`Atención: El espesor máximo recomendado para ${producto} es ${item.maxMm} mm.`);
-                }
-                
-                const consumoPorM2 = item.kgMm * espesor;
-                const totalKilos = consumoPorM2 * medida;
-                const totalKilosConMerma = totalKilos * factorMerma; 
-                const sacosNecesarios = Math.ceil(totalKilosConMerma / 25); 
-                
-                detallesTexto += `🔸 Espesor de aplicación: ${espesor} mm\n🔸 Consumo total (Neto): ${totalKilos.toFixed(2)} kg\n🔸 Sacos necesarios (25kg): *${sacosNecesarios}* (Incluye ${mermaSeleccionada}% de merma)\n`;
-
-                html += `
-                    <div class="casilla">
-                        <div class="casilla-etiqueta">Consumo / m²</div>
-                        <div class="casilla-valor">${consumoPorM2.toFixed(2)} kg</div>
-                    </div>
-                    <div class="casilla">
-                        <div class="casilla-etiqueta">Kilos (Neto)</div>
-                        <div class="casilla-valor">${totalKilos.toFixed(2)}</div>
-                    </div>
-                    <div class="casilla">
-                        <div class="casilla-etiqueta">Kilos (+${mermaSeleccionada}% merma)</div>
-                        <div class="casilla-valor">${totalKilosConMerma.toFixed(2)}</div>
-                    </div>
-                    <div class="casilla casilla-destacada">
-                        <div class="casilla-etiqueta">Sacos a pedir</div>
-                        <div class="casilla-valor">${sacosNecesarios}</div>
-                        <div class="casilla-nota">Sacos de 25 kg incl. merma</div>
-                    </div>`;
-                            
+                const totalKilos = (item.kgMm * espesor) * medida * factorMerma; 
+                const sacosNecesarios = Math.ceil(totalKilos / 25); 
+                detallesTexto += `Espesor: ${espesor} mm\nSacos (25kg): ${sacosNecesarios} (Inc. ${mermaSeleccionada}% merma)\n`;
+                html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos a pedir</div><div class="casilla-valor">${sacosNecesarios}</div></div>`;
             } else if (categoria === "puentes") {
                 if (item.tipo === "level_primer") {
-                    const tipoSoporte = document.getElementById("tipo-soporte").value;
-                    let consumoPuro = 0;
-                    let textoSoporte = "";
-
-                    if (tipoSoporte === "sin_absorcion") {
-                        consumoPuro = 0.075;
-                        textoSoporte = "Sin absorción (1:1)";
-                    } else if (tipoSoporte === "poco_poroso") {
-                        consumoPuro = 0.060;
-                        textoSoporte = "Poco poroso (1:1.5)";
-                    } else if (tipoSoporte === "poroso") {
-                        consumoPuro = 0.110;
-                        textoSoporte = "Poroso (2 capas)";
-                    }
-
-                    const totalLitrosPuros = (medida * consumoPuro) * factorMerma;
-                    const botes5L = Math.ceil(totalLitrosPuros / 5);
-
-                    detallesTexto += `🔸 Tipo de soporte: ${textoSoporte}\n🔸 Litros de producto puro: ${totalLitrosPuros.toFixed(2)} L (Inc. ${mermaSeleccionada}% merma)\n🔸 Botes de 5L necesarios: *${botes5L}*\n`;
-
-                    html += `
-                        <div class="casilla casilla-destacada">
-                            <div class="casilla-etiqueta">Botes de 5 Litros</div>
-                            <div class="casilla-valor">${botes5L}</div>
-                            <div class="casilla-nota">Soporte: ${textoSoporte}</div>
-                        </div>
-                        <div class="casilla">
-                            <div class="casilla-etiqueta">Litros (Producto Puro)</div>
-                            <div class="casilla-valor">${totalLitrosPuros.toFixed(2)} L</div>
-                            <div class="casilla-nota">Excluyendo agua de mezcla</div>
-                        </div>`;
-                } else if (item.tipo === "sikatop10") {
-                    const totalKgKilos = (medida * item.min) * factorMerma;
-                    const totalLitros = Math.ceil(totalKgKilos / item.densidad);
-
-                    detallesTexto += `🔸 Consumo: ${item.min} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
-                    html += `
-                        <div class="casilla casilla-destacada">
-                            <div class="casilla-etiqueta">Consumo en Litros</div>
-                            <div class="casilla-valor">${totalLitros} L</div>
-                            <div class="casilla-nota">Consumo: ${item.min} kg/m²</div>
-                        </div>
-                        <div class="casilla">
-                            <div class="casilla-etiqueta">Consumo en Kilos</div>
-                            <div class="casilla-valor">${totalKgKilos.toFixed(2)} kg</div>
-                            <div class="casilla-nota">Densidad: ~${item.densidad} kg/l</div>
-                        </div>`;
-                } else if (item.tipo === "rango_kilos") {
-                    const consumoMedioPorM2 = (item.min + item.max) / 2;
-                    const totalKgKilos = (medida * consumoMedioPorM2) * factorMerma;
-                    const totalLitros = Math.ceil(totalKgKilos / item.densidad);
-
-                    detallesTexto += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
-                    html += `
-                        <div class="casilla casilla-destacada">
-                            <div class="casilla-etiqueta">Consumo en Litros</div>
-                            <div class="casilla-valor">${totalLitros} L</div>
-                            <div class="casilla-nota">Media: ${consumoMedioPorM2.toFixed(3)} kg/m²</div>
-                        </div>
-                        <div class="casilla">
-                            <div class="casilla-etiqueta">Consumo en Kilos</div>
-                            <div class="casilla-valor">${totalKgKilos.toFixed(2)} kg</div>
-                            <div class="casilla-nota">Densidad: ~${item.densidad} kg/l</div>
-                        </div>`;
+                    const consumo = document.getElementById("tipo-soporte").value === "sin_absorcion" ? 0.075 : (document.getElementById("tipo-soporte").value === "poco_poroso" ? 0.060 : 0.110);
+                    const botes = Math.ceil(((medida * consumo) * factorMerma) / 5);
+                    detallesTexto += `Botes de 5L: ${botes}\n`;
+                    html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Botes 5L</div><div class="casilla-valor">${botes}</div></div>`;
+                } else if (item.tipo === "sikatop10" || item.tipo === "rango_kilos") {
+                    const consumo = item.tipo === "sikatop10" ? item.min : (item.min + item.max) / 2;
+                    const litros = Math.ceil(((medida * consumo) * factorMerma) / item.densidad);
+                    detallesTexto += `Total estimado: ${litros} Litros\n`;
+                    html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Litros</div><div class="casilla-valor">${litros}</div></div>`;
                 } else {
-                    const consumoMedioPorM2 = (item.min + item.max) / 2;
-                    const totalLitros = Math.ceil((medida * consumoMedioPorM2) * factorMerma);
-
-                    detallesTexto += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} L/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
-                    html += `
-                        <div class="casilla casilla-destacada">
-                            <div class="casilla-etiqueta">Consumo en Litros</div>
-                            <div class="casilla-valor">${totalLitros} L</div>
-                            <div class="casilla-nota">Media: ${consumoMedioPorM2.toFixed(3)} L/m²</div>
-                        </div>
-                        <div class="casilla">
-                            <div class="casilla-etiqueta">Rango Técnico</div>
-                            <div class="casilla-valor" style="font-size: 16px; margin-top: 5px;">${item.min} - ${item.max}</div>
-                            <div class="casilla-nota">Litros/kg por m²</div>
-                        </div>`;
+                    const litros = Math.ceil((medida * ((item.min + item.max) / 2)) * factorMerma);
+                    detallesTexto += `Total estimado: ${litros} Litros\n`;
+                    html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Litros</div><div class="casilla-valor">${litros}</div></div>`;
                 }
             }
 
-            html += `</div>`;
+            html += `</div><button class="btn-agregar-carrito" onclick="agregarAlCarrito()">🛒 AÑADIR A LA LISTA</button>`;
             
-            // Botón para añadir a la lista global
-            html += `
-                <button class="btn-agregar-carrito" onclick="agregarAlCarrito()">🛒 AÑADIR A LA LISTA DE MATERIALES</button>
-            `;
+            calculoTemporal = { producto: producto, textoMedida: textoMedida, detallesTexto: detallesTexto };
             
-            // Almacenamos el cálculo en memoria temporal por si el usuario decide agregarlo al carrito
-            calculoTemporal = {
-                producto: producto,
-                textoMedida: textoMedida,
-                detallesTexto: detallesTexto
-            };
-            
-            resultadoDiv.innerHTML = html;
-            resultadoDiv.style.display = "block";
+            const divRes = document.getElementById("resultado");
+            divRes.innerHTML = html;
+            divRes.style.display = "block";
         }
-
-        // --- FUNCIONES DEL CARRITO ---
 
         function agregarAlCarrito() {
             if (calculoTemporal) {
                 carritoDeObra.push(calculoTemporal);
                 renderizarCarrito();
-                
-                // Limpiar la calculadora para el siguiente producto y dar feedback visual
                 document.getElementById("resultado").style.display = "none";
                 calculoTemporal = null;
-                
-                // Opcional: hacer un pequeño scroll hacia abajo para que el usuario vea la lista
-                document.getElementById("contenedor-carrito").scrollIntoView({ behavior: 'smooth' });
             }
         }
 
         function renderizarCarrito() {
             const contenedor = document.getElementById("contenedor-carrito");
             const lista = document.getElementById("lista-carrito");
-            
-            if (carritoDeObra.length === 0) {
-                contenedor.style.display = "none";
-                return;
-            }
+            if (carritoDeObra.length === 0) return contenedor.style.display = "none";
             
             contenedor.style.display = "block";
             let html = "";
-            
             carritoDeObra.forEach((item, index) => {
-                html += `
-                <div class="item-carrito">
-                    <div class="item-carrito-info">
-                        <strong>${item.producto}</strong>
-                        <small>Superficie calculada: ${item.textoMedida}</small>
-                    </div>
-                    <button class="btn-eliminar-item" onclick="eliminarDelCarrito(${index})" title="Eliminar producto">🗑️</button>
+                html += `<div class="item-carrito">
+                    <div><strong>${index+1}. ${item.producto}</strong><br><small>${item.textoMedida}</small></div>
+                    <button class="btn-eliminar-item" onclick="eliminarDelCarrito(${index})">🗑️</button>
                 </div>`;
             });
-            
             lista.innerHTML = html;
         }
 
-        function eliminarDelCarrito(index) {
-            carritoDeObra.splice(index, 1);
-            renderizarCarrito();
-        }
+        function eliminarDelCarrito(index) { carritoDeObra.splice(index, 1); renderizarCarrito(); }
 
-        function generarTextoExportacionGlobal() {
-            let textoGlobal = "*Cotización de Materiales (Proyecto Completo):*\n\n";
-            
-            carritoDeObra.forEach((item, index) => {
-                textoGlobal += `📦 *Producto ${index + 1}:* ${item.producto}\n`;
-                textoGlobal += `📏 *Superficie:* ${item.textoMedida}\n`;
-                textoGlobal += item.detallesTexto; 
-                textoGlobal += `\n───────────────\n\n`;
+        function generarTextoPlano() {
+            let texto = "*Cotización de Materiales:*\n\n";
+            carritoDeObra.forEach((item, i) => {
+                texto += `📦 *${i + 1}. ${item.producto}*\n📏 Superficie: ${item.textoMedida}\n${item.detallesTexto.replace(/🔸/g, '•')}\n───────────────\n\n`;
             });
-            
-            textoGlobal += `⚠️ Importante: Este documento no es contractual, es solo a nivel informativo.`;
-            return textoGlobal;
+            texto += `⚠️ Cláusula. No es contractual, es solo a nivel informativo.`;
+            return texto;
         }
 
         function copiarCarrito() {
             if(carritoDeObra.length === 0) return;
-            
-            const texto = generarTextoExportacionGlobal();
-            navigator.clipboard.writeText(texto).then(() => {
-                const btn = document.querySelector('.btn-copiar');
-                btn.innerHTML = "✅ ¡Copiada!";
-                setTimeout(() => {
-                    btn.innerHTML = "📋 Copiar Lista";
-                }, 2000);
-            }).catch(err => {
-                alert('Error al copiar el texto. Inténtalo manualmente.');
-            });
+            navigator.clipboard.writeText(generarTextoPlano()).then(() => alert("Copiado al portapapeles"));
         }
 
         function enviarCarritoWhatsApp() {
             if(carritoDeObra.length === 0) return;
+            window.open('https://wa.me/?text=' + encodeURIComponent(generarTextoPlano()), '_blank');
+        }
+
+        function enviarPorEmail() {
+            if(carritoDeObra.length === 0) return;
+            const subject = encodeURIComponent("Presupuesto de Materiales");
+            const body = encodeURIComponent("Adjunto la cotización de materiales generada:\n\n" + generarTextoPlano() + "\n\n(No olvides adjuntar el archivo PDF si lo descargaste).");
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+
+        function generarPDF() {
+            if(carritoDeObra.length === 0) return;
             
-            const texto = generarTextoExportacionGlobal();
-            const urlWhatsApp = 'https://wa.me/?text=' + encodeURIComponent(texto);
-            window.open(urlWhatsApp, '_blank');
+            // 1. Inyectar fecha de hoy
+            const hoy = new Date();
+            document.getElementById('pdf-fecha').innerText = hoy.toLocaleDateString('es-ES');
+
+            // 2. Construir los items en HTML para el PDF
+            let htmlItems = "";
+            carritoDeObra.forEach((item, i) => {
+                htmlItems += `
+                <div class="pdf-item">
+                    <h4>${i + 1}. ${item.producto}</h4>
+                    <p><strong>Superficie:</strong> ${item.textoMedida}</p>
+                    <pre>• ${item.detallesTexto.trim().replace(/\n/g, '\n• ')}</pre>
+                </div>`;
+            });
+            document.getElementById('contenido-items-pdf').innerHTML = htmlItems;
+
+            // 3. Mostrar el contenedor oculto, generar PDF y volver a ocultar
+            const elementoPDF = document.getElementById('plantilla-pdf');
+            elementoPDF.style.display = 'block';
+
+            const opt = {
+                margin:       15,
+                filename:     'Presupuesto_Materiales.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(elementoPDF).save().then(() => {
+                elementoPDF.style.display = 'none';
+            });
         }
     </script>
 </body>
