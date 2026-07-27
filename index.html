@@ -242,24 +242,6 @@
         .btn-email { background-color: var(--color-email); }
 
         .marca-agua { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 30px; font-weight: 600; text-transform: uppercase; }
-
-        /* Estilos específicos para el documento PDF oculto */
-        #plantilla-pdf {
-            display: none; 
-            padding: 40px; 
-            font-family: Helvetica, Arial, sans-serif;
-            color: #333;
-            background: white;
-        }
-        .pdf-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #0056b3; padding-bottom: 20px; }
-        .pdf-titulo-empresa { font-size: 28px; font-weight: 900; color: #0056b3; letter-spacing: -0.5px; margin: 0; line-height: 1;}
-        .pdf-meta { text-align: right; font-size: 12px; color: #666; }
-        .pdf-item { border-bottom: 1px solid #eee; padding: 15px 0; }
-        .pdf-item h4 { margin: 0 0 5px 0; color: #0056b3; font-size: 16px; }
-        .pdf-item p { margin: 0 0 8px 0; font-size: 13px; color: #555; }
-        .pdf-item pre { margin: 0; font-size: 12px; color: #222; white-space: pre-wrap; font-family: inherit; line-height: 1.5; }
-        .pdf-footer { margin-top: 40px; font-size: 10px; color: #777; text-align: justify; border-top: 1px solid #ccc; padding-top: 15px; }
-
     </style>
 </head>
 <body>
@@ -368,21 +350,6 @@
         </div>
 
         <div class="marca-agua">© 2026 Elías López</div>
-    </div>
-
-    <!-- PLANTILLA OCULTA PARA EL PDF (SIN IMÁGENES LOCALES) -->
-    <div id="plantilla-pdf">
-        <div class="pdf-header">
-            <div class="pdf-titulo-empresa">ESTIMACIÓN DE<br>MATERIALES</div>
-            <div class="pdf-meta">
-                Fecha: <span id="pdf-fecha"></span><br>
-                © 2026 Elías López
-            </div>
-        </div>
-        <div id="contenido-items-pdf"></div>
-        <div class="pdf-footer">
-            <strong>Cláusula:</strong> No es contractual, es solo a nivel informativo. Las cantidades expuestas son estimaciones teóricas basadas en las especificaciones técnicas de los fabricantes. El consumo real puede variar dependiendo del estado del soporte, las herramientas utilizadas y el método de aplicación.
-        </div>
     </div>
 
     <script>
@@ -629,37 +596,49 @@
         function generarPDF() {
             if(carritoDeObra.length === 0) return;
             
-            // 1. Inyectar fecha de hoy
             const hoy = new Date();
-            document.getElementById('pdf-fecha').innerText = hoy.toLocaleDateString('es-ES');
+            const fechaTexto = hoy.toLocaleDateString('es-ES');
 
-            // 2. Construir los items en HTML para el PDF
+            // Construir los datos dinámicos en HTML
             let htmlItems = "";
             carritoDeObra.forEach((item, i) => {
                 htmlItems += `
-                <div class="pdf-item">
-                    <h4>${i + 1}. ${item.producto}</h4>
-                    <p><strong>Superficie:</strong> ${item.textoMedida}</p>
-                    <pre>• ${item.detallesTexto.trim().replace(/\n/g, '\n• ')}</pre>
+                <div style="border-bottom: 1px solid #eee; padding: 15px 0;">
+                    <h4 style="margin: 0 0 5px 0; color: #0056b3; font-size: 16px;">${i + 1}. ${item.producto}</h4>
+                    <p style="margin: 0 0 8px 0; font-size: 13px; color: #555;"><strong>Superficie:</strong> ${item.textoMedida}</p>
+                    <pre style="margin: 0; font-size: 12px; color: #222; white-space: pre-wrap; font-family: inherit; line-height: 1.5;">• ${item.detallesTexto.trim().replace(/\n/g, '\n• ')}</pre>
                 </div>`;
             });
-            document.getElementById('contenido-items-pdf').innerHTML = htmlItems;
 
-            // 3. Mostrar el contenedor oculto, generar PDF y volver a ocultar
-            const elementoPDF = document.getElementById('plantilla-pdf');
-            elementoPDF.style.display = 'block';
+            // Generar el bloque maestro a fotografiar internamente
+            const elementoEstructura = document.createElement("div");
+            elementoEstructura.innerHTML = `
+                <div style="padding: 30px; font-family: Helvetica, Arial, sans-serif; color: #333; background: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #0056b3; padding-bottom: 20px;">
+                        <div style="font-size: 26px; font-weight: 900; color: #0056b3; letter-spacing: -0.5px; margin: 0; line-height: 1;">ESTIMACIÓN DE<br>MATERIALES</div>
+                        <div style="text-align: right; font-size: 12px; color: #666;">
+                            Fecha: ${fechaTexto}<br>
+                            © 2026 Elías López
+                        </div>
+                    </div>
+                    <div>${htmlItems}</div>
+                    <div style="margin-top: 40px; font-size: 10px; color: #777; text-align: justify; border-top: 1px solid #ccc; padding-top: 15px;">
+                        <strong>Cláusula:</strong> No es contractual, es solo a nivel informativo. Las cantidades expuestas son estimaciones teóricas basadas en las especificaciones técnicas de los fabricantes. El consumo real puede variar dependiendo del estado del soporte, las herramientas utilizadas y el método de aplicación.
+                    </div>
+                </div>
+            `;
 
+            // Opciones de exportación del PDF
             const opt = {
-                margin:       15,
+                margin:       10,
                 filename:     'Presupuesto_Materiales.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(elementoPDF).save().then(() => {
-                elementoPDF.style.display = 'none';
-            });
+            // Mandamos directamente el elemento estructurado al motor de PDF sin necesidad de mostrarlo en pantalla
+            html2pdf().set(opt).from(elementoEstructura).save();
         }
     </script>
 </body>
