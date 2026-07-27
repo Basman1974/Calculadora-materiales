@@ -307,6 +307,19 @@
             width: 100%;
             margin-top: 10px;
         }
+
+        /* ESTILO PARA LA MARCA DE AGUA */
+        .marca-agua {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid var(--color-borde);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
@@ -386,6 +399,12 @@
         </div>
 
         <div id="resultado" class="resultado-container"></div>
+
+        <!-- MARCA DE AGUA INSERTADA AQUÍ -->
+        <div class="marca-agua">
+            Aplicación creada por ELIAS LOPEZ
+        </div>
+
     </div>
 
     <!-- VENTANA MODAL DE AYUDA -->
@@ -439,7 +458,8 @@
                 "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros" },
                 "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros" },
                 "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10" },
-                "Puente de Unión Morteros Henares (PTU-20)": { min: 0.400, max: 0.450, densidad: 1.4, tipo: "rango_kilos" }
+                "Puente de Unión Morteros Henares (PTU-20)": { min: 0.400, max: 0.450, densidad: 1.4, tipo: "rango_kilos" },
+                "IMPRIMACIÓN DE ADHERENCIA APLICA PRIMER TOP 5 KG": { min: 0.125, max: 0.175, densidad: 1.43, tipo: "rango_kilos" }
             }
         };
 
