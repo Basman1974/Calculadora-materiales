@@ -16,6 +16,7 @@
             --color-texto: #222222;
             --color-etiquetas: #444444; 
             --color-borde: #cbd5e1;
+            --color-peligro: #ef4444;
             --fuente-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
@@ -207,6 +208,19 @@
         }
         .btn-secundario:hover { background-color: #f0f7ff; }
 
+        .btn-agregar-carrito {
+            width: 100%;
+            background-color: var(--color-secundario);
+            color: white;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(255, 102, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-agregar-carrito:hover { background-color: #e65c00; }
+
         .resultado-container {
             margin-top: 30px;
             display: none;
@@ -273,10 +287,71 @@
         .casilla-destacada .casilla-valor,
         .casilla-destacada .casilla-nota { color: white; }
 
+        /* ESTILOS DEL CARRITO MULTIPRODUCTO */
+        .contenedor-carrito {
+            margin-top: 40px;
+            display: none;
+            padding: 20px;
+            background-color: #f8fafc;
+            border: 2px solid var(--color-primario);
+            border-radius: 12px;
+        }
+
+        .titulo-carrito {
+            color: var(--color-primario);
+            margin-top: 0;
+            font-size: 18px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .item-carrito {
+            background-color: white;
+            border: 1px solid var(--color-borde);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .item-carrito-info strong {
+            display: block;
+            font-size: 14px;
+            color: var(--color-texto);
+            margin-bottom: 4px;
+        }
+
+        .item-carrito-info small {
+            color: var(--color-etiquetas);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-eliminar-item {
+            background-color: var(--color-peligro);
+            color: white;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            width: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-eliminar-item:hover { background-color: #dc2626; }
+
         .botones-exportacion {
             display: flex;
             gap: 10px;
-            margin-top: 25px;
+            margin-top: 20px;
         }
 
         .btn-copiar, .btn-whatsapp {
@@ -380,7 +455,6 @@
 <body>
 
     <div class="contenedor-app">
-        <!-- MARCA DE AGUA SUPERIOR DERECHA -->
         <div class="marca-agua-top">
             © 2026 Elías López
         </div>
@@ -412,7 +486,6 @@
             </select>
         </div>
 
-        <!-- NUEVO CONTENEDOR DE IMAGEN -->
         <div id="contenedor-img" class="contenedor-imagen-centrada">
             <img id="img-dinamica" src="" alt="Vista del producto" class="imagen-producto">
         </div>
@@ -474,7 +547,17 @@
 
         <div id="resultado" class="resultado-container"></div>
 
-        <!-- MARCA DE AGUA INFERIOR -->
+        <!-- NUEVO CONTENEDOR: LISTA DE PRODUCTOS (CARRITO) -->
+        <div id="contenedor-carrito" class="contenedor-carrito">
+            <h3 class="titulo-carrito">🛒 Lista de Materiales</h3>
+            <div id="lista-carrito"></div>
+            
+            <div class="botones-exportacion">
+                <button class="btn-copiar" onclick="copiarCarrito()">📋 Copiar Lista</button>
+                <button class="btn-whatsapp" onclick="enviarCarritoWhatsApp()">💬 Enviar Lista</button>
+            </div>
+        </div>
+
         <div class="marca-agua">
             © 2026 Elías López
         </div>
@@ -489,11 +572,10 @@
                 <p>Esta herramienta te dice exactamente cuánto material necesitas comprar para tu obra, sin que tengas que hacer números.</p>
                 <ol>
                     <li><strong>Elige qué vas a hacer:</strong> Selecciona si necesitas ladrillos, bloques, revestimientos o puentes de unión.</li>
-                    <li><strong>Busca tu producto:</strong> Escoge el modelo exacto que quieres utilizar.</li>
-                    <li><strong>Pon tus medidas:</strong> Puedes escribir los m² totales si ya los sabes, o elegir la opción de introducir el largo y el alto de la pared.</li>
-                    <li><strong>Calcula:</strong> Toca el botón azul para ver el desglose exacto de materiales y consumos.</li>
+                    <li><strong>Busca tu producto:</strong> Escoge el modelo exacto.</li>
+                    <li><strong>Calcula:</strong> Introduce las medidas y obtén el desglose.</li>
+                    <li><strong>Añade a la lista:</strong> Pulsa el botón "Añadir a la lista" para ir guardando los materiales calculados y generar un presupuesto conjunto.</li>
                 </ol>
-                <p>💡 <em>Nota: La calculadora hace el trabajo duro por ti, calculando mortero, palets, pesos o los litros exactos en puentes de unión basados en la media técnica.</em></p>
             </div>
             <button class="btn-cerrar-modal" onclick="cerrarAyuda()">Entendido</button>
         </div>
@@ -528,7 +610,7 @@
                 "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
             },
             puentes: {
-                "IMPRIMACIÓN DE ADHERENCIA PUENTE DE UNIÓN PLUS MORTEROS HENARES 5 L": { min: 0.200, max: 0.250, tipo: "litros", imagen: "puente-union-plus.jpg" },
+                "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros", imagen: "puente-union-plus.jpg" },
                 "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros" },
                 "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros" },
                 "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10", imagen: "sikatop-10.jpg" },
@@ -538,7 +620,9 @@
             }
         };
 
-        let textoPortapapeles = "";
+        // VARIABLES DE ESTADO PARA EL CARRITO MULTIPRODUCTO
+        let carritoDeObra = [];
+        let calculoTemporal = null; // Almacena temporalmente el cálculo actual para poder añadirlo
 
         function abrirAyuda() { document.getElementById("modalAyuda").style.display = "flex"; }
         function cerrarAyuda() { document.getElementById("modalAyuda").style.display = "none"; }
@@ -546,6 +630,7 @@
 
         function ocultarResultados() {
             document.getElementById("resultado").style.display = "none";
+            calculoTemporal = null; 
         }
 
         function cambiarModoMedida() {
@@ -616,14 +701,12 @@
             const divImg = document.getElementById("contenedor-img");
             const imgElemento = document.getElementById("img-dinamica");
             
-            // Lógica para desplegar el selector de soporte
             if (producto === "Imprimacion Aplica Level Primer 5 L") {
                 divSoporte.style.display = "block";
             } else {
                 divSoporte.style.display = "none";
             }
 
-            // Lógica para mostrar la imagen si existe en la base de datos
             if (categoria && producto && datos[categoria][producto] && datos[categoria][producto].imagen) {
                 imgElemento.src = datos[categoria][producto].imagen;
                 divImg.style.display = "block";
@@ -666,13 +749,14 @@
             html += `<div class="resultado-grid">`;
             const item = datos[categoria][producto];
             
-            textoPortapapeles = `*Cotización de Materiales:*\n📦 Producto: ${producto}\n📏 Superficie: ${textoMedida}\n\n`;
+            // Cadena de texto para guardar en el carrito
+            let detallesTexto = ""; 
 
             if (categoria === "ladrillos" || categoria === "bloques") {
                 const totalUds = Math.ceil((item.udsM2 * medida) * factorMerma); 
                 const pesoTotal = (totalUds * item.peso).toFixed(2);
                 
-                textoPortapapeles += `🔸 Unidades requeridas: ${totalUds} uds (Inc. ${mermaSeleccionada}% merma)\n🔸 Peso total: ${pesoTotal} kg\n`;
+                detallesTexto += `🔸 Unidades requeridas: ${totalUds} uds (Inc. ${mermaSeleccionada}% merma)\n🔸 Peso total: ${pesoTotal} kg\n`;
 
                 html += `
                     <div class="casilla">
@@ -687,7 +771,7 @@
                 
                 if (item.palet) {
                     const totalPalets = (totalUds / item.palet).toFixed(2);
-                    textoPortapapeles += `🔸 Palets enteros (aprox): ${totalPalets}\n`;
+                    detallesTexto += `🔸 Palets enteros (aprox): ${totalPalets}\n`;
                     html += `
                     <div class="casilla">
                         <div class="casilla-etiqueta">Palets (Aprox.)</div>
@@ -698,7 +782,7 @@
                 if (item.mortero) {
                     const totalMorteroKilos = (item.mortero * medida) * factorMerma;
                     const sacosMortero = Math.ceil(totalMorteroKilos / 25);
-                    textoPortapapeles += `🔸 Sacos de mortero (25kg): *${sacosMortero}*\n`;
+                    detallesTexto += `🔸 Sacos de mortero (25kg): *${sacosMortero}*\n`;
                     html += `
                     <div class="casilla">
                         <div class="casilla-etiqueta">Mortero Total</div>
@@ -721,7 +805,7 @@
                 const totalKilosConMerma = totalKilos * factorMerma; 
                 const sacosNecesarios = Math.ceil(totalKilosConMerma / 25); 
                 
-                textoPortapapeles += `🔸 Espesor de aplicación: ${espesor} mm\n🔸 Consumo total (Neto): ${totalKilos.toFixed(2)} kg\n🔸 Sacos necesarios (25kg): *${sacosNecesarios}* (Incluye ${mermaSeleccionada}% de merma)\n`;
+                detallesTexto += `🔸 Espesor de aplicación: ${espesor} mm\n🔸 Consumo total (Neto): ${totalKilos.toFixed(2)} kg\n🔸 Sacos necesarios (25kg): *${sacosNecesarios}* (Incluye ${mermaSeleccionada}% de merma)\n`;
 
                 html += `
                     <div class="casilla">
@@ -762,7 +846,7 @@
                     const totalLitrosPuros = (medida * consumoPuro) * factorMerma;
                     const botes5L = Math.ceil(totalLitrosPuros / 5);
 
-                    textoPortapapeles += `🔸 Tipo de soporte: ${textoSoporte}\n🔸 Litros de producto puro: ${totalLitrosPuros.toFixed(2)} L (Inc. ${mermaSeleccionada}% merma)\n🔸 Botes de 5L necesarios: *${botes5L}*\n`;
+                    detallesTexto += `🔸 Tipo de soporte: ${textoSoporte}\n🔸 Litros de producto puro: ${totalLitrosPuros.toFixed(2)} L (Inc. ${mermaSeleccionada}% merma)\n🔸 Botes de 5L necesarios: *${botes5L}*\n`;
 
                     html += `
                         <div class="casilla casilla-destacada">
@@ -779,7 +863,7 @@
                     const totalKgKilos = (medida * item.min) * factorMerma;
                     const totalLitros = Math.ceil(totalKgKilos / item.densidad);
 
-                    textoPortapapeles += `🔸 Consumo: ${item.min} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
+                    detallesTexto += `🔸 Consumo: ${item.min} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
                     html += `
                         <div class="casilla casilla-destacada">
                             <div class="casilla-etiqueta">Consumo en Litros</div>
@@ -796,7 +880,7 @@
                     const totalKgKilos = (medida * consumoMedioPorM2) * factorMerma;
                     const totalLitros = Math.ceil(totalKgKilos / item.densidad);
 
-                    textoPortapapeles += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
+                    detallesTexto += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
                     html += `
                         <div class="casilla casilla-destacada">
                             <div class="casilla-etiqueta">Consumo en Litros</div>
@@ -812,7 +896,7 @@
                     const consumoMedioPorM2 = (item.min + item.max) / 2;
                     const totalLitros = Math.ceil((medida * consumoMedioPorM2) * factorMerma);
 
-                    textoPortapapeles += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} L/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
+                    detallesTexto += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} L/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
                     html += `
                         <div class="casilla casilla-destacada">
                             <div class="casilla-etiqueta">Consumo en Litros</div>
@@ -829,33 +913,103 @@
 
             html += `</div>`;
             
-            textoPortapapeles += `\n⚠️ Importante: Este documento no es contractual, es solo a nivel informativo.`;
-
+            // Botón para añadir a la lista global
             html += `
-                <div class="botones-exportacion">
-                    <button class="btn-copiar" onclick="copiarAlPortapapeles()">📋 Copiar</button>
-                    <button class="btn-whatsapp" onclick="enviarPorWhatsApp()">💬 WhatsApp</button>
-                </div>
+                <button class="btn-agregar-carrito" onclick="agregarAlCarrito()">🛒 AÑADIR A LA LISTA DE MATERIALES</button>
             `;
+            
+            // Almacenamos el cálculo en memoria temporal por si el usuario decide agregarlo al carrito
+            calculoTemporal = {
+                producto: producto,
+                textoMedida: textoMedida,
+                detallesTexto: detallesTexto
+            };
             
             resultadoDiv.innerHTML = html;
             resultadoDiv.style.display = "block";
         }
 
-        function copiarAlPortapapeles() {
-            navigator.clipboard.writeText(textoPortapapeles).then(() => {
+        // --- FUNCIONES DEL CARRITO ---
+
+        function agregarAlCarrito() {
+            if (calculoTemporal) {
+                carritoDeObra.push(calculoTemporal);
+                renderizarCarrito();
+                
+                // Limpiar la calculadora para el siguiente producto y dar feedback visual
+                document.getElementById("resultado").style.display = "none";
+                calculoTemporal = null;
+                
+                // Opcional: hacer un pequeño scroll hacia abajo para que el usuario vea la lista
+                document.getElementById("contenedor-carrito").scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function renderizarCarrito() {
+            const contenedor = document.getElementById("contenedor-carrito");
+            const lista = document.getElementById("lista-carrito");
+            
+            if (carritoDeObra.length === 0) {
+                contenedor.style.display = "none";
+                return;
+            }
+            
+            contenedor.style.display = "block";
+            let html = "";
+            
+            carritoDeObra.forEach((item, index) => {
+                html += `
+                <div class="item-carrito">
+                    <div class="item-carrito-info">
+                        <strong>${item.producto}</strong>
+                        <small>Superficie calculada: ${item.textoMedida}</small>
+                    </div>
+                    <button class="btn-eliminar-item" onclick="eliminarDelCarrito(${index})" title="Eliminar producto">🗑️</button>
+                </div>`;
+            });
+            
+            lista.innerHTML = html;
+        }
+
+        function eliminarDelCarrito(index) {
+            carritoDeObra.splice(index, 1);
+            renderizarCarrito();
+        }
+
+        function generarTextoExportacionGlobal() {
+            let textoGlobal = "*Cotización de Materiales (Proyecto Completo):*\n\n";
+            
+            carritoDeObra.forEach((item, index) => {
+                textoGlobal += `📦 *Producto ${index + 1}:* ${item.producto}\n`;
+                textoGlobal += `📏 *Superficie:* ${item.textoMedida}\n`;
+                textoGlobal += item.detallesTexto; 
+                textoGlobal += `\n───────────────\n\n`;
+            });
+            
+            textoGlobal += `⚠️ Importante: Este documento no es contractual, es solo a nivel informativo.`;
+            return textoGlobal;
+        }
+
+        function copiarCarrito() {
+            if(carritoDeObra.length === 0) return;
+            
+            const texto = generarTextoExportacionGlobal();
+            navigator.clipboard.writeText(texto).then(() => {
                 const btn = document.querySelector('.btn-copiar');
-                btn.innerHTML = "✅ ¡Copiado!";
+                btn.innerHTML = "✅ ¡Copiada!";
                 setTimeout(() => {
-                    btn.innerHTML = "📋 Copiar";
+                    btn.innerHTML = "📋 Copiar Lista";
                 }, 2000);
             }).catch(err => {
                 alert('Error al copiar el texto. Inténtalo manualmente.');
             });
         }
 
-        function enviarPorWhatsApp() {
-            const urlWhatsApp = 'https://wa.me/?text=' + encodeURIComponent(textoPortapapeles);
+        function enviarCarritoWhatsApp() {
+            if(carritoDeObra.length === 0) return;
+            
+            const texto = generarTextoExportacionGlobal();
+            const urlWhatsApp = 'https://wa.me/?text=' + encodeURIComponent(texto);
             window.open(urlWhatsApp, '_blank');
         }
     </script>
