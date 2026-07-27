@@ -597,7 +597,6 @@
         function generarPDF() {
             if(carritoDeObra.length === 0) return;
             
-            // Cambiamos el texto del botón temporalmente
             const btn = document.querySelector('.btn-pdf');
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = "⏳ Generando...";
@@ -606,65 +605,52 @@
             const hoy = new Date();
             const fechaTexto = hoy.toLocaleDateString('es-ES');
 
-            // Construir los items en HTML
+            // Formatear los ítems asegurando saltos de línea sin <pre> (que a veces da problemas en PDF)
             let htmlItems = "";
             carritoDeObra.forEach((item, i) => {
+                const detallesLimpios = item.detallesTexto.trim().replace(/\n/g, '<br>• ');
                 htmlItems += `
                 <div style="border-bottom: 1px solid #eee; padding: 15px 0;">
                     <h4 style="margin: 0 0 5px 0; color: #0056b3; font-size: 16px;">${i + 1}. ${item.producto}</h4>
                     <p style="margin: 0 0 8px 0; font-size: 13px; color: #555;"><strong>Superficie:</strong> ${item.textoMedida}</p>
-                    <pre style="margin: 0; font-size: 12px; color: #222; white-space: pre-wrap; font-family: inherit; line-height: 1.5;">• ${item.detallesTexto.trim().replace(/\n/g, '\n• ')}</pre>
+                    <div style="margin: 0; font-size: 12px; color: #222; font-family: inherit; line-height: 1.5;">• ${detallesLimpios}</div>
                 </div>`;
             });
 
-            // Creamos un contenedor físico para inyectar en la página
-            const elementoEstructura = document.createElement("div");
-            
-            // ¡EL TRUCO! Le damos estilos reales pero lo sacamos de la pantalla para que no moleste
-            elementoEstructura.style.position = "absolute";
-            elementoEstructura.style.left = "-9999px"; 
-            elementoEstructura.style.top = "0";
-            elementoEstructura.style.width = "800px"; // Ancho exacto para que el A4 cuadre perfecto
-            elementoEstructura.style.backgroundColor = "white";
-            elementoEstructura.style.padding = "40px";
-            
-            // Rellenamos el contenedor
-            elementoEstructura.innerHTML = `
-                <div style="font-family: Helvetica, Arial, sans-serif; color: #333;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #0056b3; padding-bottom: 20px;">
-                        <div style="font-size: 26px; font-weight: 900; color: #0056b3; letter-spacing: -0.5px; margin: 0; line-height: 1;">ESTIMACIÓN DE<br>MATERIALES</div>
-                        <div style="text-align: right; font-size: 12px; color: #666;">
-                            Fecha: ${fechaTexto}<br>
-                            © 2026 Elías López
-                        </div>
-                    </div>
+            // En lugar de inyectar en el DOM, le pasamos una CADENA DE TEXTO exacta a html2pdf. 
+            // Esto asegura que renderiza en su motor interno sin depender del navegador visible.
+            // Uso de <table> en la cabecera para garantizar un maquetado rígido 100% infalible.
+            const htmlString = `
+                <div style="padding: 20px; font-family: Helvetica, Arial, sans-serif; color: #333; width: 100%; box-sizing: border-box; background: white;">
+                    <table style="width: 100%; margin-bottom: 30px; border-bottom: 2px solid #0056b3; padding-bottom: 15px; border-collapse: collapse;">
+                        <tr>
+                            <td style="font-size: 24px; font-weight: 900; color: #0056b3; vertical-align: bottom; padding: 0;">ESTIMACIÓN DE<br>MATERIALES</td>
+                            <td style="text-align: right; font-size: 12px; color: #666; vertical-align: bottom; padding: 0;">Fecha: ${fechaTexto}<br>© 2026 Elías López</td>
+                        </tr>
+                    </table>
+                    
                     <div>${htmlItems}</div>
+                    
                     <div style="margin-top: 40px; font-size: 10px; color: #777; text-align: justify; border-top: 1px solid #ccc; padding-top: 15px;">
                         <strong>Cláusula:</strong> No es contractual, es solo a nivel informativo. Las cantidades expuestas son estimaciones teóricas basadas en las especificaciones técnicas de los fabricantes. El consumo real puede variar dependiendo del estado del soporte, las herramientas utilizadas y el método de aplicación.
                     </div>
                 </div>
             `;
 
-            // ¡MUY IMPORTANTE! Lo pegamos al documento principal para que el navegador lo renderice
-            document.body.appendChild(elementoEstructura);
-
-            // Configuramos html2pdf
             const opt = {
-                margin:       10,
+                margin:       15,
                 filename:     'Presupuesto_Materiales.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Mandamos generar el PDF y, al terminar, eliminamos el "molde" invisible
-            html2pdf().set(opt).from(elementoEstructura).save().then(() => {
-                document.body.removeChild(elementoEstructura);
+            // Mandamos el HTML directamente como string, sin hackear el DOM.
+            html2pdf().set(opt).from(htmlString).save().then(() => {
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             }).catch(err => {
                 console.error("Error al generar PDF:", err);
-                document.body.removeChild(elementoEstructura);
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
                 alert("Hubo un error al crear el PDF. Inténtalo de nuevo.");
