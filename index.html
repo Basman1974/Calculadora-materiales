@@ -238,6 +238,7 @@
 
         .btn-copiar { background-color: var(--color-etiquetas); }
         .btn-pdf { background-color: #dc2626; }
+        .btn-pdf:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-whatsapp { background-color: var(--color-whatsapp); }
         .btn-email { background-color: var(--color-email); }
 
@@ -596,10 +597,16 @@
         function generarPDF() {
             if(carritoDeObra.length === 0) return;
             
+            // Cambiamos el texto del botón temporalmente
+            const btn = document.querySelector('.btn-pdf');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = "⏳ Generando...";
+            btn.disabled = true;
+
             const hoy = new Date();
             const fechaTexto = hoy.toLocaleDateString('es-ES');
 
-            // Construir los datos dinámicos en HTML
+            // Construir los items en HTML
             let htmlItems = "";
             carritoDeObra.forEach((item, i) => {
                 htmlItems += `
@@ -610,10 +617,20 @@
                 </div>`;
             });
 
-            // Generar el bloque maestro a fotografiar internamente
+            // Creamos un contenedor físico para inyectar en la página
             const elementoEstructura = document.createElement("div");
+            
+            // ¡EL TRUCO! Le damos estilos reales pero lo sacamos de la pantalla para que no moleste
+            elementoEstructura.style.position = "absolute";
+            elementoEstructura.style.left = "-9999px"; 
+            elementoEstructura.style.top = "0";
+            elementoEstructura.style.width = "800px"; // Ancho exacto para que el A4 cuadre perfecto
+            elementoEstructura.style.backgroundColor = "white";
+            elementoEstructura.style.padding = "40px";
+            
+            // Rellenamos el contenedor
             elementoEstructura.innerHTML = `
-                <div style="padding: 30px; font-family: Helvetica, Arial, sans-serif; color: #333; background: white;">
+                <div style="font-family: Helvetica, Arial, sans-serif; color: #333;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #0056b3; padding-bottom: 20px;">
                         <div style="font-size: 26px; font-weight: 900; color: #0056b3; letter-spacing: -0.5px; margin: 0; line-height: 1;">ESTIMACIÓN DE<br>MATERIALES</div>
                         <div style="text-align: right; font-size: 12px; color: #666;">
@@ -628,7 +645,10 @@
                 </div>
             `;
 
-            // Opciones de exportación del PDF
+            // ¡MUY IMPORTANTE! Lo pegamos al documento principal para que el navegador lo renderice
+            document.body.appendChild(elementoEstructura);
+
+            // Configuramos html2pdf
             const opt = {
                 margin:       10,
                 filename:     'Presupuesto_Materiales.pdf',
@@ -637,8 +657,18 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Mandamos directamente el elemento estructurado al motor de PDF sin necesidad de mostrarlo en pantalla
-            html2pdf().set(opt).from(elementoEstructura).save();
+            // Mandamos generar el PDF y, al terminar, eliminamos el "molde" invisible
+            html2pdf().set(opt).from(elementoEstructura).save().then(() => {
+                document.body.removeChild(elementoEstructura);
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error("Error al generar PDF:", err);
+                document.body.removeChild(elementoEstructura);
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+                alert("Hubo un error al crear el PDF. Inténtalo de nuevo.");
+            });
         }
     </script>
 </body>
