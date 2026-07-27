@@ -100,12 +100,16 @@
         #plantilla-pdf { display: none; } /* Oculto en la pantalla normal */
 
         @media print {
-            /* Forzamos que la página sea un lienzo blanco A4 limpio */
-            @page { margin: 1.5cm; size: A4 portrait; }
+            /* Al poner el margin a 0 eliminamos los textos por defecto del navegador (ruta, fecha automática) */
+            @page { 
+                margin: 0mm; 
+                size: A4 portrait; 
+            }
             
             body { 
                 background-color: white !important; 
-                padding: 0 !important; 
+                /* Pasamos el margen al body para que el contenido no pegue con el borde del folio */
+                padding: 1.5cm !important; 
                 margin: 0 !important; 
                 -webkit-print-color-adjust: exact; 
                 print-color-adjust: exact;
@@ -518,14 +522,12 @@
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
         }
 
-        // NUEVA FUNCIÓN DE PDF: Usa el motor nativo del dispositivo (100% fiable)
         function generarPDF() {
             if(carritoDeObra.length === 0) return;
             
             const hoy = new Date();
             document.getElementById('pdf-fecha').innerText = hoy.toLocaleDateString('es-ES');
 
-            // Preparar el HTML para el documento de impresión
             let htmlItems = "";
             carritoDeObra.forEach((item, i) => {
                 const detallesLimpios = item.detallesTexto.trim().replace(/\n/g, '<br>• ');
@@ -538,7 +540,6 @@
             });
             document.getElementById('contenido-items-pdf').innerHTML = htmlItems;
 
-            // Llama a la ventana de impresión/exportación del sistema operativo
             window.print();
         }
     </script>
