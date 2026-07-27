@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -373,9 +373,9 @@
         <div id="div-merma" class="grupo-formulario" style="display:none;">
             <label for="merma">Margen de merma:</label>
             <select id="merma" oninput="ocultarResultados()">
-                <option value="0">0% (Teórico)</option>
+                <option value="0" selected>0% (Teórico)</option>
                 <option value="5">5% (Mínima)</option>
-                <option value="8" selected>8% (Estándar)</option>
+                <option value="8">8% (Estándar)</option>
                 <option value="10">10% (Alta)</option>
             </select>
         </div>
@@ -438,7 +438,8 @@
                 "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros" },
                 "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros" },
                 "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros" },
-                "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10" }
+                "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10" },
+                "Puente de Unión Morteros Henares (PTU-20)": { min: 0.400, max: 0.450, densidad: 1.4, tipo: "rango_kilos" }
             }
         };
 
@@ -467,7 +468,7 @@
             document.getElementById("largo").value = "1";
             document.getElementById("alto").value = "1";
             document.getElementById("espesor").value = "1";
-            document.getElementById("merma").value = "8";
+            document.getElementById("merma").value = "0"; 
             
             document.getElementById("contenedor-medidas").style.display = "none";
             document.getElementById("div-espesor").style.display = "none";
@@ -483,6 +484,7 @@
             const contenedorMedidas = document.getElementById("contenedor-medidas");
             const divEspesor = document.getElementById("div-espesor");
             const divMerma = document.getElementById("div-merma");
+            const selectMerma = document.getElementById("merma");
             
             productoSelect.innerHTML = '<option value="">Selecciona un producto...</option>';
             ocultarResultados();
@@ -490,6 +492,8 @@
             contenedorMedidas.style.display = categoria ? "block" : "none";
             divEspesor.style.display = categoria === "revestimientos" ? "block" : "none";
             divMerma.style.display = (categoria === "ladrillos" || categoria === "bloques" || categoria === "revestimientos" || categoria === "puentes") ? "block" : "none";
+
+            selectMerma.value = (categoria === "puentes") ? "0" : "8";
 
             if (categoria && datos[categoria]) {
                 for (const key in datos[categoria]) {
@@ -625,7 +629,24 @@
                         <div class="casilla">
                             <div class="casilla-etiqueta">Consumo en Kilos</div>
                             <div class="casilla-valor">${totalKgKilos.toFixed(2)} kg</div>
-                            <div class="casilla-nota">Densidad: ~${item.densidad} kg/l[cite: 1]</div>
+                            <div class="casilla-nota">Densidad: ~${item.densidad} kg/l</div>
+                        </div>`;
+                } else if (item.tipo === "rango_kilos") {
+                    const consumoMedioPorM2 = (item.min + item.max) / 2;
+                    const totalKgKilos = (medida * consumoMedioPorM2) * factorMerma;
+                    const totalLitros = Math.ceil(totalKgKilos / item.densidad);
+
+                    textoPortapapeles += `🔸 Consumo medio: ${consumoMedioPorM2.toFixed(3)} kg/m²\n🔸 Total estimado: ${totalLitros} Litros (Inc. ${mermaSeleccionada}% merma)\n`;
+                    html += `
+                        <div class="casilla casilla-destacada">
+                            <div class="casilla-etiqueta">Consumo en Litros</div>
+                            <div class="casilla-valor">${totalLitros} L</div>
+                            <div class="casilla-nota">Media: ${consumoMedioPorM2.toFixed(3)} kg/m²</div>
+                        </div>
+                        <div class="casilla">
+                            <div class="casilla-etiqueta">Consumo en Kilos</div>
+                            <div class="casilla-valor">${totalKgKilos.toFixed(2)} kg</div>
+                            <div class="casilla-nota">Densidad: ~${item.densidad} kg/l</div>
                         </div>`;
                 } else {
                     const consumoMedioPorM2 = (item.min + item.max) / 2;
@@ -648,6 +669,8 @@
 
             html += `</div>`;
             
+            textoPortapapeles += `\n⚠️ Importante: Este documento no es contractual, es solo a nivel informativo.`;
+
             html += `
                 <div class="botones-exportacion">
                     <button class="btn-copiar" onclick="copiarAlPortapapeles()">📋 Copiar</button>
