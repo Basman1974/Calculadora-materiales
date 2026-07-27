@@ -251,8 +251,8 @@
             color: #333;
             background: white;
         }
-        .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-bottom: 2px solid #0056b3; padding-bottom: 20px; }
-        .pdf-logo { max-width: 180px; }
+        .pdf-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #0056b3; padding-bottom: 20px; }
+        .pdf-titulo-empresa { font-size: 28px; font-weight: 900; color: #0056b3; letter-spacing: -0.5px; margin: 0; line-height: 1;}
         .pdf-meta { text-align: right; font-size: 12px; color: #666; }
         .pdf-item { border-bottom: 1px solid #eee; padding: 15px 0; }
         .pdf-item h4 { margin: 0 0 5px 0; color: #0056b3; font-size: 16px; }
@@ -370,12 +370,11 @@
         <div class="marca-agua">© 2026 Elías López</div>
     </div>
 
-    <!-- PLANTILLA OCULTA PARA EL PDF -->
+    <!-- PLANTILLA OCULTA PARA EL PDF (SIN IMÁGENES LOCALES) -->
     <div id="plantilla-pdf">
         <div class="pdf-header">
-            <img src="LOGO OBRAMAT.PNG" alt="Logo" class="pdf-logo" id="logo-pdf">
+            <div class="pdf-titulo-empresa">ESTIMACIÓN DE<br>MATERIALES</div>
             <div class="pdf-meta">
-                <strong>Estimación de Materiales</strong><br>
                 Fecha: <span id="pdf-fecha"></span><br>
                 © 2026 Elías López
             </div>
@@ -654,7 +653,7 @@
                 margin:       15,
                 filename:     'Presupuesto_Materiales.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                html2canvas:  { scale: 2 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
