@@ -43,7 +43,7 @@
         }
 
         .marca-agua-top { position: absolute; top: 15px; right: 15px; font-size: 11px; color: #000000; font-weight: 800; text-transform: uppercase; }
-        .logo-container { text-align: center; margin-bottom: 25px; }
+        .logo-container { text-align: center; margin-bottom: 25px; min-height: 50px; }
         .logo-container img { max-width: 200px; height: auto; }
         .encabezado { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--color-borde); padding-bottom: 15px; }
         h2 { color: var(--color-primario); margin: 0; font-size: 22px; font-weight: 800; }
@@ -160,7 +160,7 @@
         <div class="marca-agua-top">© 2026 Elías López</div>
 
         <div class="logo-container">
-            <img src="LOGO OBRAMAT.PNG" alt="Logo">
+            <img src="LOGO OBRAMAT.PNG" alt="Logo Obramat" onerror="if(this.src.includes('LOGO OBRAMAT.PNG')){this.src='logo.png';}else if(this.src.includes('logo.png')){this.src='LOGO.png';}else if(this.src.includes('LOGO.png')){this.src='logo.jpg';}else{this.style.display='none';}">
         </div>
 
         <div class="encabezado">
