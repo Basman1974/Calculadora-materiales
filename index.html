@@ -100,7 +100,6 @@
         #plantilla-pdf { display: none; } /* Oculto en la pantalla normal */
 
         @media print {
-            /* Al poner el margin a 0 eliminamos los textos por defecto del navegador (ruta, fecha automática) */
             @page { 
                 margin: 0mm; 
                 size: A4 portrait; 
@@ -108,17 +107,14 @@
             
             body { 
                 background-color: white !important; 
-                /* Pasamos el margen al body para que el contenido no pegue con el borde del folio */
                 padding: 1.5cm !important; 
                 margin: 0 !important; 
                 -webkit-print-color-adjust: exact; 
                 print-color-adjust: exact;
             }
 
-            /* Ocultamos la aplicación entera */
             .contenedor-app { display: none !important; }
 
-            /* Mostramos solo el formato de factura */
             #plantilla-pdf { 
                 display: block !important; 
                 font-family: Arial, sans-serif !important;
@@ -243,6 +239,15 @@
             </select>
         </div>
 
+        <!-- NUEVO SELECTOR PARA EL TIPO DE MORTERO -->
+        <div id="div-tipo-mortero" class="grupo-formulario" style="display:none;">
+            <label for="tipo-mortero">Suministro de Mortero:</label>
+            <select id="tipo-mortero" oninput="ocultarResultados()">
+                <option value="predosificado">Predosificado (Sacos 25kg)</option>
+                <option value="obra">Hecho en obra (Cemento y Arena - M7.5)</option>
+            </select>
+        </div>
+
         <div class="botones-formulario">
             <button class="btn-primario" onclick="calcular()">Calcular</button>
             <button class="btn-secundario" onclick="limpiarCalculadora()">Limpiar</button>
@@ -310,8 +315,6 @@
                 "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
             },
             puentes: {
-                // Si la imagen está en la misma carpeta que el index, lo dejamos indicado. 
-                // Si la pones en 'img', podemos quitar el "imagen: ..." y el sistema la buscará sola.
                 "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros", imagen: "puente-union-plus.jpg" },
                 "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros", imagen: "sikatop-30.jpg" },
                 "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros" },
@@ -346,12 +349,14 @@
             document.getElementById("alto").value = "1";
             document.getElementById("espesor").value = "1";
             document.getElementById("merma").value = "0"; 
+            document.getElementById("tipo-mortero").value = "predosificado";
             
             document.getElementById("contenedor-medidas").style.display = "none";
             document.getElementById("div-espesor").style.display = "none";
             document.getElementById("div-merma").style.display = "none";
             document.getElementById("div-soporte").style.display = "none";
             document.getElementById("contenedor-img").style.display = "none";
+            document.getElementById("div-tipo-mortero").style.display = "none";
             
             cambiarModoMedida();
             ocultarResultados();
@@ -369,6 +374,7 @@
             document.getElementById("contenedor-medidas").style.display = categoria ? "block" : "none";
             document.getElementById("div-espesor").style.display = categoria === "revestimientos" ? "block" : "none";
             document.getElementById("div-merma").style.display = categoria ? "block" : "none";
+            document.getElementById("div-tipo-mortero").style.display = (categoria === "ladrillos" || categoria === "bloques") ? "block" : "none";
 
             document.getElementById("merma").value = (categoria === "puentes") ? "0" : "8";
 
@@ -381,7 +387,6 @@
             }
         }
 
-        // NUEVA FUNCIÓN: Limpia el nombre para buscar el archivo automáticamente
         function formatearNombreImagen(nombre) {
             return nombre.toLowerCase()
                          .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
@@ -390,7 +395,6 @@
                          + '.jpg'; 
         }
 
-        // FUNCIÓN ACTUALIZADA CON CARGA MASIVA AUTOMÁTICA
         function actualizarOpcionesProducto() {
             ocultarResultados();
             const categoria = document.getElementById("categoria").value;
@@ -402,16 +406,13 @@
             const imgElemento = document.getElementById("img-dinamica");
             
             if (categoria && producto && datos[categoria][producto]) {
-                // Comprueba si la imagen se ha forzado manualmente en los datos (como puente-union-plus.jpg o sikatop-30.jpg)
                 if (datos[categoria][producto].imagen) {
                     imgElemento.src = datos[categoria][producto].imagen;
                     divImg.style.display = "block";
                 } else {
-                    // MODO MASIVO: Adivina el nombre de la foto y la busca en la carpeta 'img'
                     const nombreAuto = formatearNombreImagen(producto);
                     imgElemento.src = 'img/' + nombreAuto;
                     
-                    // Solo muestra el recuadro si la imagen realmente existe en la carpeta
                     imgElemento.onload = function() { divImg.style.display = "block"; };
                     imgElemento.onerror = function() { divImg.style.display = "none"; };
                 }
@@ -460,9 +461,26 @@
                     html += `<div class="casilla"><div class="casilla-etiqueta">Palets</div><div class="casilla-valor">${totalPalets}</div></div>`;
                 }
                 if (item.mortero) {
-                    const sacosMortero = Math.ceil(((item.mortero * medida) * factorMerma) / 25);
-                    detallesTexto += `Sacos de mortero (25kg): ${sacosMortero}\n`;
-                    html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos Mortero</div><div class="casilla-valor">${sacosMortero}</div></div>`;
+                    const kilosMorteroTotal = ((item.mortero * medida) * factorMerma);
+                    const kilosMorteroStr = kilosMorteroTotal.toFixed(2);
+                    const tipoMortero = document.getElementById("tipo-mortero").value;
+                    
+                    html += `<div class="casilla"><div class="casilla-etiqueta">Kg Mortero</div><div class="casilla-valor">${kilosMorteroStr}</div></div>`;
+
+                    if (tipoMortero === "predosificado") {
+                        const sacosMortero = Math.ceil(kilosMorteroTotal / 25);
+                        detallesTexto += `Mortero total necesario: ${kilosMorteroStr} kg\nSacos de mortero predosificado (25kg): ${sacosMortero}\n`;
+                        html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos Mortero</div><div class="casilla-valor">${sacosMortero}</div></div>`;
+                    } else if (tipoMortero === "obra") {
+                        // Mortero M7.5 aprox: 1 parte de cemento por 5 de arena por peso (1/6 cemento, 5/6 arena)
+                        const kgCemento = kilosMorteroTotal * (1/6);
+                        const kgArena = kilosMorteroTotal * (5/6);
+                        const sacosCemento25 = Math.ceil(kgCemento / 25);
+                        
+                        detallesTexto += `Mortero total necesario: ${kilosMorteroStr} kg\nCemento (M7.5): ${kgCemento.toFixed(2)} kg (aprox ${sacosCemento25} sacos de 25kg)\nArena (M7.5): ${kgArena.toFixed(2)} kg\n`;
+                        html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos Cemento</div><div class="casilla-valor">${sacosCemento25}</div><div class="casilla-nota">Sacos 25 kg</div></div>`;
+                        html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Kg Arena</div><div class="casilla-valor">${kgArena.toFixed(0)}</div></div>`;
+                    }
                 }
             } else if (categoria === "revestimientos") {
                 const totalKilos = (item.kgMm * espesor) * medida * factorMerma; 
