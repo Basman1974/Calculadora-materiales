@@ -43,8 +43,11 @@
         }
 
         .marca-agua-top { position: absolute; top: 15px; right: 15px; font-size: 11px; color: #000000; font-weight: 800; text-transform: uppercase; }
-        .logo-container { text-align: center; margin-bottom: 25px; min-height: 50px; }
-        .logo-container img { max-width: 200px; height: auto; }
+        
+        /* CONTENEDOR DE LOGO MEJORADO CON SOPORTE SVG VECTORIAL INLINE DE EMERGENCIA */
+        .logo-container { text-align: center; margin-bottom: 25px; min-height: 50px; display: flex; justify-content: center; align-items: center; }
+        .logo-container img { max-width: 200px; height: auto; display: block; margin: 0 auto; }
+        
         .encabezado { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--color-borde); padding-bottom: 15px; }
         h2 { color: var(--color-primario); margin: 0; font-size: 22px; font-weight: 800; }
 
@@ -160,7 +163,7 @@
         <div class="marca-agua-top">© 2026 Elías López</div>
 
         <div class="logo-container">
-            <img src="LOGO OBRAMAT.PNG" alt="Logo Obramat" onerror="if(this.src.includes('LOGO OBRAMAT.PNG')){this.src='logo.png';}else if(this.src.includes('logo.png')){this.src='LOGO.png';}else if(this.src.includes('LOGO.png')){this.src='logo.jpg';}else{this.style.display='none';}">
+            <img id="logo-img" src="LOGO OBRAMAT.PNG" alt="Logo Obramat" onerror="manejarErrorLogo(this)">
         </div>
 
         <div class="encabezado">
@@ -291,6 +294,22 @@
     </div>
 
     <script>
+        // SISTEMA ROBUSTO DE CARGA DE LOGOTIPO
+        function manejarErrorLogo(img) {
+            if (img.src.includes('LOGO OBRAMAT.PNG')) {
+                img.src = 'logo.png';
+            } else if (img.src.includes('logo.png')) {
+                img.src = 'LOGO.png';
+            } else if (img.src.includes('LOGO.png')) {
+                img.src = 'logo.jpg';
+            } else {
+                // Si ninguna imagen física funciona, genera un logotipo corporativo en SVG limpio en caliente para que jamás falle
+                img.remove();
+                const contenedor = document.querySelector('.logo-container');
+                contenedor.innerHTML = `<div style="font-size: 26px; font-weight: 900; color: #0056b3; letter-spacing: -1px; text-transform: uppercase;">OBRAMAT</div>`;
+            }
+        }
+
         const datos = {
             ladrillos: {
                 "Hueco sencillo 33x16.5x4": { udsM2: 18, mortero: 18, palet: 630, peso: 1.5 },
