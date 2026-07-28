@@ -239,13 +239,17 @@
             </select>
         </div>
 
-        <!-- NUEVO SELECTOR PARA EL TIPO DE MORTERO -->
         <div id="div-tipo-mortero" class="grupo-formulario" style="display:none;">
             <label for="tipo-mortero">Suministro de Mortero:</label>
-            <select id="tipo-mortero" oninput="ocultarResultados()">
+            <select id="tipo-mortero" oninput="ocultarResultados(); gestionarVisibilidadMortero();">
                 <option value="predosificado">Predosificado (Sacos 25kg)</option>
                 <option value="obra">Hecho en obra (Cemento y Arena - M7.5)</option>
             </select>
+            <button type="button" id="btn-info-mortero" onclick="toggleTextoMortero()" style="display:none; font-size: 12px; margin-top: 8px; background: none; border: none; color: var(--color-primario); text-decoration: underline; cursor: pointer; padding: 0;">Ver justificación de cálculo</button>
+            <div id="texto-info-mortero" style="display:none; font-size: 12px; color: #555; background: #f1f5f9; padding: 10px; border-radius: 6px; margin-top: 8px; border-left: 3px solid var(--color-primario);">
+                <strong>Cálculo para Mortero M7,5:</strong><br>
+                Se emplea una dosificación por peso de 1:5 (1 parte de cemento por 5 partes de arena). Al mezclar 6 partes en total, el peso del cemento equivale a 1/6 (aprox. 16,6%) del peso total del mortero, y la arena a los 5/6 restantes (aprox. 83,3%).
+            </div>
         </div>
 
         <div class="botones-formulario">
@@ -358,6 +362,9 @@
             document.getElementById("contenedor-img").style.display = "none";
             document.getElementById("div-tipo-mortero").style.display = "none";
             
+            document.getElementById("btn-info-mortero").style.display = "none";
+            document.getElementById("texto-info-mortero").style.display = "none";
+
             cambiarModoMedida();
             ocultarResultados();
         }
@@ -377,6 +384,9 @@
             document.getElementById("div-tipo-mortero").style.display = (categoria === "ladrillos" || categoria === "bloques") ? "block" : "none";
 
             document.getElementById("merma").value = (categoria === "puentes") ? "0" : "8";
+            
+            document.getElementById("btn-info-mortero").style.display = "none";
+            document.getElementById("texto-info-mortero").style.display = "none";
 
             if (categoria && datos[categoria]) {
                 for (const key in datos[categoria]) {
@@ -419,6 +429,24 @@
             } else {
                 divImg.style.display = "none";
             }
+        }
+
+        function gestionarVisibilidadMortero() {
+            const tipo = document.getElementById("tipo-mortero").value;
+            const btnInfo = document.getElementById("btn-info-mortero");
+            const divInfo = document.getElementById("texto-info-mortero");
+            
+            if (tipo === "obra") {
+                btnInfo.style.display = "inline-block";
+            } else {
+                btnInfo.style.display = "none";
+                divInfo.style.display = "none";
+            }
+        }
+
+        function toggleTextoMortero() {
+            const divInfo = document.getElementById("texto-info-mortero");
+            divInfo.style.display = (divInfo.style.display === "none") ? "block" : "none";
         }
 
         function calcular() {
@@ -472,7 +500,6 @@
                         detallesTexto += `Mortero total necesario: ${kilosMorteroStr} kg\nSacos de mortero predosificado (25kg): ${sacosMortero}\n`;
                         html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos Mortero</div><div class="casilla-valor">${sacosMortero}</div></div>`;
                     } else if (tipoMortero === "obra") {
-                        // Mortero M7.5 aprox: 1 parte de cemento por 5 de arena por peso (1/6 cemento, 5/6 arena)
                         const kgCemento = kilosMorteroTotal * (1/6);
                         const kgArena = kilosMorteroTotal * (5/6);
                         const sacosCemento25 = Math.ceil(kgCemento / 25);
