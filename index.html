@@ -310,6 +310,8 @@
                 "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
             },
             puentes: {
+                // Si la imagen está en la misma carpeta que el index, lo dejamos indicado. 
+                // Si la pones en 'img', podemos quitar el "imagen: ..." y el sistema la buscará sola.
                 "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros", imagen: "puente-union-plus.jpg" },
                 "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros", imagen: "sikatop-30.jpg" },
                 "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros" },
@@ -379,6 +381,16 @@
             }
         }
 
+        // NUEVA FUNCIÓN: Limpia el nombre para buscar el archivo automáticamente
+        function formatearNombreImagen(nombre) {
+            return nombre.toLowerCase()
+                         .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
+                         .replace(/\s+/g, '-') 
+                         .replace(/[^a-z0-9\-]/g, '') 
+                         + '.jpg'; 
+        }
+
+        // FUNCIÓN ACTUALIZADA CON CARGA MASIVA AUTOMÁTICA
         function actualizarOpcionesProducto() {
             ocultarResultados();
             const categoria = document.getElementById("categoria").value;
@@ -388,9 +400,21 @@
 
             const divImg = document.getElementById("contenedor-img");
             const imgElemento = document.getElementById("img-dinamica");
-            if (categoria && producto && datos[categoria][producto] && datos[categoria][producto].imagen) {
-                imgElemento.src = datos[categoria][producto].imagen;
-                divImg.style.display = "block";
+            
+            if (categoria && producto && datos[categoria][producto]) {
+                // Comprueba si la imagen se ha forzado manualmente en los datos (como puente-union-plus.jpg o sikatop-30.jpg)
+                if (datos[categoria][producto].imagen) {
+                    imgElemento.src = datos[categoria][producto].imagen;
+                    divImg.style.display = "block";
+                } else {
+                    // MODO MASIVO: Adivina el nombre de la foto y la busca en la carpeta 'img'
+                    const nombreAuto = formatearNombreImagen(producto);
+                    imgElemento.src = 'img/' + nombreAuto;
+                    
+                    // Solo muestra el recuadro si la imagen realmente existe en la carpeta
+                    imgElemento.onload = function() { divImg.style.display = "block"; };
+                    imgElemento.onerror = function() { divImg.style.display = "none"; };
+                }
             } else {
                 divImg.style.display = "none";
             }
