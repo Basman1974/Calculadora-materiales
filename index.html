@@ -97,63 +97,21 @@
         /* =========================================
            ESTILOS EXCLUSIVOS PARA EL PDF/IMPRESIÓN
            ========================================= */
-        #plantilla-pdf { display: none; } /* Oculto en la pantalla normal */
+        #plantilla-pdf { display: none; } 
 
         @media print {
-            /* Al poner el margin a 0 eliminamos los textos por defecto del navegador (ruta, fecha automática) */
-            @page { 
-                margin: 0mm; 
-                size: A4 portrait; 
-            }
-            
-            body { 
-                background-color: white !important; 
-                /* Pasamos el margen al body para que el contenido no pegue con el borde del folio */
-                padding: 1.5cm !important; 
-                margin: 0 !important; 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact;
-            }
-
-            /* Ocultamos la aplicación entera */
+            @page { margin: 0mm; size: A4 portrait; }
+            body { background-color: white !important; padding: 1.5cm !important; margin: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .contenedor-app { display: none !important; }
-
-            /* Mostramos solo el formato de factura */
-            #plantilla-pdf { 
-                display: block !important; 
-                font-family: Arial, sans-serif !important;
-                color: #000000 !important;
-            }
-
-            .pdf-header {
-                display: flex !important;
-                justify-content: space-between !important;
-                align-items: flex-end !important;
-                border-bottom: 2px solid #0056b3 !important;
-                padding-bottom: 20px !important;
-                margin-bottom: 30px !important;
-            }
-
+            #plantilla-pdf { display: block !important; font-family: Arial, sans-serif !important; color: #000000 !important; }
+            .pdf-header { display: flex !important; justify-content: space-between !important; align-items: flex-end !important; border-bottom: 2px solid #0056b3 !important; padding-bottom: 20px !important; margin-bottom: 30px !important; }
             .pdf-titulo-empresa { font-size: 24px !important; font-weight: 900 !important; color: #0056b3 !important; line-height: 1 !important;}
             .pdf-meta { font-size: 12px !important; text-align: right !important; color: #555 !important; }
-            
-            .pdf-item {
-                border-bottom: 1px solid #ddd !important;
-                padding: 15px 0 !important;
-                page-break-inside: avoid !important;
-            }
+            .pdf-item { border-bottom: 1px solid #ddd !important; padding: 15px 0 !important; page-break-inside: avoid !important; }
             .pdf-item h4 { margin: 0 0 5px 0 !important; font-size: 16px !important; color: #0056b3 !important; }
             .pdf-item p { margin: 0 0 5px 0 !important; font-size: 14px !important; font-weight: bold !important; }
             .pdf-item .detalles { font-size: 13px !important; line-height: 1.6 !important; }
-
-            .pdf-footer {
-                margin-top: 40px !important;
-                font-size: 10px !important;
-                color: #555 !important;
-                text-align: justify !important;
-                border-top: 1px solid #ccc !important;
-                padding-top: 15px !important;
-            }
+            .pdf-footer { margin-top: 40px !important; font-size: 10px !important; color: #555 !important; text-align: justify !important; border-top: 1px solid #ccc !important; padding-top: 15px !important; }
         }
     </style>
 </head>
@@ -189,8 +147,12 @@
             </select>
         </div>
 
+        <!-- CONTENEDOR DE IMAGEN CON ASISTENTE DE ERRORES -->
         <div id="contenedor-img" class="contenedor-imagen-centrada">
             <img id="img-dinamica" src="" alt="Vista del producto" class="imagen-producto">
+            <div id="ayuda-foto" style="display:none; font-size:13px; color:#b91c1c; margin-top:10px; border:1px dashed #fca5a5; padding:10px; border-radius:6px; background:#fef2f2; text-align:center;">
+                <!-- Aquí aparecerá el nombre de la foto si falta -->
+            </div>
         </div>
 
         <div id="div-soporte" class="grupo-formulario" style="display:none;">
@@ -310,10 +272,8 @@
                 "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
             },
             puentes: {
-                // Si la imagen está en la misma carpeta que el index, lo dejamos indicado. 
-                // Si la pones en 'img', podemos quitar el "imagen: ..." y el sistema la buscará sola.
                 "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros", imagen: "puente-union-plus.jpg" },
-                "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros", imagen: "sikatop-30.jpg" },
+                "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros" }, // Sin definir imagen, dejará que actúe el sistema automático
                 "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros" },
                 "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10", imagen: "sikatop-10.jpg" },
                 "Puente de Unión Morteros Henares (PTU-20)": { min: 0.400, max: 0.450, densidad: 1.4, tipo: "rango_kilos" },
@@ -381,16 +341,15 @@
             }
         }
 
-        // NUEVA FUNCIÓN: Limpia el nombre para buscar el archivo automáticamente
+        // NUEVA FUNCIÓN: Permite puntos (.) para que no se coma las medidas como 16.5
         function formatearNombreImagen(nombre) {
             return nombre.toLowerCase()
                          .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
                          .replace(/\s+/g, '-') 
-                         .replace(/[^a-z0-9\-]/g, '') 
+                         .replace(/[^a-z0-9\-.]/g, '') // Permite letras, números, guiones y puntos
                          + '.jpg'; 
         }
 
-        // FUNCIÓN ACTUALIZADA CON CARGA MASIVA AUTOMÁTICA
         function actualizarOpcionesProducto() {
             ocultarResultados();
             const categoria = document.getElementById("categoria").value;
@@ -400,21 +359,34 @@
 
             const divImg = document.getElementById("contenedor-img");
             const imgElemento = document.getElementById("img-dinamica");
+            const divAyuda = document.getElementById("ayuda-foto");
             
             if (categoria && producto && datos[categoria][producto]) {
-                // Comprueba si la imagen se ha forzado manualmente en los datos (como puente-union-plus.jpg o sikatop-30.jpg)
+                let nombreFoto = "";
+                
+                // Si la imagen está especificada a mano, usa esa. Si no, deduce el nombre.
                 if (datos[categoria][producto].imagen) {
-                    imgElemento.src = datos[categoria][producto].imagen;
-                    divImg.style.display = "block";
+                    nombreFoto = datos[categoria][producto].imagen;
                 } else {
-                    // MODO MASIVO: Adivina el nombre de la foto y la busca en la carpeta 'img'
-                    const nombreAuto = formatearNombreImagen(producto);
-                    imgElemento.src = 'img/' + nombreAuto;
-                    
-                    // Solo muestra el recuadro si la imagen realmente existe en la carpeta
-                    imgElemento.onload = function() { divImg.style.display = "block"; };
-                    imgElemento.onerror = function() { divImg.style.display = "none"; };
+                    nombreFoto = formatearNombreImagen(producto);
                 }
+                
+                // Intenta cargar la imagen en la misma carpeta raíz
+                imgElemento.src = nombreFoto;
+                
+                imgElemento.onload = function() { 
+                    divImg.style.display = "block"; 
+                    imgElemento.style.display = "inline-block";
+                    divAyuda.style.display = "none"; 
+                };
+                
+                // SI LA IMAGEN NO ESTÁ, AVISA EXACTAMENTE DE QUÉ NOMBRE FALTA
+                imgElemento.onerror = function() { 
+                    divImg.style.display = "block"; 
+                    imgElemento.style.display = "none"; // Oculta el icono de imagen rota
+                    divAyuda.innerHTML = `⚠️ Falta la foto de este producto.<br>Guárdala en esta carpeta con el nombre exacto:<br><b style="font-size:16px;">${nombreFoto}</b>`;
+                    divAyuda.style.display = "block"; 
+                };
             } else {
                 divImg.style.display = "none";
             }
