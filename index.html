@@ -42,7 +42,7 @@
             position: relative;
         }
 
-        .marca-agua-top { position: absolute; top: 15px; right: 15px; font-size: 11px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+        .marca-agua-top { position: absolute; top: 15px; right: 15px; font-size: 11px; color: #000000; font-weight: 800; text-transform: uppercase; }
         .logo-container { text-align: center; margin-bottom: 25px; }
         .logo-container img { max-width: 200px; height: auto; }
         .encabezado { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--color-borde); padding-bottom: 15px; }
@@ -92,7 +92,7 @@
         .btn-pdf { background-color: #dc2626; }
         .btn-whatsapp { background-color: var(--color-whatsapp); }
         .btn-email { background-color: var(--color-email); }
-        .marca-agua { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 30px; font-weight: 600; text-transform: uppercase; }
+        .marca-agua { text-align: center; font-size: 11px; color: #000000; margin-top: 30px; font-weight: 800; text-transform: uppercase; }
 
         /* =========================================
            ESTILOS EXCLUSIVOS PARA EL PDF/IMPRESIÓN
@@ -135,7 +135,7 @@
             }
 
             .pdf-titulo-empresa { font-size: 24px !important; font-weight: 900 !important; color: #0056b3 !important; line-height: 1 !important;}
-            .pdf-meta { font-size: 12px !important; text-align: right !important; color: #555 !important; }
+            .pdf-meta { font-size: 12px !important; text-align: right !important; color: #000000 !important; font-weight: bold !important; }
             
             .pdf-item {
                 border-bottom: 1px solid #ddd !important;
@@ -449,12 +449,15 @@
             if (categoria === "ladrillos" || categoria === "bloques") {
                 const totalUds = Math.ceil((item.udsM2 * medida) * factorMerma); 
                 const pesoTotal = (totalUds * item.peso).toFixed(2);
+                
                 detallesTexto += `Unidades: ${totalUds} uds (Inc. ${mermaSeleccionada}% merma)\nPeso total: ${pesoTotal} kg\n`;
                 html += `<div class="casilla"><div class="casilla-etiqueta">Unidades</div><div class="casilla-valor">${totalUds}</div></div>`;
+                html += `<div class="casilla"><div class="casilla-etiqueta">Peso (kg)</div><div class="casilla-valor">${pesoTotal}</div></div>`;
                 
                 if (item.palet) {
                     const totalPalets = (totalUds / item.palet).toFixed(2);
                     detallesTexto += `Palets (aprox): ${totalPalets}\n`;
+                    html += `<div class="casilla"><div class="casilla-etiqueta">Palets</div><div class="casilla-valor">${totalPalets}</div></div>`;
                 }
                 if (item.mortero) {
                     const sacosMortero = Math.ceil(((item.mortero * medida) * factorMerma) / 25);
