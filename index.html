@@ -279,12 +279,12 @@
                 "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 }
             },
             puentes: {
-                "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros" },
-                "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros" },
-                "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros" },
-                "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10" },
-                "Puente de Unión Morteros Henares (PTU-20)": { min: 0.400, max: 0.450, densidad: 1.4, tipo: "rango_kilos" },
-                "Aplica primer TOP 5KG": { min: 0.125, max: 0.175, densidad: 1.43, tipo: "rango_kilos" },
+                "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros", imagen: "puente-union-plus.jpg" },
+                "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros", imagen: "SikaTop-30.jpg" },
+                "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros", imagen: "SikaTop-50.jpg" },
+                "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10", imagen: "sikatop-10.jpg" },
+                "Puente de Unión Morteros Henares (PTU-20)": { min: 0.400, max: 0.450, densidad: 1.4, tipo: "rango_kilos", imagen: "puente-de-union-morteros-henares-ptu-20.jpg" },
+                "Aplica primer TOP 5KG": { min: 0.125, max: 0.175, densidad: 1.43, tipo: "rango_kilos", imagen: "aplica-primer-top-5kg.jpg" },
                 "Imprimacion Aplica Level Primer 5 L": { tipo: "level_primer" }
             }
         };
@@ -380,7 +380,6 @@
                     imgElemento.src = datos[categoria][producto].imagen;
                     divImg.style.display = "block";
                 } else {
-                    // Intento 1: Buscar con el nombre formateado automáticamente en la raíz
                     const nombreAuto = formatearNombreImagen(producto);
                     imgElemento.src = nombreAuto;
                     
@@ -389,14 +388,7 @@
                     };
                     
                     imgElemento.onerror = function() {
-                        // Intento 2: Buscar con el nombre exacto del producto + .jpg en la raíz
-                        imgElemento.src = producto + ".jpg";
-                        imgElemento.onload = function() {
-                            divImg.style.display = "block";
-                        };
-                        imgElemento.onerror = function() {
-                            divImg.style.display = "none";
-                        };
+                        divImg.style.display = "none";
                     };
                 }
             } else {
