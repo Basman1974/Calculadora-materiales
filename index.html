@@ -44,18 +44,12 @@
 
         .marca-agua-top { position: absolute; top: 15px; right: 15px; font-size: 11px; color: #000000; font-weight: 800; text-transform: uppercase; }
         
-        /* CONTENEDOR DE LOGO MEJORADO CON SOPORTE SVG VECTORIAL INLINE DE EMERGENCIA */
-        .logo-container { text-align: center; margin-bottom: 25px; min-height: 50px; display: flex; justify-content: center; align-items: center; }
+        .logo-container { text-align: center; margin-bottom: 25px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
         .logo-container img { max-width: 200px; height: auto; display: block; margin: 0 auto; }
-        
+        .logo-texto-corporativo { font-size: 26px; font-weight: 900; color: var(--color-primario); letter-spacing: -1px; text-transform: uppercase; margin: 0; }
+
         .encabezado { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--color-borde); padding-bottom: 15px; }
         h2 { color: var(--color-primario); margin: 0; font-size: 22px; font-weight: 800; }
-
-        .btn-ayuda-ico {
-            background-color: #e2e8f0; color: var(--color-primario); border: none; border-radius: 50%;
-            width: 36px; height: 36px; font-size: 18px; font-weight: bold; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
         
         .grupo-formulario { margin-bottom: 22px; }
         .contenedor-imagen-centrada { text-align: center; margin-bottom: 22px; display: none; padding: 10px; background-color: #f8fafc; border-radius: 8px; border: 1px dashed var(--color-borde); }
@@ -100,59 +94,21 @@
         /* =========================================
            ESTILOS EXCLUSIVOS PARA EL PDF/IMPRESIÓN
            ========================================= */
-        #plantilla-pdf { display: none; } /* Oculto en la pantalla normal */
+        #plantilla-pdf { display: none; }
 
         @media print {
-            @page { 
-                margin: 0mm; 
-                size: A4 portrait; 
-            }
-            
-            body { 
-                background-color: white !important; 
-                padding: 1.5cm !important; 
-                margin: 0 !important; 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact;
-            }
-
+            @page { margin: 0mm; size: A4 portrait; }
+            body { background-color: white !important; padding: 1.5cm !important; margin: 0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .contenedor-app { display: none !important; }
-
-            #plantilla-pdf { 
-                display: block !important; 
-                font-family: Arial, sans-serif !important;
-                color: #000000 !important;
-            }
-
-            .pdf-header {
-                display: flex !important;
-                justify-content: space-between !important;
-                align-items: flex-end !important;
-                border-bottom: 2px solid #0056b3 !important;
-                padding-bottom: 20px !important;
-                margin-bottom: 30px !important;
-            }
-
+            #plantilla-pdf { display: block !important; font-family: Arial, sans-serif !important; color: #000000 !important; }
+            .pdf-header { display: flex !important; justify-content: space-between !important; align-items: flex-end !important; border-bottom: 2px solid #0056b3 !important; padding-bottom: 20px !important; margin-bottom: 30px !important; }
             .pdf-titulo-empresa { font-size: 24px !important; font-weight: 900 !important; color: #0056b3 !important; line-height: 1 !important;}
             .pdf-meta { font-size: 12px !important; text-align: right !important; color: #000000 !important; font-weight: bold !important; }
-            
-            .pdf-item {
-                border-bottom: 1px solid #ddd !important;
-                padding: 15px 0 !important;
-                page-break-inside: avoid !important;
-            }
+            .pdf-item { border-bottom: 1px solid #ddd !important; padding: 15px 0 !important; page-break-inside: avoid !important; }
             .pdf-item h4 { margin: 0 0 5px 0 !important; font-size: 16px !important; color: #0056b3 !important; }
             .pdf-item p { margin: 0 0 5px 0 !important; font-size: 14px !important; font-weight: bold !important; }
             .pdf-item .detalles { font-size: 13px !important; line-height: 1.6 !important; }
-
-            .pdf-footer {
-                margin-top: 40px !important;
-                font-size: 10px !important;
-                color: #555 !important;
-                text-align: justify !important;
-                border-top: 1px solid #ccc !important;
-                padding-top: 15px !important;
-            }
+            .pdf-footer { margin-top: 40px !important; font-size: 10px !important; color: #555 !important; text-align: justify !important; border-top: 1px solid #ccc !important; padding-top: 15px !important; }
         }
     </style>
 </head>
@@ -163,7 +119,8 @@
         <div class="marca-agua-top">© 2026 Elías López</div>
 
         <div class="logo-container">
-            <img id="logo-img" src="LOGO OBRAMAT.PNG" alt="Logo Obramat" onerror="manejarErrorLogo(this)">
+            <img src="logo.png" alt="Logo Obramat" onerror="this.onerror=null; this.src='LOGO OBRAMAT.PNG'; this.onerror=function(){this.style.display='none'; document.getElementById('texto-logo-alternativo').style.display='block';}">
+            <h1 id="texto-logo-alternativo" class="logo-texto-corporativo" style="display:none;">OBRAMAT</h1>
         </div>
 
         <div class="encabezado">
@@ -294,22 +251,6 @@
     </div>
 
     <script>
-        // SISTEMA ROBUSTO DE CARGA DE LOGOTIPO
-        function manejarErrorLogo(img) {
-            if (img.src.includes('LOGO OBRAMAT.PNG')) {
-                img.src = 'logo.png';
-            } else if (img.src.includes('logo.png')) {
-                img.src = 'LOGO.png';
-            } else if (img.src.includes('LOGO.png')) {
-                img.src = 'logo.jpg';
-            } else {
-                // Si ninguna imagen física funciona, genera un logotipo corporativo en SVG limpio en caliente para que jamás falle
-                img.remove();
-                const contenedor = document.querySelector('.logo-container');
-                contenedor.innerHTML = `<div style="font-size: 26px; font-weight: 900; color: #0056b3; letter-spacing: -1px; text-transform: uppercase;">OBRAMAT</div>`;
-            }
-        }
-
         const datos = {
             ladrillos: {
                 "Hueco sencillo 33x16.5x4": { udsM2: 18, mortero: 18, palet: 630, peso: 1.5 },
@@ -536,18 +477,25 @@
             } else if (categoria === "puentes") {
                 if (item.tipo === "level_primer") {
                     const consumo = document.getElementById("tipo-soporte").value === "sin_absorcion" ? 0.075 : (document.getElementById("tipo-soporte").value === "poco_poroso" ? 0.060 : 0.110);
-                    const botes = Math.ceil(((medida * consumo) * factorMerma) / 5);
-                    detallesTexto += `Botes de 5L: ${botes}\n`;
+                    const totalKilosNetos = (medida * consumo) * factorMerma;
+                    const botes = Math.ceil(totalKilosNetos / 5);
+                    const litrosEstimados = Math.ceil(totalKilosNetos / 1.0);
+                    detallesTexto += `Botes de 5L: ${botes}\nTotal litros aprox: ${litrosEstimados} L\n`;
                     html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Botes 5L</div><div class="casilla-valor">${botes}</div></div>`;
+                    html += `<div class="casilla"><div class="casilla-etiqueta">Litros Aprox.</div><div class="casilla-valor">${litrosEstimados} L</div></div>`;
                 } else if (item.tipo === "sikatop10" || item.tipo === "rango_kilos") {
                     const consumo = item.tipo === "sikatop10" ? item.min : (item.min + item.max) / 2;
-                    const litros = Math.ceil(((medida * consumo) * factorMerma) / item.densidad);
-                    detallesTexto += `Total estimado: ${litros} Litros\n`;
+                    const totalKilosNetos = (medida * consumo) * factorMerma;
+                    const litros = Math.ceil(totalKilosNetos / item.densidad);
+                    detallesTexto += `Total estimado: ${litros} Litros (Kilos aprox: ${totalKilosNetos.toFixed(2)} kg)\n`;
                     html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Litros</div><div class="casilla-valor">${litros}</div></div>`;
+                    html += `<div class="casilla"><div class="casilla-etiqueta">Litros Exactos</div><div class="casilla-valor">${(totalKilosNetos / item.densidad).toFixed(2)} L</div></div>`;
                 } else {
-                    const litros = Math.ceil((medida * ((item.min + item.max) / 2)) * factorMerma);
+                    const litrosCalculados = (medida * ((item.min + item.max) / 2)) * factorMerma;
+                    const litros = Math.ceil(litrosCalculados);
                     detallesTexto += `Total estimado: ${litros} Litros\n`;
                     html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Litros</div><div class="casilla-valor">${litros}</div></div>`;
+                    html += `<div class="casilla"><div class="casilla-etiqueta">Litros Exactos</div><div class="casilla-valor">${litrosCalculados.toFixed(2)} L</div></div>`;
                 }
             }
 
