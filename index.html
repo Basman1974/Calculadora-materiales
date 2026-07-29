@@ -217,7 +217,7 @@
         <div class="marca-agua">© 2026 Elías López</div>
     </div>
 
-    <!-- MODAL DE AYUDA AÑADIDO -->
+    <!-- MODAL DE AYUDA -->
     <div id="modal-ayuda" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
         <div style="background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
             <h3 style="color: var(--color-primario); margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
@@ -336,7 +336,16 @@
             if (categoria && datos[categoria]) {
                 for (const key in datos[categoria]) {
                     let option = document.createElement("option");
-                    option.value = key; option.text = key;
+                    option.value = key;
+                    
+                    // Mostrar cantidad por palet en ladrillos y bloques si está definida
+                    let productoInfo = datos[categoria][key];
+                    if (productoInfo.palet) {
+                        option.text = `${key} (Palet: ${productoInfo.palet} uds)`;
+                    } else {
+                        option.text = key;
+                    }
+                    
                     productoSelect.appendChild(option);
                 }
             }
@@ -638,7 +647,6 @@
             doc.save("Presupuesto-Materiales-Obramat.pdf");
         }
 
-        // Función de ayuda añadida sin alterar nada previo
         function toggleAyuda() {
             const modal = document.getElementById("modal-ayuda");
             modal.style.display = (modal.style.display === "flex") ? "none" : "flex";
