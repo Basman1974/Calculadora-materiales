@@ -258,12 +258,12 @@
                 "Bloque gris 39x19x10": { udsM2: 13.5, peso: 9.0, palet: 132, mortero: 50 }
             },
             revestimientos: {
-                "weber.rev fino": { kgMm: 1.7, maxMm: 5 },
-                "weberpral prisma": { kgMm: 1.5, maxMm: 30 },
-                "weberev hidro PLUS": { kgMm: 1.8, maxMm: 20 },
-                "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20 },
-                "Mortero Cal base Aplicarev 25kg BCO": { kgMm: 1.4, maxMm: 50, imagen: "mortero-cal-base-aplicarev-25kg-bco.jpg" },
-                "Mortero Cal revoco Aplicarev 25kg BCO": { kgMm: 1.4, maxMm: 9, imagen: "cal-revoco.JPG" }
+                "weber.rev fino": { kgMm: 1.7, maxMm: 5, palet: 48 },
+                "weberpral prisma": { kgMm: 1.5, maxMm: 30, palet: 48 },
+                "weberev hidro PLUS": { kgMm: 1.8, maxMm: 20, palet: 48 },
+                "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20, palet: 64 },
+                "Mortero Cal base Aplicarev 25kg BCO": { kgMm: 1.4, maxMm: 50, imagen: "mortero-cal-base-aplicarev-25kg-bco.jpg", palet: 48 },
+                "Mortero Cal revoco Aplicarev 25kg BCO": { kgMm: 1.4, maxMm: 9, imagen: "cal-revoco.JPG", palet: 48 }
             },
             puentes: {
                 "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros", imagen: "puente-union-plus.jpg" },
@@ -475,6 +475,13 @@
                 detallesTexto += `Espesor: ${espesor} mm\nKilos totales: ${totalKilos.toFixed(2)} kg\nSacos (25kg): ${sacosNecesarios} (Inc. ${mermaSeleccionada}% merma)\n`;
                 html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos a pedir</div><div class="casilla-valor">${sacosNecesarios}</div></div>`;
                 html += `<div class="casilla"><div class="casilla-etiqueta">Kg Totales</div><div class="casilla-valor">${totalKilos.toFixed(2)}</div></div>`;
+                
+                if (item.palet) {
+                    const totalPalets = (sacosNecesarios / item.palet).toFixed(2);
+                    detallesTexto += `Palets (aprox): ${totalPalets}\n`;
+                    html += `<div class="casilla"><div class="casilla-etiqueta">Palets</div><div class="casilla-valor">${totalPalets}</div></div>`;
+                }
+
             } else if (categoria === "puentes") {
                 if (item.tipo === "level_primer") {
                     const consumo = document.getElementById("tipo-soporte").value === "sin_absorcion" ? 0.075 : (document.getElementById("tipo-soporte").value === "poco_poroso" ? 0.060 : 0.110);
