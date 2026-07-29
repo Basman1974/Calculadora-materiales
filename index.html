@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Materiales</title>
-    <!-- Importación de jsPDF para compatibilidad total en móviles y PC -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
@@ -68,6 +67,7 @@
         .btn-primario { flex: 2; background-color: var(--color-primario); color: white; }
         .btn-secundario { flex: 1; background-color: transparent; color: var(--color-primario); border: 2px solid var(--color-primario); }
         .btn-agregar-carrito { width: 100%; background-color: var(--color-secundario); color: white; margin-top: 20px; padding: 16px; font-size: 16px;}
+        .btn-vaciar-carrito { width: 100%; background-color: transparent; color: var(--color-peligro); border: 1px solid var(--color-peligro); margin-top: 15px; padding: 10px; font-size: 12px; }
 
         .resultado-container { margin-top: 30px; display: none; padding-top: 25px; border-top: 2px dashed var(--color-borde); }
         .resultado-titulo { text-align: center; color: var(--color-resultado); font-weight: 800; }
@@ -95,7 +95,6 @@
 </head>
 <body>
 
-    <!-- INTERFAZ PRINCIPAL -->
     <div class="contenedor-app">
         <div class="marca-agua-top">© 2026 Elías López</div>
 
@@ -201,7 +200,6 @@
 
         <div id="resultado" class="resultado-container"></div>
 
-        <!-- CARRITO DE OBRA -->
         <div id="contenedor-carrito" class="contenedor-carrito">
             <h3 class="titulo-carrito">🛒 Lista de Materiales</h3>
             <div id="lista-carrito"></div>
@@ -212,6 +210,7 @@
                 <button class="btn-export btn-email" onclick="enviarPorEmail()">✉️ Email</button>
                 <button class="btn-export btn-whatsapp" onclick="enviarCarritoWhatsApp()">💬 WhatsApp</button>
             </div>
+            <button class="btn-vaciar-carrito" onclick="vaciarCarritoTotal()">🗑️ Vaciar Lista Completa</button>
         </div>
 
         <div class="marca-agua">© 2026 Elías López</div>
@@ -228,7 +227,7 @@
                 <p><strong>1. Selecciona una categoría:</strong> Elige entre ladrillos, bloques, revestimientos o puentes de unión.</p>
                 <p><strong>2. Escoge el producto:</strong> Selecciona el material específico que vas a utilizar en obra.</p>
                 <p><strong>3. Introduce las medidas:</strong> Puedes introducir los metros cuadrados (m²) directamente o calcularlos indicando el largo y el alto de la pared.</p>
-                <p><strong>4. Añade a la lista:</strong> Pulsa en "Calcular" y luego en "Añadir a la lista" para ir acumulando los materiales necesarios de tu obra.</p>
+                <p><strong>4. Añade a la lista:</strong> Pulsa en "Calcular" y luego en "Añadir a la lista" para ir acumulando los materiales necesarios de tu obra. La lista se guardará automáticamente en tu dispositivo.</p>
                 <p><strong>5. Exporta tu presupuesto:</strong> Desde el carrito inferior podrás generar un PDF descargable compatible con móviles y PC, copiar el texto, o enviarlo por WhatsApp y Email.</p>
             </div>
             <button onclick="toggleAyuda()" style="width: 100%; margin-top: 20px; background: var(--color-primario); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Entendido</button>
@@ -278,6 +277,28 @@
 
         let carritoDeObra = [];
         let calculoTemporal = null;
+
+        // --- FUNCIONES DE LOCAL STORAGE ---
+        function guardarCarrito() {
+            localStorage.setItem("carritoMateriales", JSON.stringify(carritoDeObra));
+        }
+
+        function cargarCarrito() {
+            const datosGuardados = localStorage.getItem("carritoMateriales");
+            if (datosGuardados) {
+                carritoDeObra = JSON.parse(datosGuardados);
+                renderizarCarrito();
+            }
+        }
+
+        function vaciarCarritoTotal() {
+            if(confirm("¿Estás seguro de que deseas vaciar toda la lista?")) {
+                carritoDeObra = [];
+                guardarCarrito();
+                renderizarCarrito();
+            }
+        }
+        // -----------------------------------
 
         function ocultarResultados() {
             document.getElementById("resultado").style.display = "none";
@@ -519,6 +540,7 @@
         function agregarAlCarrito() {
             if (calculoTemporal) {
                 carritoDeObra.push(calculoTemporal);
+                guardarCarrito();
                 renderizarCarrito();
                 document.getElementById("resultado").style.display = "none";
                 calculoTemporal = null;
@@ -541,7 +563,11 @@
             lista.innerHTML = html;
         }
 
-        function eliminarDelCarrito(index) { carritoDeObra.splice(index, 1); renderizarCarrito(); }
+        function eliminarDelCarrito(index) { 
+            carritoDeObra.splice(index, 1); 
+            guardarCarrito();
+            renderizarCarrito(); 
+        }
 
         function generarTextoPlano() {
             let texto = "*Cotización de Materiales:*\n\n";
@@ -572,16 +598,14 @@
         function generarPDF() {
             if(carritoDeObra.length === 0) return;
 
-            // Uso de jsPDF compatible al 100% en móviles y navegadores web
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
             let y = 20;
 
-            // Cabecera
             doc.setFont("helvetica", "bold");
             doc.setFontSize(20);
-            doc.setTextColor(0, 86, 179); // #0056b3
+            doc.setTextColor(0, 86, 179); 
             doc.text("ESTIMACIÓN DE MATERIALES", 20, y);
 
             doc.setFontSize(10);
@@ -601,9 +625,8 @@
 
             y += 15;
 
-            // Items del carrito
             carritoDeObra.forEach((item, i) => {
-                if (y > 250) { // Salto de página automático si se llena
+                if (y > 250) { 
                     doc.addPage();
                     y = 20;
                 }
@@ -638,7 +661,6 @@
                 y += 10;
             });
 
-            // Pie de página / Cláusula
             if (y > 240) { doc.addPage(); y = 20; }
             y += 10;
             doc.setFont("helvetica", "bold");
@@ -652,7 +674,6 @@
             const lineasClausula = doc.splitTextToSize(textoClausula, 170);
             doc.text(lineasClausula, 20, y + 5);
 
-            // Descargar el archivo PDF directamente en el móvil o PC
             doc.save("Presupuesto-Materiales-Obramat.pdf");
         }
 
@@ -660,6 +681,9 @@
             const modal = document.getElementById("modal-ayuda");
             modal.style.display = (modal.style.display === "flex") ? "none" : "flex";
         }
+
+        // Cargar datos al iniciar
+        window.onload = cargarCarrito;
     </script>
 </body>
 </html>
