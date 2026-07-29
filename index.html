@@ -80,6 +80,16 @@
         .btn-email { background-color: var(--color-email); }
         .btn-guardar-historial { background-color: #059669; grid-column: span 2; }
         .marca-agua { text-align: center; font-size: 11px; color: #000000; margin-top: 30px; font-weight: 800; text-transform: uppercase; }
+
+        /* Animación de parpadeo */
+        @keyframes alerta-parpadeo {
+            0% { border-color: var(--color-borde); box-shadow: none; }
+            50% { border-color: var(--color-secundario); box-shadow: 0 0 10px rgba(255, 102, 0, 0.4); }
+            100% { border-color: var(--color-borde); box-shadow: none; }
+        }
+        .parpadeo-activo {
+            animation: alerta-parpadeo 1.5s infinite;
+        }
     </style>
 </head>
 <body>
@@ -113,7 +123,7 @@
         </div>
         <div class="grupo-formulario">
             <label for="nombre-comercial">Atendido por:</label>
-            <input type="text" id="nombre-comercial" value="Elías" oninput="guardarDatosCabecera()">
+            <input type="text" id="nombre-comercial" class="parpadeo-activo" placeholder="Introduce tu nombre aquí..." oninput="guardarDatosCabecera(); this.classList.remove('parpadeo-activo');">
         </div>
 
         <div class="grupo-formulario">
@@ -318,10 +328,17 @@
             }
             const c = localStorage.getItem("nombreCliente");
             if (c !== null) document.getElementById("nombre-cliente").value = c;
+            
             const t = localStorage.getItem("telefonoCliente");
             if (t !== null) document.getElementById("telefono-cliente").value = t;
+            
+            // Carga el comercial y detiene el parpadeo si ya hay un nombre guardado
             const com = localStorage.getItem("nombreComercial");
-            if (com !== null) document.getElementById("nombre-comercial").value = com;
+            const inputComercial = document.getElementById("nombre-comercial");
+            if (com !== null && com !== "") {
+                inputComercial.value = com;
+                inputComercial.classList.remove("parpadeo-activo");
+            }
         }
 
         function vaciarCarritoTotal() {
@@ -416,7 +433,11 @@
                 carritoDeObra = [...p.items];
                 document.getElementById("nombre-cliente").value = p.cliente;
                 document.getElementById("telefono-cliente").value = p.telefono;
-                document.getElementById("nombre-comercial").value = p.comercial;
+                
+                const inputComercial = document.getElementById("nombre-comercial");
+                inputComercial.value = p.comercial;
+                inputComercial.classList.remove("parpadeo-activo");
+
                 guardarCarrito();
                 guardarDatosCabecera();
                 renderizarCarrito();
@@ -698,7 +719,7 @@
             carritoDeObra.forEach((item, i) => {
                 texto += `📦 *${i + 1}. ${item.producto}*\n📏 Superficie: ${item.textoMedida}\n${item.detallesTexto.replace(/🔸/g, '•')}\n───────────────\n\n`;
             });
-            texto += `⚠️ Cláusula. No es contractual, es solo a nivel informativo.`;
+            texto += `⚠️ Cláusula. No es contractual, es solo a nivel informativo etc.`;
             return texto;
         }
 
@@ -801,7 +822,7 @@
             
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
-            const textoClausula = "Cláusula. No es contractual, es solo a nivel informativo.";
+            const textoClausula = "Cláusula. No es contractual, es solo a nivel informativo etc";
             const lineasClausula = doc.splitTextToSize(textoClausula, 170);
             doc.text(lineasClausula, 20, y + 5);
 
