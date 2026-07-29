@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Materiales</title>
+    
+    <!-- Enlaces PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0056b3">
+
+    <!-- Importación de jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
@@ -22,26 +28,8 @@
             --fuente-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
-        body {
-            font-family: var(--fuente-principal);
-            padding: 20px;
-            max-width: 550px;
-            margin: 0 auto;
-            background-color: var(--color-fondo-pantalla);
-            color: var(--color-texto);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        .contenedor-app {
-            background-color: var(--color-fondo-app);
-            padding: 30px 25px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            border: 1px solid #e2e8f0;
-            position: relative;
-        }
-
+        body { font-family: var(--fuente-principal); padding: 20px; max-width: 550px; margin: 0 auto; background-color: var(--color-fondo-pantalla); color: var(--color-texto); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        .contenedor-app { background-color: var(--color-fondo-app); padding: 30px 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; position: relative; }
         .marca-agua-top { position: absolute; top: 15px; right: 15px; font-size: 11px; color: #000000; font-weight: 800; text-transform: uppercase; }
         
         .logo-container { text-align: center; margin-bottom: 25px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
@@ -90,6 +78,7 @@
         .btn-pdf { background-color: #dc2626; }
         .btn-whatsapp { background-color: var(--color-whatsapp); }
         .btn-email { background-color: var(--color-email); }
+        .btn-guardar-historial { background-color: #059669; grid-column: span 2; }
         .marca-agua { text-align: center; font-size: 11px; color: #000000; margin-top: 30px; font-weight: 800; text-transform: uppercase; }
     </style>
 </head>
@@ -105,7 +94,26 @@
 
         <div class="encabezado">
             <h2>Calculadora</h2>
-            <button type="button" onclick="toggleAyuda()" style="background: var(--color-primario); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Ayuda de uso">?</button>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="toggleHistorial()" style="background: var(--color-secundario); color: white; border: none; border-radius: 8px; padding: 5px 15px; font-weight: bold; cursor: pointer;">🗂️ Historial</button>
+                <button type="button" onclick="toggleAyuda()" style="background: var(--color-primario); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Ayuda de uso">?</button>
+            </div>
+        </div>
+
+        <!-- DATOS DEL CLIENTE Y COMERCIAL -->
+        <div class="grupo-formulario fila-medidas">
+            <div class="columna-mitad">
+                <label for="nombre-cliente">Cliente / Obra:</label>
+                <input type="text" id="nombre-cliente" placeholder="Ej. Reformas García" oninput="guardarDatosCabecera()">
+            </div>
+            <div class="columna-mitad">
+                <label for="telefono-cliente">Teléfono:</label>
+                <input type="tel" id="telefono-cliente" placeholder="Ej. 600123456" oninput="guardarDatosCabecera()">
+            </div>
+        </div>
+        <div class="grupo-formulario">
+            <label for="nombre-comercial">Atendido por:</label>
+            <input type="text" id="nombre-comercial" value="Elías" oninput="guardarDatosCabecera()">
         </div>
 
         <div class="grupo-formulario">
@@ -205,6 +213,7 @@
             <div id="lista-carrito"></div>
             
             <div class="grid-botones-export">
+                <button class="btn-export btn-guardar-historial" onclick="guardarPresupuesto()">💾 Guardar en Historial</button>
                 <button class="btn-export btn-pdf" onclick="generarPDF()">📄 Generar PDF</button>
                 <button class="btn-export btn-copiar" onclick="copiarCarrito()">📋 Copiar</button>
                 <button class="btn-export btn-email" onclick="enviarPorEmail()">✉️ Email</button>
@@ -216,6 +225,18 @@
         <div class="marca-agua">© 2026 Elías López</div>
     </div>
 
+    <!-- MODAL DE HISTORIAL -->
+    <div id="modal-historial" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+        <div style="background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <h3 style="color: var(--color-primario); margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
+                <span>🗂️ Presupuestos Guardados</span>
+                <button onclick="toggleHistorial()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #555;">✕</button>
+            </h3>
+            <input type="text" id="buscador-historial" placeholder="Buscar por cliente, teléfono o fecha..." style="width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid var(--color-borde); border-radius: 8px; font-family: var(--fuente-principal);" oninput="filtrarHistorial()">
+            <div id="lista-historial" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+    </div>
+
     <!-- MODAL DE AYUDA -->
     <div id="modal-ayuda" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
         <div style="background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
@@ -224,11 +245,11 @@
                 <button onclick="toggleAyuda()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #555;">✕</button>
             </h3>
             <div style="font-size: 14px; color: #444; line-height: 1.6;">
-                <p><strong>1. Selecciona una categoría:</strong> Elige entre ladrillos, bloques, revestimientos o puentes de unión.</p>
+                <p><strong>1. Datos base:</strong> Introduce el nombre del cliente y teléfono para asociarlo al cálculo y poder guardarlo.</p>
                 <p><strong>2. Escoge el producto:</strong> Selecciona el material específico que vas a utilizar en obra.</p>
                 <p><strong>3. Introduce las medidas:</strong> Puedes introducir los metros cuadrados (m²) directamente o calcularlos indicando el largo y el alto de la pared.</p>
-                <p><strong>4. Añade a la lista:</strong> Pulsa en "Calcular" y luego en "Añadir a la lista" para ir acumulando los materiales necesarios de tu obra. La lista se guardará automáticamente en tu dispositivo.</p>
-                <p><strong>5. Exporta tu presupuesto:</strong> Desde el carrito inferior podrás generar un PDF descargable compatible con móviles y PC, copiar el texto, o enviarlo por WhatsApp y Email.</p>
+                <p><strong>4. Añade a la lista:</strong> Pulsa en "Calcular" y luego en "Añadir a la lista" para ir acumulando materiales.</p>
+                <p><strong>5. Exporta y guarda:</strong> Desde el carrito inferior podrás guardar el presupuesto en el historial, generar un PDF o enviarlo por WhatsApp.</p>
             </div>
             <button onclick="toggleAyuda()" style="width: 100%; margin-top: 20px; background: var(--color-primario); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Entendido</button>
         </div>
@@ -278,9 +299,15 @@
         let carritoDeObra = [];
         let calculoTemporal = null;
 
-        // --- FUNCIONES DE LOCAL STORAGE ---
+        // --- FUNCIONES DE ALMACENAMIENTO (CARRITO Y CABECERA) ---
         function guardarCarrito() {
             localStorage.setItem("carritoMateriales", JSON.stringify(carritoDeObra));
+        }
+
+        function guardarDatosCabecera() {
+            localStorage.setItem("nombreCliente", document.getElementById("nombre-cliente").value);
+            localStorage.setItem("telefonoCliente", document.getElementById("telefono-cliente").value);
+            localStorage.setItem("nombreComercial", document.getElementById("nombre-comercial").value);
         }
 
         function cargarCarrito() {
@@ -289,6 +316,12 @@
                 carritoDeObra = JSON.parse(datosGuardados);
                 renderizarCarrito();
             }
+            const c = localStorage.getItem("nombreCliente");
+            if (c !== null) document.getElementById("nombre-cliente").value = c;
+            const t = localStorage.getItem("telefonoCliente");
+            if (t !== null) document.getElementById("telefono-cliente").value = t;
+            const com = localStorage.getItem("nombreComercial");
+            if (com !== null) document.getElementById("nombre-comercial").value = com;
         }
 
         function vaciarCarritoTotal() {
@@ -298,8 +331,109 @@
                 renderizarCarrito();
             }
         }
-        // -----------------------------------
 
+        // --- LÓGICA DE HISTORIAL ---
+        function guardarPresupuesto() {
+            if(carritoDeObra.length === 0) return alert("La lista está vacía. Añade productos antes de guardar.");
+            
+            const cliente = document.getElementById("nombre-cliente").value.trim();
+            const telefono = document.getElementById("telefono-cliente").value.trim();
+            
+            if(!cliente || !telefono) {
+                return alert("⚠️ Faltan datos: Debes indicar el nombre y el teléfono del cliente para poder guardar el presupuesto.");
+            }
+
+            const presupuesto = {
+                id: Date.now().toString(),
+                fecha: new Date().toLocaleDateString('es-ES'),
+                cliente: cliente,
+                telefono: telefono,
+                comercial: document.getElementById("nombre-comercial").value.trim(),
+                items: [...carritoDeObra]
+            };
+
+            let historial = JSON.parse(localStorage.getItem("historialPresupuestos")) || [];
+            historial.push(presupuesto);
+            localStorage.setItem("historialPresupuestos", JSON.stringify(historial));
+
+            alert("✅ Presupuesto guardado correctamente en el historial.");
+        }
+
+        function toggleHistorial() {
+            const modal = document.getElementById("modal-historial");
+            if(modal.style.display === "none" || modal.style.display === "") {
+                renderizarHistorial();
+                modal.style.display = "flex";
+            } else {
+                modal.style.display = "none";
+            }
+        }
+
+        function renderizarHistorial(filtro = "") {
+            let historial = JSON.parse(localStorage.getItem("historialPresupuestos")) || [];
+            const lista = document.getElementById("lista-historial");
+            lista.innerHTML = "";
+
+            if(filtro) {
+                const f = filtro.toLowerCase();
+                historial = historial.filter(p => 
+                    p.cliente.toLowerCase().includes(f) || 
+                    p.telefono.includes(f) || 
+                    p.fecha.includes(f)
+                );
+            }
+
+            historial.reverse().forEach(p => {
+                const div = document.createElement("div");
+                div.style.cssText = "border: 1px solid var(--color-borde); padding: 15px; border-radius: 8px; background: #f8fafc;";
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <strong style="color: var(--color-primario); font-size:16px;">👤 ${p.cliente}</strong>
+                        <span style="color: #666; font-size: 12px; font-weight:bold;">📅 ${p.fecha}</span>
+                    </div>
+                    <div style="font-size: 13px; color: #555; margin-bottom: 12px;">
+                        📞 ${p.telefono || 'Sin teléfono'} <br> 🛒 ${p.items.length} productos calculados
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="cargarPresupuestoHistorico('${p.id}')" style="flex:2; background: var(--color-secundario); color: white; border: none; padding: 8px; border-radius: 6px; font-size: 13px; font-weight:bold; cursor: pointer;">Cargar Presupuesto</button>
+                        <button onclick="eliminarDelHistorial('${p.id}')" style="flex:1; background: transparent; color: var(--color-peligro); border: 1px solid var(--color-peligro); padding: 8px; border-radius: 6px; font-size: 13px; cursor: pointer;">Borrar</button>
+                    </div>
+                `;
+                lista.appendChild(div);
+            });
+
+            if(historial.length === 0) lista.innerHTML = "<p style='text-align:center; color:#666;'>No hay presupuestos guardados.</p>";
+        }
+
+        function filtrarHistorial() {
+            renderizarHistorial(document.getElementById("buscador-historial").value);
+        }
+
+        function cargarPresupuestoHistorico(id) {
+            let historial = JSON.parse(localStorage.getItem("historialPresupuestos")) || [];
+            const p = historial.find(x => x.id === id);
+            if(p) {
+                carritoDeObra = [...p.items];
+                document.getElementById("nombre-cliente").value = p.cliente;
+                document.getElementById("telefono-cliente").value = p.telefono;
+                document.getElementById("nombre-comercial").value = p.comercial;
+                guardarCarrito();
+                guardarDatosCabecera();
+                renderizarCarrito();
+                toggleHistorial();
+            }
+        }
+
+        function eliminarDelHistorial(id) {
+            if(confirm("¿Estás seguro de borrar este presupuesto de tu dispositivo?")) {
+                let historial = JSON.parse(localStorage.getItem("historialPresupuestos")) || [];
+                historial = historial.filter(x => x.id !== id);
+                localStorage.setItem("historialPresupuestos", JSON.stringify(historial));
+                filtrarHistorial();
+            }
+        }
+
+        // --- LÓGICA DE CALCULADORA ---
         function ocultarResultados() {
             document.getElementById("resultado").style.display = "none";
             calculoTemporal = null; 
@@ -360,25 +494,16 @@
                 for (const key in datos[categoria]) {
                     let option = document.createElement("option");
                     option.value = key;
-                    
                     let productoInfo = datos[categoria][key];
-                    if (productoInfo.palet) {
-                        option.text = `${key} (Palet: ${productoInfo.palet} uds)`;
-                    } else {
-                        option.text = key;
-                    }
-                    
+                    if (productoInfo.palet) option.text = `${key} (Palet: ${productoInfo.palet} uds)`;
+                    else option.text = key;
                     productoSelect.appendChild(option);
                 }
             }
         }
 
         function formatearNombreImagen(nombre) {
-            return nombre.toLowerCase()
-                         .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
-                         .replace(/\s+/g, '-') 
-                         .replace(/[^a-z0-9\-]/g, '') 
-                         + '.jpg'; 
+            return nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '') + '.jpg'; 
         }
 
         function actualizarOpcionesProducto() {
@@ -398,14 +523,8 @@
                 } else {
                     const nombreAuto = formatearNombreImagen(producto);
                     imgElemento.src = nombreAuto;
-                    
-                    imgElemento.onload = function() { 
-                        divImg.style.display = "block"; 
-                    };
-                    
-                    imgElemento.onerror = function() {
-                        divImg.style.display = "none";
-                    };
+                    imgElemento.onload = function() { divImg.style.display = "block"; };
+                    imgElemento.onerror = function() { divImg.style.display = "none"; };
                 }
             } else {
                 divImg.style.display = "none";
@@ -417,12 +536,8 @@
             const btnInfo = document.getElementById("btn-info-mortero");
             const divInfo = document.getElementById("texto-info-mortero");
             
-            if (tipo === "obra") {
-                btnInfo.style.display = "inline-block";
-            } else {
-                btnInfo.style.display = "none";
-                divInfo.style.display = "none";
-            }
+            if (tipo === "obra") btnInfo.style.display = "inline-block";
+            else { btnInfo.style.display = "none"; divInfo.style.display = "none"; }
         }
 
         function toggleTextoMortero() {
@@ -502,7 +617,6 @@
                     detallesTexto += `Palets (aprox): ${totalPalets}\n`;
                     html += `<div class="casilla"><div class="casilla-etiqueta">Palets</div><div class="casilla-valor">${totalPalets}</div></div>`;
                 }
-
             } else if (categoria === "puentes") {
                 if (item.tipo === "level_primer") {
                     const consumo = document.getElementById("tipo-soporte").value === "sin_absorcion" ? 0.075 : (document.getElementById("tipo-soporte").value === "poco_poroso" ? 0.060 : 0.110);
@@ -529,7 +643,6 @@
             }
 
             html += `</div><button class="btn-agregar-carrito" onclick="agregarAlCarrito()">🛒 AÑADIR A LA LISTA</button>`;
-            
             calculoTemporal = { producto: producto, textoMedida: textoMedida, detallesTexto: detallesTexto };
             
             const divRes = document.getElementById("resultado");
@@ -569,8 +682,19 @@
             renderizarCarrito(); 
         }
 
+        // --- FUNCIONES DE EXPORTACIÓN ---
         function generarTextoPlano() {
-            let texto = "*Cotización de Materiales:*\n\n";
+            const cliente = document.getElementById("nombre-cliente").value || "No especificado";
+            const telefono = document.getElementById("telefono-cliente").value || "No especificado";
+            const comercial = document.getElementById("nombre-comercial").value || "No especificado";
+            const hoy = new Date().toLocaleDateString('es-ES');
+
+            let texto = `*ESTIMACIÓN DE MATERIALES*\n`;
+            texto += `👤 Cliente: ${cliente}\n`;
+            texto += `📞 Teléfono: ${telefono}\n`;
+            texto += `👨‍💼 Atendido por: ${comercial}\n`;
+            texto += `📅 Fecha: ${hoy}\n\n`;
+
             carritoDeObra.forEach((item, i) => {
                 texto += `📦 *${i + 1}. ${item.producto}*\n📏 Superficie: ${item.textoMedida}\n${item.detallesTexto.replace(/🔸/g, '•')}\n───────────────\n\n`;
             });
@@ -601,6 +725,11 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
+            const cliente = document.getElementById("nombre-cliente").value || "No especificado";
+            const telefono = document.getElementById("telefono-cliente").value || "No especificado";
+            const comercial = document.getElementById("nombre-comercial").value || "No especificado";
+            const hoy = new Date().toLocaleDateString('es-ES');
+
             let y = 20;
 
             doc.setFont("helvetica", "bold");
@@ -608,17 +737,20 @@
             doc.setTextColor(0, 86, 179); 
             doc.text("ESTIMACIÓN DE MATERIALES", 20, y);
 
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            const hoy = new Date().toLocaleDateString('es-ES');
+            y += 10;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(11);
+            doc.setTextColor(50, 50, 50);
+            doc.text(`Cliente / Obra: ${cliente}`, 20, y);
             doc.text(`Fecha: ${hoy}`, 190, y, { align: "right" });
 
-            y += 8;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9);
-            doc.text("© 2026 Elías López", 190, y, { align: "right" });
+            y += 6;
+            doc.text(`Teléfono: ${telefono}`, 20, y);
 
-            y += 10;
+            y += 6;
+            doc.text(`Atendido por: ${comercial}`, 20, y);
+
+            y += 8;
             doc.setDrawColor(0, 86, 179);
             doc.setLineWidth(0.5);
             doc.line(20, y, 190, y);
@@ -630,7 +762,6 @@
                     doc.addPage();
                     y = 20;
                 }
-
                 doc.setFont("helvetica", "bold");
                 doc.setFontSize(14);
                 doc.setTextColor(0, 86, 179);
@@ -670,11 +801,11 @@
             
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
-            const textoClausula = "No es contractual, es solo a nivel informativo. Las cantidades expuestas son estimaciones teóricas basadas en las especificaciones técnicas de los fabricantes. El consumo real puede variar dependiendo del estado del soporte, las herramientas utilizadas y el método de aplicación.";
+            const textoClausula = "Cláusula. No es contractual, es solo a nivel informativo.";
             const lineasClausula = doc.splitTextToSize(textoClausula, 170);
             doc.text(lineasClausula, 20, y + 5);
 
-            doc.save("Presupuesto-Materiales-Obramat.pdf");
+            doc.save("Presupuesto-Materiales.pdf");
         }
 
         function toggleAyuda() {
@@ -684,6 +815,21 @@
 
         // Cargar datos al iniciar
         window.onload = cargarCarrito;
+    </script>
+
+    <!-- Registro del Service Worker para PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registrado con éxito');
+                    })
+                    .catch(err => {
+                        console.log('Fallo al registrar el ServiceWorker: ', err);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
