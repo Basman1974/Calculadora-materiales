@@ -338,7 +338,6 @@
                     let option = document.createElement("option");
                     option.value = key;
                     
-                    // Mostrar cantidad por palet en ladrillos y bloques si está definida
                     let productoInfo = datos[categoria][key];
                     if (productoInfo.palet) {
                         option.text = `${key} (Palet: ${productoInfo.palet} uds)`;
@@ -471,8 +470,9 @@
             } else if (categoria === "revestimientos") {
                 const totalKilos = (item.kgMm * espesor) * medida * factorMerma; 
                 const sacosNecesarios = Math.ceil(totalKilos / 25); 
-                detallesTexto += `Espesor: ${espesor} mm\nSacos (25kg): ${sacosNecesarios} (Inc. ${mermaSeleccionada}% merma)\n`;
+                detallesTexto += `Espesor: ${espesor} mm\nKilos totales: ${totalKilos.toFixed(2)} kg\nSacos (25kg): ${sacosNecesarios} (Inc. ${mermaSeleccionada}% merma)\n`;
                 html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos a pedir</div><div class="casilla-valor">${sacosNecesarios}</div></div>`;
+                html += `<div class="casilla"><div class="casilla-etiqueta">Kg Totales</div><div class="casilla-valor">${totalKilos.toFixed(2)}</div></div>`;
             } else if (categoria === "puentes") {
                 if (item.tipo === "level_primer") {
                     const consumo = document.getElementById("tipo-soporte").value === "sin_absorcion" ? 0.075 : (document.getElementById("tipo-soporte").value === "poco_poroso" ? 0.060 : 0.110);
