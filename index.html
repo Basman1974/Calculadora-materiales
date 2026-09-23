@@ -16,6 +16,8 @@
     .app{background:var(--bg);border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.08)}
     .top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:1.28rem;font-weight:950}.small{font-size:.78rem;color:var(--muted);font-weight:650}
     .btn{min-height:44px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);padding:9px 12px;font-weight:850}
+    .storebar{display:none;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:10px 12px;border:1.5px solid var(--line);border-radius:14px;background:var(--card)}.storebar.show{display:flex}.storemeta{min-width:0}.storetitle{font-size:.78rem;font-weight:950}.storesub{font-size:.7rem;color:var(--muted);font-weight:700}.storechange{border:0;background:var(--accentSoft);color:var(--accent);border-radius:10px;padding:8px 10px;font-weight:900}
+    .postalGate{padding:22px 0 8px}.postalCard{max-width:560px;margin:18px auto 0;background:var(--card);border:1.5px solid var(--line);border-radius:22px;padding:20px}.postalIcon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:var(--accentSoft);color:var(--accent);font-size:1.4rem;font-weight:950}.postalCard h2{margin:14px 0 6px;font-size:1.55rem;line-height:1.1}.postalCard p{margin:0 0 15px;color:var(--muted);font-size:.86rem;font-weight:650}.postalError{min-height:20px;margin-top:7px;color:#b42318;font-size:.75rem;font-weight:850}.postalNote{margin-top:12px;color:var(--muted);font-size:.7rem;line-height:1.45}
     .appearance{display:none;margin-top:10px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px}.appearance.open{display:block}
     .apTitle{font-size:.68rem;font-weight:950;letter-spacing:.08em;color:var(--muted);margin:12px 0 8px}.modes,.palette{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
     .mode,.color{min-height:44px;border:1.5px solid var(--line);border-radius:11px;background:var(--soft);color:var(--text);font-weight:900}.mode[aria-pressed="true"],.color[aria-pressed="true"]{border-color:var(--accent);background:var(--accentSoft);color:var(--accent)}
@@ -47,6 +49,8 @@
     <button class="btn" id="look" type="button">Apariencia</button>
   </div>
 
+  <div class="storebar" id="storebar"><div class="storemeta"><div class="storetitle" id="storeTitle">Almacén OBRAMAT</div><div class="storesub" id="storeSub"></div></div><button class="storechange" id="changePostal" type="button">Cambiar CP</button></div>
+
   <div class="appearance" id="appearance">
     <div class="apTitle">MODO</div>
     <div class="modes">
@@ -65,7 +69,16 @@
     </div>
   </div>
 
-  <section class="screen active" id="home">
+  <section class="screen active" id="postal">
+    <div class="postalGate"><div class="postalCard">
+      <div class="postalIcon">⌖</div><h2>¿Dónde vas a realizar la obra?</h2>
+      <p>Introduce el código postal. Es obligatorio para asociar la calculadora al almacén OBRAMAT correspondiente y preparar referencias y fichas de producto por zona.</p>
+      <form id="postalForm"><label>Código postal<input id="postalCode" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}" placeholder="Ej. 04738" required></label><div class="postalError" id="postalError" aria-live="polite"></div><button class="calc" type="submit">CONTINUAR</button></form>
+      <div class="postalNote">El código postal se guarda únicamente en este dispositivo. La asociación automática de catálogo, fichas y códigos se mostrará solo cuando exista una fuente OBRAMAT verificable para el almacén seleccionado.</div>
+    </div></div>
+  </section>
+
+  <section class="screen" id="home">
     <div class="hero"><h2>Tipo de obra</h2><p>Selecciona el trabajo que quieres calcular.</p></div>
     <div class="tiles">
       <button class="tile" data-open="wall" type="button">
@@ -196,6 +209,16 @@
   let work = [];
 
   const screens = [...document.querySelectorAll('.screen')];
+  const storeMap=[
+    {name:'OBRAMAT Almería',postalPrefixes:['040','041','042','043','044','045','046','047','048']},
+    {name:'OBRAMAT Granada',postalPrefixes:['180','181','182','183','184','185','186','187','188']},
+    {name:'OBRAMAT Málaga',postalPrefixes:['290','291','292','293','294','295','296','297']},
+    {name:'OBRAMAT Murcia',postalPrefixes:['300','301','302','303','304','305','306','307','308']},
+    {name:'OBRAMAT Córdoba',postalPrefixes:['140','141','142','143','144','145','146','147','148','149']}
+  ];
+  let postalState={code:'',store:''};
+  try{postalState=JSON.parse(localStorage.getItem('calculadora-postal-v1')||'{"code":"","store":""}');}catch(e){}
+
   const nav = [...document.querySelectorAll('[data-nav]')];
 
   const data = {
@@ -244,6 +267,20 @@
     if(id==='work') renderWork();
     if(id==='list') renderList();
   }
+
+  function resolveStore(cp){
+    const prefix=cp.slice(0,3),hit=storeMap.find(s=>s.postalPrefixes.includes(prefix));
+    return hit?hit.name:'Almacén OBRAMAT por verificar';
+  }
+  function applyPostal(cp){
+    const store=resolveStore(cp);postalState={code:cp,store};
+    try{localStorage.setItem('calculadora-postal-v1',JSON.stringify(postalState));}catch(e){}
+    $('#storeTitle').textContent=store;$('#storeSub').textContent='CP '+cp+' · referencias vinculadas a zona';
+    $('#storebar').classList.add('show');show('home');
+  }
+  $('#postalForm').onsubmit=e=>{e.preventDefault();const cp=$('#postalCode').value.trim();if(!/^\\d{5}$/.test(cp)){ $('#postalError').textContent='Introduce un código postal español de 5 dígitos.';return;}$('#postalError').textContent='';applyPostal(cp);};
+  $('#changePostal').onclick=()=>{$('#postalCode').value=postalState.code||'';$('#storebar').classList.remove('show');show('postal');};
+  if(postalState.code&&/^\\d{5}$/.test(postalState.code)){ $('#storeTitle').textContent=postalState.store||resolveStore(postalState.code);$('#storeSub').textContent='CP '+postalState.code+' · referencias vinculadas a zona';$('#storebar').classList.add('show');show('home');}
 
   document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{show(b.dataset.open);if(b.dataset.open==='wet'){renderProducts();calcWet();}});
   document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>show('home'));
