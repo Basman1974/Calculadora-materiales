@@ -178,6 +178,12 @@
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
     <div class="sectionTitle">Cerámica</div><p class="lead">Calcula el sistema de nivelación y consulta la clasificación orientativa del adhesivo.</p>
     <div class="catgrid"><button type="button" class="cat active" data-cer-tab="level">Sistema de nivelación</button><button type="button" class="cat" data-cer-tab="adhesive">Cemento cola</button></div>
+    <div class="panel" style="margin-bottom:12px">
+      <div style="font-weight:950;margin-bottom:6px">Cerámica de OBRAMAT</div>
+      <div class="small" id="cerStoreText">El catálogo se abrirá usando el código postal seleccionado en la calculadora.</div>
+      <button class="calc" id="chooseObramatCeramic" type="button" style="margin-top:12px">ELEGIR CERÁMICA EN OBRAMAT</button>
+      <div class="info" style="margin-top:10px">Al volver, introduce o confirma las dimensiones del producto elegido. La integración automática de referencia, precio y stock solo se activará cuando esos datos puedan verificarse para el almacén seleccionado.</div>
+    </div>
     <form id="levelForm"><div class="panel"><div class="grid">
       <label>Lado A de baldosa (cm)<input id="cA" value="60" inputmode="decimal"></label>
       <label>Lado B de baldosa (cm)<input id="cB" value="60" inputmode="decimal"></label>
@@ -300,6 +306,13 @@
     },{enableHighAccuracy:true,timeout:12000,maximumAge:300000});
   };
   $('#changePostal').onclick=()=>{$('#postalCode').value=postalState.code||'';$('#storebar').classList.remove('show');show('postal');};
+  $('#chooseObramatCeramic').onclick=()=>{
+    const cp=postalState.code||'';
+    const store=postalState.store||resolveStore(cp);
+    $('#cerStoreText').textContent=(cp?'CP '+cp+' · ':'')+store+' · OBRAMAT exige almacén seleccionado para precio y disponibilidad.';
+    // OBRAMAT gestiona el contexto real de almacén en su propia web. No inventamos stock/precio en el cliente.
+    window.open('https://www.obramat.es/ceramica/suelos-ceramicos/suelos-porcelanicos/','_blank','noopener');
+  };
   if(postalState.code&&/^[0-9]{5}$/.test(postalState.code)){ $('#storeTitle').textContent=postalState.store||resolveStore(postalState.code);$('#storeSub').textContent='CP '+postalState.code+' · referencias vinculadas a zona';$('#storebar').classList.add('show');show('home');}
 
   document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{show(b.dataset.open);if(b.dataset.open==='wet'){renderProducts();calcWet();}});
