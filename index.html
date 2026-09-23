@@ -88,6 +88,11 @@
         <span class="tileShade"></span><span class="tileTop">ALBAÑILERÍA</span>
         <span class="tileText"><strong>Obra húmeda</strong><small>Ladrillos, bloques, revestimientos y puentes de unión.</small><span class="arrow">CALCULAR →</span></span>
       </button>
+      <button class="tile" data-open="ceramic" type="button">
+        <img class="tilePhoto" src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=1200&q=85" alt="Colocación de revestimiento cerámico">
+        <span class="tileShade"></span><span class="tileTop">COLOCACIÓN</span>
+        <span class="tileText"><strong>Cerámica</strong><small>Nivelación y selección orientativa de cemento cola.</small><span class="arrow">CALCULAR →</span></span>
+      </button>
     </div>
   </section>
 
@@ -156,6 +161,26 @@
     </div><button class="calc" type="submit">CALCULAR OBRA HÚMEDA</button></form><div class="result" id="wetResult"></div>
   </section>
 
+  <section class="screen" id="ceramic">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Cerámica</div><p class="lead">Calcula el sistema de nivelación y consulta la clasificación orientativa del adhesivo.</p>
+    <div class="catgrid"><button type="button" class="cat active" data-cer-tab="level">Sistema de nivelación</button><button type="button" class="cat" data-cer-tab="adhesive">Cemento cola</button></div>
+    <form id="levelForm"><div class="panel"><div class="grid">
+      <label>Lado A de baldosa (cm)<input id="cA" value="60" inputmode="decimal"></label>
+      <label>Lado B de baldosa (cm)<input id="cB" value="60" inputmode="decimal"></label>
+      <label>Superficie (m²)<input id="cArea" value="10" inputmode="decimal"></label>
+      <label>Merma de calzos<select id="cWaste"><option value="0">0 %</option><option value="5" selected>5 %</option><option value="10">10 %</option></select></label>
+    </div><div class="info">Los calzos son consumibles. Las cuñas son reutilizables y no se calculan como consumo por m².</div></div>
+    <button class="calc" type="submit">CALCULAR CALZOS</button></form><div class="result" id="levelResult"></div>
+    <form id="adhForm" class="hidden"><div class="panel"><div class="grid">
+      <label>Aplicación<select id="aZone"><option value="floor">Pavimento</option><option value="wall">Pared / techo</option></select></label>
+      <label>Ubicación<select id="aPlace"><option value="interior">Interior</option><option value="exterior">Exterior</option></select></label>
+      <label>Lado mayor (cm)<input id="aSize" value="60" inputmode="decimal"></label>
+      <label>Soporte<select id="aSupport"><option value="cement">Cementoso / hormigón</option><option value="radiant">Calefacción radiante</option><option value="existing">Cerámica / piedra existente</option><option value="gypsum">Placa de yeso laminado</option><option value="cementboard">Panel cemento / fibrocemento</option><option value="wood">Madera</option><option value="metal">Metal</option></select></label>
+    </div><div class="info">Selector orientativo basado en la tabla técnica aportada. La ficha del fabricante del adhesivo y las condiciones reales de la obra prevalecen.</div></div>
+    <button class="calc" type="submit">VER CLASIFICACIÓN</button></form><div class="result hidden" id="adhResult"></div>
+  </section>
+
   <section class="screen" id="work"><div class="hero"><h2>Obra</h2><p>Partidas añadidas.</p></div><div class="panel" id="workContent"></div></section>
   <section class="screen" id="list"><div class="hero"><h2>Lista</h2><p>Resumen de materiales.</p></div><div class="panel" id="listContent"></div></section>
   <section class="screen" id="help"><div class="hero"><h2>Ayuda</h2><p>Conceptos básicos y técnicos.</p></div><div class="panel"><div class="small"><b>Rendimiento base:</b> se muestra separado de la merma. El ladrillo hueco sencillo 33 × 16,5 × 4 utiliza 18 ud/m² como base. La cantidad a pedir se redondea después de aplicar la merma.</div></div></section>
@@ -215,7 +240,7 @@
 
   function show(id){
     screens.forEach(x=>x.classList.toggle('active',x.id===id));
-    nav.forEach(b=>b.classList.toggle('active',b.dataset.nav===(['wall','lining','roof','wet'].includes(id)?'home':id)));
+    nav.forEach(b=>b.classList.toggle('active',b.dataset.nav===(['wall','lining','roof','wet','ceramic'].includes(id)?'home':id)));
     if(id==='work') renderWork();
     if(id==='list') renderList();
   }
@@ -327,6 +352,38 @@
   $('#wetForm').onsubmit=e=>{e.preventDefault();calcWet();};
   ['#wetProduct','#wetMeasureMode','#wetThickness','#wetSupport','#wetMortar','#wetWaste'].forEach(x=>$(x).onchange=calcWet);
 
+  function calcLevel(){
+    const A=Math.max(10,num('#cA')),B=Math.max(10,num('#cB')),area=num('#cArea'),w=num('#cWaste');
+    const tilesM2=10000/(A*B);
+    const clipsM2=Math.max(4, Math.ceil(tilesM2*2));
+    const total=Math.ceil(clipsM2*area*(1+w/100));
+    const rows=[['Calzos de nivelación',total+' uds',clipsM2+' calzos/m² estimados · formato '+A+' × '+B+' cm'],['Cuñas reutilizables','No consumibles','Se reutilizan durante la colocación; dimensionar según ritmo de trabajo']];
+    const obj={title:'Nivelación · '+area.toFixed(2)+' m²',items:rows};
+    $('#levelResult').innerHTML=resultHTML(obj.title,'Baldosa '+A+' × '+B+' cm · merma '+w+' %',rows);bindAdd($('#levelResult'),obj);
+  }
+  $('#levelForm').onsubmit=e=>{e.preventDefault();calcLevel();};
+  function adhesiveClass(){
+    const zone=$('#aZone').value,place=$('#aPlace').value,size=num('#aSize'),support=$('#aSupport').value;
+    let cls='C2';
+    if(support==='wood') cls=size>60?'R2':'C2S1';
+    else if(support==='metal') cls=size>60?'R2':'R1';
+    else if(support==='radiant') cls=size>60?'C2S2':'C2S1';
+    else if(place==='exterior') cls=size>90?'C2S2':'C2S1';
+    else if(size>120) cls='C2S2';
+    else if(size>60) cls='C2S1';
+    else if(size<=30 && support==='cement' && zone==='wall') cls='C1';
+    const meanings={C1:'Adhesivo cementoso de adherencia normal',C2:'Adhesivo cementoso de adherencia mejorada',C2S1:'Cementoso mejorado y deformable',C2S2:'Cementoso mejorado y altamente deformable',R1:'Adhesivo de resinas reactivas',R2:'Adhesivo de resinas reactivas mejorado'};
+    const rows=[['Clasificación orientativa',cls,meanings[cls]||'Consultar ficha técnica'],['Comprobación','Obligatoria','Verificar soporte, formato, ubicación y ficha técnica del fabricante antes de ejecutar']];
+    $('#adhResult').classList.remove('hidden');$('#adhResult').innerHTML=resultHTML('Cemento cola · '+cls,'Lado mayor '+size+' cm',rows);
+  }
+  $('#adhForm').onsubmit=e=>{e.preventDefault();adhesiveClass();};
+  document.querySelectorAll('[data-cer-tab]').forEach(b=>b.onclick=()=>{
+    const level=b.dataset.cerTab==='level';
+    document.querySelectorAll('[data-cer-tab]').forEach(x=>x.classList.toggle('active',x===b));
+    $('#levelForm').classList.toggle('hidden',!level);$('#levelResult').classList.toggle('hidden',!level);
+    $('#adhForm').classList.toggle('hidden',level);$('#adhResult').classList.toggle('hidden',level);
+  });
+
   function renderWork(){
     const c=$('#workContent');
     c.innerHTML=work.length?work.map((x,i)=>'<div class="workItem"><b>'+(i+1)+'. '+x.title+'</b><br><button class="btn" data-del="'+i+'" style="margin-top:8px">Eliminar</button></div>').join(''):'<div class="empty">Todavía no has añadido partidas.</div>';
@@ -337,7 +394,7 @@
     c.innerHTML=work.length?work.flatMap(x=>x.items).map(x=>'<div class="listLine"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></div>').join(''):'<div class="empty">Añade partidas para generar la lista.</div>';
   }
 
-  renderProducts();calcWall();calcLining();calcRoof();calcWet();
+  renderProducts();calcWall();calcLining();calcRoof();calcWet();calcLevel();
 })();
 </script>
 </body>
