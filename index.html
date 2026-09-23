@@ -1,863 +1,344 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Materiales</title>
-    
-    <!-- Enlaces PWA -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192x192.png">
-    <meta name="theme-color" content="#0056b3">
-
-    <!-- Importación de jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        :root {
-            --color-primario: #0056b3;
-            --color-secundario: #ff6600; 
-            --color-secundario-suave: #fff7f0; 
-            --color-resultado: #059669;
-            --color-whatsapp: #25D366;
-            --color-email: #4f46e5;
-            --color-fondo-pantalla: #e2e8f0; 
-            --color-fondo-app: #ffffff; 
-            --color-texto: #222222;
-            --color-etiquetas: #444444; 
-            --color-borde: #cbd5e1;
-            --color-peligro: #ef4444;
-            --fuente-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-
-        body { font-family: var(--fuente-principal); padding: 20px; max-width: 550px; margin: 0 auto; background-color: var(--color-fondo-pantalla); color: var(--color-texto); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-        .contenedor-app { background-color: var(--color-fondo-app); padding: 30px 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; position: relative; }
-        .marca-agua-top { position: absolute; top: 15px; right: 15px; font-size: 11px; color: #000000; font-weight: 800; text-transform: uppercase; }
-        
-        .logo-container { text-align: center; margin-bottom: 25px; min-height: 40px; display: flex; align-items: center; justify-content: center; }
-        .logo-container img { max-width: 200px; height: auto; display: block; margin: 0 auto; }
-        .logo-texto-corporativo { font-size: 26px; font-weight: 900; color: var(--color-primario); letter-spacing: -1px; text-transform: uppercase; margin: 0; }
-
-        .encabezado { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--color-borde); padding-bottom: 15px; }
-        h2 { color: var(--color-primario); margin: 0; font-size: 22px; font-weight: 800; }
-        
-        .grupo-formulario { margin-bottom: 22px; }
-        .contenedor-imagen-centrada { text-align: center; margin-bottom: 22px; display: none; padding: 10px; background-color: #f8fafc; border-radius: 8px; border: 1px dashed var(--color-borde); }
-        .imagen-producto { max-width: 160px; border-radius: 6px; }
-
-        label { font-weight: 700; display: block; margin-bottom: 8px; font-size: 14px; color: var(--color-etiquetas); text-transform: uppercase; }
-        select, input { font-family: var(--fuente-principal); width: 100%; padding: 14px 15px; border: 2px solid var(--color-borde); border-radius: 8px; font-size: 16px; box-sizing: border-box;}
-        select { background-color: var(--color-secundario-suave); border-left: 5px solid var(--color-secundario); font-weight: 700; }
-
-        .fila-medidas { display: flex; gap: 15px; }
-        .columna-mitad { flex: 1; }
-        .botones-formulario { display: flex; gap: 10px; margin-top: 25px; }
-
-        button { font-family: var(--fuente-principal); border-radius: 8px; font-size: 14px; font-weight: 800; padding: 14px; cursor: pointer; border: none; text-transform: uppercase; }
-        .btn-primario { flex: 2; background-color: var(--color-primario); color: white; }
-        .btn-secundario { flex: 1; background-color: transparent; color: var(--color-primario); border: 2px solid var(--color-primario); }
-        .btn-agregar-carrito { width: 100%; background-color: var(--color-secundario); color: white; margin-top: 20px; padding: 16px; font-size: 16px;}
-        .btn-vaciar-carrito { width: 100%; background-color: transparent; color: var(--color-peligro); border: 1px solid var(--color-peligro); margin-top: 15px; padding: 10px; font-size: 12px; }
-
-        .resultado-container { margin-top: 30px; display: none; padding-top: 25px; border-top: 2px dashed var(--color-borde); }
-        .resultado-titulo { text-align: center; color: var(--color-resultado); font-weight: 800; }
-        .resultado-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
-        .casilla { background-color: rgba(5, 150, 105, 0.05); border: 2px solid var(--color-resultado); border-radius: 10px; padding: 15px; text-align: center; }
-        .casilla-etiqueta { font-size: 12px; color: var(--color-etiquetas); font-weight: 800; }
-        .casilla-valor { font-size: 26px; font-weight: 900; color: var(--color-resultado); }
-        .casilla-nota { font-size: 11px; color: #555; margin-top: 5px; }
-        .casilla-destacada { background-color: var(--color-resultado); color: white; }
-        .casilla-destacada .casilla-etiqueta, .casilla-destacada .casilla-valor, .casilla-destacada .casilla-nota { color: white; }
-
-        .contenedor-carrito { margin-top: 40px; display: none; padding: 20px; background-color: #f8fafc; border: 2px solid var(--color-primario); border-radius: 12px; }
-        .titulo-carrito { color: var(--color-primario); text-align: center; margin-top: 0;}
-        .item-carrito { background-color: white; border: 1px solid var(--color-borde); padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-eliminar-item { background-color: var(--color-peligro); color: white; padding: 8px; }
-
-        .grid-botones-export { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .btn-export { display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: none; color: white; }
-        .btn-copiar { background-color: var(--color-etiquetas); }
-        .btn-pdf { background-color: #dc2626; }
-        .btn-whatsapp { background-color: var(--color-whatsapp); }
-        .btn-email { background-color: var(--color-email); }
-        .btn-guardar-historial { background-color: #059669; grid-column: span 2; }
-        .marca-agua { text-align: center; font-size: 11px; color: #000000; margin-top: 30px; font-weight: 800; text-transform: uppercase; }
-
-        /* Animación de parpadeo */
-        @keyframes alerta-parpadeo {
-            0% { border-color: var(--color-borde); box-shadow: none; }
-            50% { border-color: var(--color-secundario); box-shadow: 0 0 10px rgba(255, 102, 0, 0.4); }
-            100% { border-color: var(--color-borde); box-shadow: none; }
-        }
-        .parpadeo-activo {
-            animation: alerta-parpadeo 1.5s infinite;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#285940">
+  <title>Calculadora Construcción</title>
+  <style>
+    :root{--bg:#f3f5f2;--card:#fff;--soft:#edf1ee;--text:#111713;--muted:#59655d;--line:#c5cec7;--accent:#285940;--accent2:#183d2a;--accentSoft:#dfece3;--on:#fff}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    body[data-mode="dark"]{--bg:#111512;--card:#1f2521;--soft:#2a302c;--text:#f7f8f7;--muted:#d0d6d2;--line:#606a63;--accentSoft:#26392e}
+    body[data-mode="contrast"]{--bg:#000;--card:#000;--soft:#111;--text:#fff;--muted:#fff;--line:#fff;--accent:#ffe600;--accent2:#ffe600;--accentSoft:#111;--on:#000}
+    button,input,select{font:inherit}button{cursor:pointer}
+    .shell{max-width:980px;margin:0 auto;padding:14px}
+    .app{background:var(--bg);border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.08)}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:1.28rem;font-weight:950}.small{font-size:.78rem;color:var(--muted);font-weight:650}
+    .btn{min-height:44px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);padding:9px 12px;font-weight:850}
+    .appearance{display:none;margin-top:10px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px}.appearance.open{display:block}
+    .apTitle{font-size:.68rem;font-weight:950;letter-spacing:.08em;color:var(--muted);margin:12px 0 8px}.modes,.palette{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+    .mode,.color{min-height:44px;border:1.5px solid var(--line);border-radius:11px;background:var(--soft);color:var(--text);font-weight:900}.mode[aria-pressed="true"],.color[aria-pressed="true"]{border-color:var(--accent);background:var(--accentSoft);color:var(--accent)}
+    .color{display:flex;align-items:center;gap:6px;padding:7px;text-align:left;font-size:.7rem;background:var(--card)}.sw{width:20px;height:20px;border-radius:6px;border:1px solid rgba(0,0,0,.15);flex:none}
+    .screen{display:none}.screen.active{display:block}.hero{padding:25px 2px 7px}.hero h2{margin:0;font-size:1.72rem;line-height:1.04;font-weight:950}.hero p{margin:.55rem 0 0;color:var(--muted);font-weight:600}
+    .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:17px}
+    .tile{height:285px;border:0;border-radius:22px;overflow:hidden;position:relative;padding:0;text-align:left;color:#fff;background:#1d211e;box-shadow:0 12px 28px rgba(0,0,0,.18)}
+    .tile:focus-visible{outline:4px solid var(--accent);outline-offset:3px}.tilePhoto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}.tile:hover .tilePhoto{transform:scale(1.045)}
+    .tileShade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.02) 10%,rgba(0,0,0,.10) 38%,rgba(0,0,0,.9) 100%)}.tileTop{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.94);color:#101410;border-radius:999px;padding:6px 10px;font-size:.67rem;font-weight:950;box-shadow:0 3px 12px rgba(0,0,0,.16)}
+    .tileText{position:absolute;left:17px;right:17px;bottom:17px;z-index:2}.tileText strong{display:block;font-size:1.42rem;line-height:1;font-weight:950;text-shadow:0 2px 8px rgba(0,0,0,.3)}.tileText small{display:block;margin-top:7px;font-size:.78rem;line-height:1.38;color:#f8faf8;font-weight:650}.arrow{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-size:.73rem;font-weight:950;letter-spacing:.05em}
+    .backWrap{margin:12px 0 17px}.back{display:inline-flex;align-items:center;gap:10px;min-height:50px;border:2px solid var(--accent);border-radius:14px;background:var(--accentSoft);color:var(--accent);padding:9px 15px;font-weight:950;box-shadow:0 5px 14px rgba(0,0,0,.08)}.backIcon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--accent);color:var(--on);font-size:1.16rem}
+    .sectionTitle{font-size:1.45rem;font-weight:950}.lead{margin:0 0 11px;color:var(--muted);font-size:.84rem;font-weight:600}
+    .panel{background:var(--card);border:1.5px solid var(--line);border-radius:17px;padding:13px;margin-top:10px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    label{display:block;font-size:.77rem;font-weight:900}input,select{width:100%;min-height:47px;margin-top:5px;padding:9px 10px;border:1.5px solid var(--line);border-radius:11px;background:var(--soft);color:var(--text);font-weight:700}
+    .calc{width:100%;min-height:51px;margin-top:12px;border:0;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--on);font-weight:950;box-shadow:0 7px 17px rgba(0,0,0,.13)}
+    .result{margin-top:14px;background:var(--card);border:2px solid var(--accent);border-radius:18px;overflow:hidden}.resultHead{padding:14px;background:var(--accentSoft);border-bottom:1px solid var(--accent)}.eyebrow{font-size:.67rem;font-weight:950;letter-spacing:.09em;color:var(--accent)}.resultTitle{font-size:1.16rem;font-weight:950;margin-top:3px}.resultMeta{font-size:.75rem;color:var(--muted);font-weight:700;margin-top:4px}.groupHead{padding:9px 12px;background:var(--soft);font-size:.68rem;font-weight:950;letter-spacing:.07em;color:var(--accent)}
+    .row{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(90px,.55fr);gap:8px;padding:11px 12px;border-top:1px solid var(--line)}.rowName{font-size:.83rem;font-weight:900}.rowVal{text-align:right;font-size:.94rem;font-weight:950;color:var(--accent)}.rowDetail{grid-column:1/-1;color:var(--muted);font-size:.71rem;line-height:1.45;margin-top:-3px;font-weight:650}.actions{display:flex;gap:8px;padding:12px}.actions .btn{flex:1}
+    .catgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.cat{min-height:48px;border:1.5px solid var(--line);border-radius:11px;background:var(--card);color:var(--text);font-weight:900}.cat.active{background:var(--accentSoft);border-color:var(--accent);color:var(--accent)}
+    .productCard{display:grid;grid-template-columns:150px 1fr;gap:14px;margin-top:12px;background:linear-gradient(145deg,var(--card),var(--soft));border:1.5px solid var(--line);border-radius:18px;padding:12px;align-items:center}.productImgWrap{height:145px;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #e6e6e6;position:relative}.productImg{width:100%;height:100%;object-fit:contain;padding:8px}.sourceTag{position:absolute;left:7px;bottom:7px;border-radius:999px;background:rgba(0,0,0,.76);color:#fff;padding:4px 7px;font-size:.58rem;font-weight:900}
+    .productName{font-size:1rem;font-weight:950;line-height:1.2}.productSpec{margin-top:6px;color:var(--muted);font-size:.73rem;line-height:1.45;font-weight:650}.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.chip{padding:5px 7px;border-radius:999px;background:var(--accentSoft);color:var(--accent);font-size:.65rem;font-weight:900}.sourceLink{display:inline-block;margin-top:8px;color:var(--accent);font-size:.72rem;font-weight:950;text-decoration:none}
+    .info{margin-top:10px;padding:10px;border-left:4px solid var(--accent);border-radius:8px;background:var(--soft);font-size:.73rem;color:var(--muted);line-height:1.45}.nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;border-top:1.5px solid var(--line);margin-top:16px;padding-top:9px}.nav button{min-height:44px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:.73rem;font-weight:750}.nav button.active{background:var(--accentSoft);color:var(--accent);font-weight:950}.empty{text-align:center;padding:20px;color:var(--muted)}.workItem{padding:11px 0;border-bottom:1px solid var(--line)}.listLine{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:.79rem}.hidden{display:none!important}
+    @media(max-width:520px){.shell{padding:0}.app{border-radius:0;min-height:100vh}.tiles,.grid{grid-template-columns:1fr}.tile{height:245px}.palette{grid-template-columns:repeat(2,minmax(0,1fr))}.modes{grid-template-columns:1fr}.productCard{grid-template-columns:110px 1fr}.productImgWrap{height:112px}.back{width:100%;justify-content:flex-start}}
+  </style>
 </head>
-<body>
+<body data-mode="normal">
+<div class="shell"><div class="app">
+  <div class="top">
+    <div><div class="brand">Calculadora Construcción</div><div class="small">Cálculo de materiales para obra seca y obra húmeda</div></div>
+    <button class="btn" id="look" type="button">Apariencia</button>
+  </div>
 
-    <div class="contenedor-app">
-        <div class="marca-agua-top">© 2026 Elías López</div>
-
-        <div class="logo-container">
-            <img src="logo.png" alt="Logo Obramat" onerror="this.onerror=null; this.src='LOGO OBRAMAT.PNG'; this.onerror=function(){this.style.display='none'; document.getElementById('texto-logo-alternativo').style.display='block';}">
-            <h1 id="texto-logo-alternativo" class="logo-texto-corporativo" style="display:none;">OBRAMAT</h1>
-        </div>
-
-        <div class="encabezado" style="flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <h2>Calculadora</h2>
-                <a href="https://www.tiktok.com/@cota.cero42" target="_blank" rel="noopener noreferrer" style="text-decoration: none; background-color: #000000; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
-                    Sígueme en TikTok
-                </a>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button type="button" onclick="toggleHistorial()" style="background: var(--color-secundario); color: white; border: none; border-radius: 8px; padding: 5px 15px; font-weight: bold; cursor: pointer;">🗂️ Historial</button>
-                <button type="button" onclick="toggleAyuda()" style="background: var(--color-primario); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Ayuda de uso">?</button>
-            </div>
-        </div>
-
-        <!-- DATOS DEL CLIENTE Y COMERCIAL -->
-        <div class="grupo-formulario fila-medidas">
-            <div class="columna-mitad">
-                <label for="nombre-cliente">Cliente / Obra:</label>
-                <input type="text" id="nombre-cliente" placeholder="Ej. Reformas García" oninput="guardarDatosCabecera()">
-            </div>
-            <div class="columna-mitad">
-                <label for="telefono-cliente">Teléfono:</label>
-                <input type="tel" id="telefono-cliente" placeholder="Ej. 600123456" oninput="guardarDatosCabecera()">
-            </div>
-        </div>
-        <div class="grupo-formulario">
-            <label for="nombre-comercial">Atendido por:</label>
-            <input type="text" id="nombre-comercial" class="parpadeo-activo" placeholder="Introduce tu nombre aquí..." oninput="guardarDatosCabecera(); this.classList.remove('parpadeo-activo');">
-        </div>
-
-        <div class="grupo-formulario">
-            <label for="categoria">Categoría constructiva:</label>
-            <select id="categoria" onchange="actualizarOpciones()" oninput="ocultarResultados()">
-                <option value="">Selecciona una categoría...</option>
-                <option value="ladrillos">Ladrillos</option>
-                <option value="bloques">Bloques de Hormigón</option>
-                <option value="revestimientos">Revestimientos</option>
-                <option value="puentes">Puentes de Unión</option>
-            </select>
-        </div>
-
-        <div class="grupo-formulario">
-            <label for="producto">Producto específico:</label>
-            <select id="producto" onchange="actualizarOpcionesProducto()" oninput="ocultarResultados()">
-                <option value="">Selecciona un producto...</option>
-            </select>
-        </div>
-
-        <div id="contenedor-img" class="contenedor-imagen-centrada">
-            <img id="img-dinamica" src="" alt="Vista del producto" class="imagen-producto">
-        </div>
-
-        <div id="div-soporte" class="grupo-formulario" style="display:none;">
-            <label for="tipo-soporte">Tipo de Soporte (Dilución):</label>
-            <select id="tipo-soporte" oninput="ocultarResultados()">
-                <option value="sin_absorcion">Soporte sin absorción (Dilución 1:1, 1 capa)</option>
-                <option value="poco_poroso">Soporte poco poroso (Dilución 1:1.5, 1 capa)</option>
-                <option value="poroso">Soporte poroso (Dilución 1:2 y 1:1.5, 2 capas)</option>
-            </select>
-        </div>
-
-        <div id="contenedor-medidas" style="display:none;">
-            <div class="grupo-formulario">
-                <label for="modo-medida">Cálculo de superficie:</label>
-                <select id="modo-medida" onchange="cambiarModoMedida()" oninput="ocultarResultados()">
-                    <option value="directo">Introducir m² totales</option>
-                    <option value="dimensiones">Calcular por medidas (L x A)</option>
-                </select>
-            </div>
-
-            <div id="div-m2-directo" class="grupo-formulario">
-                <label for="medida">Metros Cuadrados (m²):</label>
-                <input type="number" id="medida" min="0.1" value="1" inputmode="decimal" step="0.01" oninput="ocultarResultados()">
-            </div>
-
-            <div id="div-dimensiones" class="grupo-formulario fila-medidas" style="display:none;">
-                <div class="columna-mitad">
-                    <label for="largo">Largo (m):</label>
-                    <input type="number" id="largo" min="0.1" value="1" inputmode="decimal" step="0.01">
-                </div>
-                <div class="columna-mitad">
-                    <label for="alto">Alto (m):</label>
-                    <input type="number" id="alto" min="0.1" value="1" inputmode="decimal" step="0.01">
-                </div>
-            </div>
-        </div>
-
-        <div id="div-espesor" class="grupo-formulario" style="display:none;">
-            <label for="espesor">Espesor (mm):</label>
-            <input type="number" id="espesor" min="1" value="1" inputmode="decimal">
-        </div>
-
-        <div id="div-merma" class="grupo-formulario" style="display:none;">
-            <label for="merma">Margen de merma:</label>
-            <select id="merma">
-                <option value="0" selected>0% (Teórico)</option>
-                <option value="5">5% (Mínima)</option>
-                <option value="8">8% (Estándar)</option>
-                <option value="10">10% (Alta)</option>
-            </select>
-        </div>
-
-        <div id="div-tipo-mortero" class="grupo-formulario" style="display:none;">
-            <label for="tipo-mortero">Suministro de Mortero:</label>
-            <select id="tipo-mortero" oninput="ocultarResultados(); gestionarVisibilidadMortero();">
-                <option value="predosificado">Predosificado (Sacos 25kg)</option>
-                <option value="obra">Hecho en obra (Cemento y Arena - M7.5)</option>
-            </select>
-            <button type="button" id="btn-info-mortero" onclick="toggleTextoMortero()" style="display:none; font-size: 12px; margin-top: 8px; background: none; border: none; color: var(--color-primario); text-decoration: underline; cursor: pointer; padding: 0;">Ver justificación de cálculo</button>
-            <div id="texto-info-mortero" style="display:none; font-size: 12px; color: #555; background: #f1f5f9; padding: 10px; border-radius: 6px; margin-top: 8px; border-left: 3px solid var(--color-primario);">
-                <strong>Cálculo para Mortero M7,5:</strong><br>
-                Se emplea una dosificación por peso de 1:5 (1 parte de cemento por 5 partes de arena). Al mezclar 6 partes en total, el peso del cemento equivale a 1/6 (aprox. 16,6%) del peso total del mortero, y la arena a los 5/6 restantes (aprox. 83,3%).
-            </div>
-        </div>
-
-        <div class="botones-formulario">
-            <button class="btn-primario" onclick="calcular()">Calcular</button>
-            <button class="btn-secundario" onclick="limpiarCalculadora()">Limpiar</button>
-        </div>
-
-        <div id="resultado" class="resultado-container"></div>
-
-        <div id="contenedor-carrito" class="contenedor-carrito">
-            <h3 class="titulo-carrito">🛒 Lista de Materiales</h3>
-            <div id="lista-carrito"></div>
-            
-            <div class="grid-botones-export">
-                <button class="btn-export btn-guardar-historial" onclick="guardarPresupuesto()">💾 Guardar en Historial</button>
-                <button class="btn-export btn-pdf" onclick="generarPDF()">📄 Generar PDF</button>
-                <button class="btn-export btn-copiar" onclick="copiarCarrito()">📋 Copiar</button>
-                <button class="btn-export btn-email" onclick="enviarPorEmail()">✉️ Email</button>
-                <button class="btn-export btn-whatsapp" onclick="enviarCarritoWhatsApp()">💬 WhatsApp</button>
-            </div>
-            <button class="btn-vaciar-carrito" onclick="vaciarCarritoTotal()">🗑️ Vaciar Lista Completa</button>
-        </div>
-
-        <div class="marca-agua">© 2026 Elías López</div>
+  <div class="appearance" id="appearance">
+    <div class="apTitle">MODO</div>
+    <div class="modes">
+      <button class="mode" data-mode="normal" aria-pressed="true">Normal</button>
+      <button class="mode" data-mode="dark" aria-pressed="false">Oscuro</button>
+      <button class="mode" data-mode="contrast" aria-pressed="false">Alto contraste</button>
     </div>
-
-    <!-- MODAL DE HISTORIAL -->
-    <div id="modal-historial" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
-        <div style="background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-            <h3 style="color: var(--color-primario); margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
-                <span>🗂️ Presupuestos Guardados</span>
-                <button onclick="toggleHistorial()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #555;">✕</button>
-            </h3>
-            <input type="text" id="buscador-historial" placeholder="Buscar por cliente, teléfono o fecha..." style="width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid var(--color-borde); border-radius: 8px; font-family: var(--fuente-principal);" oninput="filtrarHistorial()">
-            <div id="lista-historial" style="display: flex; flex-direction: column; gap: 10px;"></div>
-        </div>
+    <div class="apTitle">COLOR</div>
+    <div class="palette">
+      <button class="color" data-ac="#285940|#dfece3|#fff" aria-pressed="true"><span class="sw" style="background:#285940"></span>Verde</button>
+      <button class="color" data-ac="#14669e|#e7f1f8|#fff"><span class="sw" style="background:#14669e"></span>Azul</button>
+      <button class="color" data-ac="#a95818|#faeee3|#fff"><span class="sw" style="background:#a95818"></span>Naranja</button>
+      <button class="color" data-ac="#789d87|#edf5f0|#15251b"><span class="sw" style="background:#b7d3c1"></span>Salvia</button>
+      <button class="color" data-ac="#5e98c5|#edf6fd|#102437"><span class="sw" style="background:#b8dbf5"></span>Cielo</button>
+      <button class="color" data-ac="#b98b53|#faf2e8|#2b2117"><span class="sw" style="background:#efd0a9"></span>Arena</button>
     </div>
+  </div>
 
-    <!-- MODAL DE AYUDA -->
-    <div id="modal-ayuda" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
-        <div style="background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-            <h3 style="color: var(--color-primario); margin-top: 0; display: flex; justify-content: space-between; align-items: center;">
-                <span>📖 ¿Cómo funciona?</span>
-                <button onclick="toggleAyuda()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #555;">✕</button>
-            </h3>
-            <div style="font-size: 14px; color: #444; line-height: 1.6;">
-                <p><strong>1. Datos base:</strong> Introduce el nombre del cliente y teléfono para asociarlo al cálculo y poder guardarlo.</p>
-                <p><strong>2. Escoge el producto:</strong> Selecciona el material específico que vas a utilizar en obra.</p>
-                <p><strong>3. Introduce las medidas:</strong> Puedes introducir los metros cuadrados (m²) directamente o calcularlos indicando el largo y el alto de la pared.</p>
-                <p><strong>4. Añade a la lista:</strong> Pulsa en "Calcular" y luego en "Añadir a la lista" para ir acumulando materiales.</p>
-                <p><strong>5. Exporta y guarda:</strong> Desde el carrito inferior podrás guardar el presupuesto en el historial, generar un PDF o enviarlo por WhatsApp.</p>
-            </div>
-            <button onclick="toggleAyuda()" style="width: 100%; margin-top: 20px; background: var(--color-primario); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Entendido</button>
-        </div>
+  <section class="screen active" id="home">
+    <div class="hero"><h2>Tipo de obra</h2><p>Selecciona el trabajo que quieres calcular.</p></div>
+    <div class="tiles">
+      <button class="tile" data-open="wall" type="button">
+        <img class="tilePhoto" src="https://static.wixstatic.com/media/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png/v1/fill/w_980,h_658,al_c,q_90/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png" alt="Montaje real de tabique de placas de yeso laminado">
+        <span class="tileShade"></span><span class="tileTop">OBRA SECA</span>
+        <span class="tileText"><strong>Tabique</strong><small>Estructura metálica y placas de yeso laminado.</small><span class="arrow">CALCULAR →</span></span>
+      </button>
+      <button class="tile" data-open="lining" type="button">
+        <img class="tilePhoto" src="https://www.gyproclatenplaatsen.be/sites/89/images/kamerbrede-gipskarton.jpg" alt="Trasdosado interior con placas de yeso">
+        <span class="tileShade"></span><span class="tileTop">REVESTIMIENTO</span>
+        <span class="tileText"><strong>Trasdosado</strong><small>Directo, semidirecto o autoportante.</small><span class="arrow">CALCULAR →</span></span>
+      </button>
+      <button class="tile" data-open="roof" type="button">
+        <img class="tilePhoto" src="https://images.squarespace-cdn.com/content/v1/688cd53107e36267f90172f3/1754060088863-WS71FRXOAHONWJFSGGA3/Commercial%2BDrywall%2BSan%2BFrancisco.webp" alt="Montaje real de falso techo de placas">
+        <span class="tileShade"></span><span class="tileTop">FALSO TECHO</span>
+        <span class="tileText"><strong>Techo</strong><small>Perfilería, suspensión, varillas y placas.</small><span class="arrow">CALCULAR →</span></span>
+      </button>
+      <button class="tile" data-open="wet" type="button">
+        <img class="tilePhoto" src="https://static.wixstatic.com/media/eb1c04_5bc2f9ab534a45d69f719a63cb656a0f~mv2.jpg/v1/fill/w_600,h_439,al_c,lg_1,q_80/eb1c04_5bc2f9ab534a45d69f719a63cb656a0f~mv2.jpg" alt="Albañilería tradicional levantando un muro">
+        <span class="tileShade"></span><span class="tileTop">ALBAÑILERÍA</span>
+        <span class="tileText"><strong>Obra húmeda</strong><small>Ladrillos, bloques, revestimientos y puentes de unión.</small><span class="arrow">CALCULAR →</span></span>
+      </button>
     </div>
-
-    <script>
-        const datos = {
-            ladrillos: {
-                "Hueco sencillo 33x16.5x4": { udsM2: 18, mortero: 18, palet: 630, peso: 1.5 },
-                "Hueco doble 33x20x7": { udsM2: 15, mortero: 23, palet: 270, peso: 3.1 },
-                "Hueco triple 33x20x11": { udsM2: 15, mortero: 30, palet: 180, peso: 4.87 },
-                "Termocerámico 14 cm": { udsM2: 15, mortero: 40, palet: 135, peso: 6.5 },
-                "Termocerámico 20 cm": { udsM2: 15, mortero: 56, palet: 105, peso: 9.0 },
-                "Termocerámico 24 cm": { udsM2: 15, mortero: 67, palet: 90, peso: 10.1 },
-                "Termocerámico 29 cm": { udsM2: 15, mortero: 81, palet: 75, peso: 12.20 },
-                "Perforado 10 cm": { udsM2: 40, mortero: 60, palet: 360, peso: 2.3 },
-                "Perforado 20 cm": { udsM2: 20, mortero: 35, palet: 180, peso: 4.2 },
-                "Rojo liso caravista 24x12x5": { udsM2: 67, mortero: null, palet: 578, peso: 1.15 }
-            },
-            bloques: {
-                "Bloque ligero gris 39x19x19": { udsM2: 13.5, peso: 14.1, palet: 90, mortero: 100 },
-                "Bloque tapado gris 39x19x19": { udsM2: 13.5, peso: 13.0, palet: 90, mortero: 87.5 },
-                "Bloque redondo gris 39x19x19": { udsM2: 13.5, peso: 16.0, palet: 75, mortero: 87.5 },
-                "Bloque ligero blanco 39x19x19": { udsM2: 13.5, peso: 14.1, palet: 90, mortero: 100 },
-                "Bloque tapado gris 39x19x15": { udsM2: 13.5, peso: 12.48, palet: 105, mortero: 75 },
-                "Bloque gris 39x19x10": { udsM2: 13.5, peso: 9.0, palet: 132, mortero: 50 }
-            },
-            revestimientos: {
-                "weber.rev fino": { kgMm: 1.7, maxMm: 5, palet: 48 },
-                "weberpral prisma": { kgMm: 1.5, maxMm: 30, palet: 48 },
-                "weberev hidro PLUS": { kgMm: 1.8, maxMm: 20, palet: 48 },
-                "APLICAREV Cal Nature Pro": { kgMm: 1.9, maxMm: 20, palet: 64 },
-                "Mortero Cal base Aplicarev 25kg BCO": { kgMm: 1.4, maxMm: 50, imagen: "mortero-cal-base-aplicarev-25kg-bco.jpg", palet: 48 },
-                "Mortero Cal revoco Aplicarev 25kg BCO": { kgMm: 1.4, maxMm: 9, imagen: "cal-revoco.JPG", palet: 48 }
-            },
-            puentes: {
-                "Puente de unión PLUS (MH)": { min: 0.200, max: 0.250, tipo: "litros", imagen: "puente-union-plus.jpg" },
-                "SikaTop-30": { min: 0.150, max: 0.175, tipo: "litros", imagen: "SikaTop-30.jpg" },
-                "SikaTop-50": { min: 0.125, max: 0.150, tipo: "litros", imagen: "SikaTop-50.jpg" },
-                "SikaTop®-10": { min: 0.8, max: 0.8, densidad: 1.32, tipo: "sikatop10", imagen: "sikatop-10.jpg" },
-                "Puente de Unión Morteros Henares (PTU-20)": { min: 0.400, max: 0.450, densidad: 1.4, tipo: "rango_kilos", imagen: "puente-de-union-morteros-henares-ptu-20.jpg" },
-                "Aplica primer TOP 5KG": { min: 0.125, max: 0.175, densidad: 1.43, tipo: "rango_kilos", imagen: "aplica-primer-top-5kg.jpg" },
-                "Imprimacion Aplica Level Primer 5 L": { tipo: "level_primer", imagen: "aplica-primer-top-5kg.jpg" }
-            }
-        };
-
-        let carritoDeObra = [];
-        let calculoTemporal = null;
-
-        // --- FUNCIONES DE ALMACENAMIENTO (CARRITO Y CABECERA) ---
-        function guardarCarrito() {
-            localStorage.setItem("carritoMateriales", JSON.stringify(carritoDeObra));
-        }
-
-        function guardarDatosCabecera() {
-            localStorage.setItem("nombreCliente", document.getElementById("nombre-cliente").value);
-            localStorage.setItem("telefonoCliente", document.getElementById("telefono-cliente").value);
-            localStorage.setItem("nombreComercial", document.getElementById("nombre-comercial").value);
-        }
-
-        function cargarCarrito() {
-            const datosGuardados = localStorage.getItem("carritoMateriales");
-            if (datosGuardados) {
-                carritoDeObra = JSON.parse(datosGuardados);
-                renderizarCarrito();
-            }
-            const c = localStorage.getItem("nombreCliente");
-            if (c !== null) document.getElementById("nombre-cliente").value = c;
-            
-            const t = localStorage.getItem("telefonoCliente");
-            if (t !== null) document.getElementById("telefono-cliente").value = t;
-            
-            // Carga el comercial y detiene el parpadeo si ya hay un nombre guardado
-            const com = localStorage.getItem("nombreComercial");
-            const inputComercial = document.getElementById("nombre-comercial");
-            if (com !== null && com !== "") {
-                inputComercial.value = com;
-                inputComercial.classList.remove("parpadeo-activo");
-            }
-        }
-
-        function vaciarCarritoTotal() {
-            if(confirm("¿Estás seguro de que deseas vaciar toda la lista?")) {
-                carritoDeObra = [];
-                guardarCarrito();
-                renderizarCarrito();
-            }
-        }
-
-        // --- LÓGICA DE HISTORIAL ---
-        function guardarPresupuesto() {
-            if(carritoDeObra.length === 0) return alert("La lista está vacía. Añade productos antes de guardar.");
-            
-            const cliente = document.getElementById("nombre-cliente").value.trim();
-            const telefono = document.getElementById("telefono-cliente").value.trim();
-            
-            if(!cliente || !telefono) {
-                return alert("⚠️ Faltan datos: Debes indicar el nombre y el teléfono del cliente para poder guardar el presupuesto.");
-            }
-
-            const presupuesto = {
-                id: Date.now().toString(),
-                fecha: new Date().toLocaleDateString('es-ES'),
-                cliente: cliente,
-                telefono: telefono,
-                comercial: document.getElementById("nombre-comercial").value.trim(),
-                items: [...carritoDeObra]
-            };
-
-            let historial = JSON.parse(localStorage.getItem("historialPresupuestos")) || [];
-            historial.push(presupuesto);
-            localStorage.setItem("historialPresupuestos", JSON.stringify(historial));
-
-            alert("✅ Presupuesto guardado correctamente en el historial.");
-        }
-
-        function toggleHistorial() {
-            const modal = document.getElementById("modal-historial");
-            if(modal.style.display === "none" || modal.style.display === "") {
-                renderizarHistorial();
-                modal.style.display = "flex";
-            } else {
-                modal.style.display = "none";
-            }
-        }
-
-        function renderizarHistorial(filtro = "") {
-            let historial = JSON.parse(localStorage.getItem("historialPresupuestos")) || [];
-            const lista = document.getElementById("lista-historial");
-            lista.innerHTML = "";
-
-            if(filtro) {
-                const f = filtro.toLowerCase();
-                historial = historial.filter(p => 
-                    p.cliente.toLowerCase().includes(f) || 
-                    p.telefono.includes(f) || 
-                    p.fecha.includes(f)
-                );
-            }
-
-            historial.reverse().forEach(p => {
-                const div = document.createElement("div");
-                div.style.cssText = "border: 1px solid var(--color-borde); padding: 15px; border-radius: 8px; background: #f8fafc;";
-                div.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <strong style="color: var(--color-primario); font-size:16px;">👤 ${p.cliente}</strong>
-                        <span style="color: #666; font-size: 12px; font-weight:bold;">📅 ${p.fecha}</span>
-                    </div>
-                    <div style="font-size: 13px; color: #555; margin-bottom: 12px;">
-                        📞 ${p.telefono || 'Sin teléfono'} <br> 🛒 ${p.items.length} productos calculados
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button onclick="cargarPresupuestoHistorico('${p.id}')" style="flex:2; background: var(--color-secundario); color: white; border: none; padding: 8px; border-radius: 6px; font-size: 13px; font-weight:bold; cursor: pointer;">Cargar Presupuesto</button>
-                        <button onclick="eliminarDelHistorial('${p.id}')" style="flex:1; background: transparent; color: var(--color-peligro); border: 1px solid var(--color-peligro); padding: 8px; border-radius: 6px; font-size: 13px; cursor: pointer;">Borrar</button>
-                    </div>
-                `;
-                lista.appendChild(div);
-            });
-
-            if(historial.length === 0) lista.innerHTML = "<p style='text-align:center; color:#666;'>No hay presupuestos guardados.</p>";
-        }
-
-        function filtrarHistorial() {
-            renderizarHistorial(document.getElementById("buscador-historial").value);
-        }
-
-        function cargarPresupuestoHistorico(id) {
-            let historial = JSON.parse(localStorage.getItem("historialPresupuestos")) || [];
-            const p = historial.find(x => x.id === id);
-            if(p) {
-                carritoDeObra = [...p.items];
-                document.getElementById("nombre-cliente").value = p.cliente;
-                document.getElementById("telefono-cliente").value = p.telefono;
-                
-                const inputComercial = document.getElementById("nombre-comercial");
-                inputComercial.value = p.comercial;
-                inputComercial.classList.remove("parpadeo-activo");
-
-                guardarCarrito();
-                guardarDatosCabecera();
-                renderizarCarrito();
-                toggleHistorial();
-            }
-        }
-
-        function eliminarDelHistorial(id) {
-            if(confirm("¿Estás seguro de borrar este presupuesto de tu dispositivo?")) {
-                let historial = JSON.parse(localStorage.getItem("historialPresupuestos")) || [];
-                historial = historial.filter(x => x.id !== id);
-                localStorage.setItem("historialPresupuestos", JSON.stringify(historial));
-                filtrarHistorial();
-            }
-        }
-
-        // --- LÓGICA DE CALCULADORA ---
-        function ocultarResultados() {
-            document.getElementById("resultado").style.display = "none";
-            calculoTemporal = null; 
-        }
-
-        function cambiarModoMedida() {
-            const modo = document.getElementById("modo-medida").value;
-            document.getElementById("div-m2-directo").style.display = modo === "directo" ? "block" : "none";
-            document.getElementById("div-dimensiones").style.display = modo === "dimensiones" ? "flex" : "none";
-            ocultarResultados();
-        }
-
-        function limpiarCalculadora() {
-            document.getElementById("categoria").value = "";
-            document.getElementById("producto").innerHTML = '<option value="">Selecciona un producto...</option>';
-            document.getElementById("modo-medida").value = "directo";
-            document.getElementById("medida").value = "1";
-            document.getElementById("largo").value = "1";
-            document.getElementById("alto").value = "1";
-            document.getElementById("espesor").value = "1";
-            document.getElementById("merma").value = "0"; 
-            document.getElementById("tipo-mortero").value = "predosificado";
-            
-            document.getElementById("contenedor-medidas").style.display = "none";
-            document.getElementById("div-espesor").style.display = "none";
-            document.getElementById("div-merma").style.display = "none";
-            document.getElementById("div-soporte").style.display = "none";
-            document.getElementById("contenedor-img").style.display = "none";
-            document.getElementById("div-tipo-mortero").style.display = "none";
-            
-            document.getElementById("btn-info-mortero").style.display = "none";
-            document.getElementById("texto-info-mortero").style.display = "none";
-
-            cambiarModoMedida();
-            ocultarResultados();
-        }
-
-        function actualizarOpciones() {
-            const categoria = document.getElementById("categoria").value;
-            const productoSelect = document.getElementById("producto");
-            
-            productoSelect.innerHTML = '<option value="">Selecciona un producto...</option>';
-            document.getElementById("div-soporte").style.display = "none";
-            document.getElementById("contenedor-img").style.display = "none";
-            ocultarResultados();
-            
-            document.getElementById("contenedor-medidas").style.display = categoria ? "block" : "none";
-            document.getElementById("div-espesor").style.display = categoria === "revestimientos" ? "block" : "none";
-            document.getElementById("div-merma").style.display = categoria ? "block" : "none";
-            document.getElementById("div-tipo-mortero").style.display = (categoria === "ladrillos" || categoria === "bloques") ? "block" : "none";
-
-            document.getElementById("merma").value = (categoria === "puentes") ? "0" : "8";
-            
-            document.getElementById("btn-info-mortero").style.display = "none";
-            document.getElementById("texto-info-mortero").style.display = "none";
-
-            if (categoria && datos[categoria]) {
-                for (const key in datos[categoria]) {
-                    let option = document.createElement("option");
-                    option.value = key;
-                    let productoInfo = datos[categoria][key];
-                    if (productoInfo.palet) option.text = `${key} (Palet: ${productoInfo.palet} uds)`;
-                    else option.text = key;
-                    productoSelect.appendChild(option);
-                }
-            }
-        }
-
-        function formatearNombreImagen(nombre) {
-            return nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '') + '.jpg'; 
-        }
-
-        function actualizarOpcionesProducto() {
-            ocultarResultados();
-            const categoria = document.getElementById("categoria").value;
-            const producto = document.getElementById("producto").value;
-            
-            document.getElementById("div-soporte").style.display = (producto === "Imprimacion Aplica Level Primer 5 L") ? "block" : "none";
-
-            const divImg = document.getElementById("contenedor-img");
-            const imgElemento = document.getElementById("img-dinamica");
-            
-            if (categoria && producto && datos[categoria][producto]) {
-                if (datos[categoria][producto].imagen) {
-                    imgElemento.src = datos[categoria][producto].imagen;
-                    divImg.style.display = "block";
-                } else {
-                    const nombreAuto = formatearNombreImagen(producto);
-                    imgElemento.src = nombreAuto;
-                    imgElemento.onload = function() { divImg.style.display = "block"; };
-                    imgElemento.onerror = function() { divImg.style.display = "none"; };
-                }
-            } else {
-                divImg.style.display = "none";
-            }
-        }
-
-        function gestionarVisibilidadMortero() {
-            const tipo = document.getElementById("tipo-mortero").value;
-            const btnInfo = document.getElementById("btn-info-mortero");
-            const divInfo = document.getElementById("texto-info-mortero");
-            
-            if (tipo === "obra") btnInfo.style.display = "inline-block";
-            else { btnInfo.style.display = "none"; divInfo.style.display = "none"; }
-        }
-
-        function toggleTextoMortero() {
-            const divInfo = document.getElementById("texto-info-mortero");
-            divInfo.style.display = (divInfo.style.display === "none") ? "block" : "none";
-        }
-
-        function calcular() {
-            const categoria = document.getElementById("categoria").value;
-            const producto = document.getElementById("producto").value;
-            const modoMedida = document.getElementById("modo-medida").value;
-            
-            let medida = 0, textoMedida = "";
-            if (modoMedida === "directo") {
-                medida = parseFloat(document.getElementById("medida").value) || 0;
-                textoMedida = `${medida} m²`;
-            } else {
-                const largo = parseFloat(document.getElementById("largo").value) || 0;
-                const alto = parseFloat(document.getElementById("alto").value) || 0;
-                medida = parseFloat((largo * alto).toFixed(2));
-                textoMedida = `${medida} m² (Pared de ${largo}m x ${alto}m)`;
-            }
-
-            const espesor = parseFloat(document.getElementById("espesor").value) || 0;
-            const mermaSeleccionada = parseFloat(document.getElementById("merma").value) || 0;
-            const factorMerma = 1 + (mermaSeleccionada / 100);
-
-            if (!categoria || !producto || medida <= 0) return alert("Completa los campos correctamente.");
-
-            const item = datos[categoria][producto];
-            let html = `<h3 class="resultado-titulo">RESULTADO<br><small style="font-size:14px; color:#555;">${textoMedida}</small></h3><div class="resultado-grid">`;
-            let detallesTexto = ""; 
-
-            if (categoria === "ladrillos" || categoria === "bloques") {
-                const totalUds = Math.ceil((item.udsM2 * medida) * factorMerma); 
-                const pesoTotal = (totalUds * item.peso).toFixed(2);
-                
-                detallesTexto += `Unidades: ${totalUds} uds (Inc. ${mermaSeleccionada}% merma)\nPeso total: ${pesoTotal} kg\n`;
-                html += `<div class="casilla"><div class="casilla-etiqueta">Unidades</div><div class="casilla-valor">${totalUds}</div></div>`;
-                html += `<div class="casilla"><div class="casilla-etiqueta">Peso (kg)</div><div class="casilla-valor">${pesoTotal}</div></div>`;
-                
-                if (item.palet) {
-                    const totalPalets = (totalUds / item.palet).toFixed(2);
-                    detallesTexto += `Palets (aprox): ${totalPalets}\n`;
-                    html += `<div class="casilla"><div class="casilla-etiqueta">Palets</div><div class="casilla-valor">${totalPalets}</div></div>`;
-                }
-                if (item.mortero) {
-                    const kilosMorteroTotal = ((item.mortero * medida) * factorMerma);
-                    const kilosMorteroStr = kilosMorteroTotal.toFixed(2);
-                    const tipoMortero = document.getElementById("tipo-mortero").value;
-                    
-                    html += `<div class="casilla"><div class="casilla-etiqueta">Kg Mortero</div><div class="casilla-valor">${kilosMorteroStr}</div></div>`;
-
-                    if (tipoMortero === "predosificado") {
-                        const sacosMortero = Math.ceil(kilosMorteroTotal / 25);
-                        detallesTexto += `Mortero total necesario: ${kilosMorteroStr} kg\nSacos de mortero predosificado (25kg): ${sacosMortero}\n`;
-                        html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos Mortero</div><div class="casilla-valor">${sacosMortero}</div></div>`;
-                    } else if (tipoMortero === "obra") {
-                        const kgCemento = kilosMorteroTotal * (1/6);
-                        const kgArena = kilosMorteroTotal * (5/6);
-                        const sacosCemento25 = Math.ceil(kgCemento / 25);
-                        
-                        detallesTexto += `Mortero total necesario: ${kilosMorteroStr} kg\nCemento (M7.5): ${kgCemento.toFixed(2)} kg (aprox ${sacosCemento25} sacos de 25kg)\nArena (M7.5): ${kgArena.toFixed(2)} kg\n`;
-                        html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos Cemento</div><div class="casilla-valor">${sacosCemento25}</div><div class="casilla-nota">Sacos 25 kg</div></div>`;
-                        html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Kg Arena</div><div class="casilla-valor">${kgArena.toFixed(0)}</div></div>`;
-                    }
-                }
-            } else if (categoria === "revestimientos") {
-                const totalKilos = (item.kgMm * espesor) * medida * factorMerma; 
-                const sacosNecesarios = Math.ceil(totalKilos / 25); 
-                detallesTexto += `Espesor: ${espesor} mm\nKilos totales: ${totalKilos.toFixed(2)} kg\nSacos (25kg): ${sacosNecesarios} (Inc. ${mermaSeleccionada}% merma)\n`;
-                html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Sacos a pedir</div><div class="casilla-valor">${sacosNecesarios}</div></div>`;
-                html += `<div class="casilla"><div class="casilla-etiqueta">Kg Totales</div><div class="casilla-valor">${totalKilos.toFixed(2)}</div></div>`;
-                
-                if (item.palet) {
-                    const totalPalets = (sacosNecesarios / item.palet).toFixed(2);
-                    detallesTexto += `Palets (aprox): ${totalPalets}\n`;
-                    html += `<div class="casilla"><div class="casilla-etiqueta">Palets</div><div class="casilla-valor">${totalPalets}</div></div>`;
-                }
-            } else if (categoria === "puentes") {
-                if (item.tipo === "level_primer") {
-                    const consumo = document.getElementById("tipo-soporte").value === "sin_absorcion" ? 0.075 : (document.getElementById("tipo-soporte").value === "poco_poroso" ? 0.060 : 0.110);
-                    const totalKilosNetos = (medida * consumo) * factorMerma;
-                    const botes = Math.ceil(totalKilosNetos / 5);
-                    const litrosEstimados = Math.ceil(totalKilosNetos / 1.0);
-                    detallesTexto += `Botes de 5L: ${botes}\nTotal litros aprox: ${litrosEstimados} L\n`;
-                    html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Botes 5L</div><div class="casilla-valor">${botes}</div></div>`;
-                    html += `<div class="casilla"><div class="casilla-etiqueta">Litros Aprox.</div><div class="casilla-valor">${litrosEstimados} L</div></div>`;
-                } else if (item.tipo === "sikatop10" || item.tipo === "rango_kilos") {
-                    const consumo = item.tipo === "sikatop10" ? item.min : (item.min + item.max) / 2;
-                    const totalKilosNetos = (medida * consumo) * factorMerma;
-                    const litros = Math.ceil(totalKilosNetos / item.densidad);
-                    detallesTexto += `Total estimado: ${litros} Litros (Kilos aprox: ${totalKilosNetos.toFixed(2)} kg)\n`;
-                    html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Litros</div><div class="casilla-valor">${litros}</div></div>`;
-                    html += `<div class="casilla"><div class="casilla-etiqueta">Litros Exactos</div><div class="casilla-valor">${(totalKilosNetos / item.densidad).toFixed(2)} L</div></div>`;
-                } else {
-                    const litrosCalculados = (medida * ((item.min + item.max) / 2)) * factorMerma;
-                    const litros = Math.ceil(litrosCalculados);
-                    detallesTexto += `Total estimado: ${litros} Litros\n`;
-                    html += `<div class="casilla casilla-destacada"><div class="casilla-etiqueta">Litros</div><div class="casilla-valor">${litros}</div></div>`;
-                    html += `<div class="casilla"><div class="casilla-etiqueta">Litros Exactos</div><div class="casilla-valor">${litrosCalculados.toFixed(2)} L</div></div>`;
-                }
-            }
-
-            html += `</div><button class="btn-agregar-carrito" onclick="agregarAlCarrito()">🛒 AÑADIR A LA LISTA</button>`;
-            calculoTemporal = { producto: producto, textoMedida: textoMedida, detallesTexto: detallesTexto };
-            
-            const divRes = document.getElementById("resultado");
-            divRes.innerHTML = html;
-            divRes.style.display = "block";
-        }
-
-        function agregarAlCarrito() {
-            if (calculoTemporal) {
-                carritoDeObra.push(calculoTemporal);
-                guardarCarrito();
-                renderizarCarrito();
-                document.getElementById("resultado").style.display = "none";
-                calculoTemporal = null;
-            }
-        }
-
-        function renderizarCarrito() {
-            const contenedor = document.getElementById("contenedor-carrito");
-            const lista = document.getElementById("lista-carrito");
-            if (carritoDeObra.length === 0) return contenedor.style.display = "none";
-            
-            contenedor.style.display = "block";
-            let html = "";
-            carritoDeObra.forEach((item, index) => {
-                html += `<div class="item-carrito">
-                    <div><strong>${index+1}. ${item.producto}</strong><br><small>${item.textoMedida}</small></div>
-                    <button class="btn-eliminar-item" onclick="eliminarDelCarrito(${index})">🗑️</button>
-                </div>`;
-            });
-            lista.innerHTML = html;
-        }
-
-        function eliminarDelCarrito(index) { 
-            carritoDeObra.splice(index, 1); 
-            guardarCarrito();
-            renderizarCarrito(); 
-        }
-
-        // --- FUNCIONES DE EXPORTACIÓN ---
-        function generarTextoPlano() {
-            const cliente = document.getElementById("nombre-cliente").value || "No especificado";
-            const telefono = document.getElementById("telefono-cliente").value || "No especificado";
-            const comercial = document.getElementById("nombre-comercial").value || "No especificado";
-            const hoy = new Date().toLocaleDateString('es-ES');
-
-            let texto = `*ESTIMACIÓN DE MATERIALES*\n`;
-            texto += `👤 Cliente: ${cliente}\n`;
-            texto += `📞 Teléfono: ${telefono}\n`;
-            texto += `👨‍💼 Atendido por: ${comercial}\n`;
-            texto += `📅 Fecha: ${hoy}\n\n`;
-
-            carritoDeObra.forEach((item, i) => {
-                texto += `📦 *${i + 1}. ${item.producto}*\n📏 Superficie: ${item.textoMedida}\n${item.detallesTexto.replace(/🔸/g, '•')}\n───────────────\n\n`;
-            });
-            texto += `⚠️ Cláusula. No es contractual, es solo a nivel informativo etc.`;
-            return texto;
-        }
-
-        function copiarCarrito() {
-            if(carritoDeObra.length === 0) return;
-            navigator.clipboard.writeText(generarTextoPlano()).then(() => alert("Copiado al portapapeles"));
-        }
-
-        function enviarCarritoWhatsApp() {
-            if(carritoDeObra.length === 0) return;
-            window.open('https://wa.me/?text=' + encodeURIComponent(generarTextoPlano()), '_blank');
-        }
-
-        function enviarPorEmail() {
-            if(carritoDeObra.length === 0) return;
-            const subject = encodeURIComponent("Presupuesto de Materiales");
-            const body = encodeURIComponent("Adjunto la cotización de materiales generada:\n\n" + generarTextoPlano());
-            window.location.href = `mailto:?subject=${subject}&body=${body}`;
-        }
-
-        function generarPDF() {
-            if(carritoDeObra.length === 0) return;
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            const cliente = document.getElementById("nombre-cliente").value || "No especificado";
-            const telefono = document.getElementById("telefono-cliente").value || "No especificado";
-            const comercial = document.getElementById("nombre-comercial").value || "No especificado";
-            const hoy = new Date().toLocaleDateString('es-ES');
-
-            let y = 20;
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(20);
-            doc.setTextColor(0, 86, 179); 
-            doc.text("ESTIMACIÓN DE MATERIALES", 20, y);
-
-            y += 10;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(11);
-            doc.setTextColor(50, 50, 50);
-            doc.text(`Cliente / Obra: ${cliente}`, 20, y);
-            doc.text(`Fecha: ${hoy}`, 190, y, { align: "right" });
-
-            y += 6;
-            doc.text(`Teléfono: ${telefono}`, 20, y);
-
-            y += 6;
-            doc.text(`Atendido por: ${comercial}`, 20, y);
-
-            y += 8;
-            doc.setDrawColor(0, 86, 179);
-            doc.setLineWidth(0.5);
-            doc.line(20, y, 190, y);
-
-            y += 15;
-
-            carritoDeObra.forEach((item, i) => {
-                if (y > 250) { 
-                    doc.addPage();
-                    y = 20;
-                }
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(14);
-                doc.setTextColor(0, 86, 179);
-                doc.text(`${i + 1}. ${item.producto}`, 20, y);
-
-                y += 6;
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(11);
-                doc.setTextColor(50, 50, 50);
-                doc.text(`Superficie: ${item.textoMedida}`, 20, y);
-
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(10);
-                doc.setTextColor(0, 0, 0);
-
-                const lineasDetalle = item.detallesTexto.trim().split('\n');
-                lineasDetalle.forEach(linea => {
-                    if (y > 270) { doc.addPage(); y = 20; }
-                    doc.text(`• ${linea}`, 25, y);
-                    y += 6;
-                });
-
-                y += 8;
-                doc.setDrawColor(200, 200, 200);
-                doc.setLineWidth(0.2);
-                doc.line(20, y, 190, y);
-                y += 10;
-            });
-
-            if (y > 240) { doc.addPage(); y = 20; }
-            y += 10;
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(9);
-            doc.setTextColor(80, 80, 80);
-            doc.text("Cláusula:", 20, y);
-            
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(8);
-            const textoClausula = "Cláusula. No es contractual, es solo a nivel informativo etc";
-            const lineasClausula = doc.splitTextToSize(textoClausula, 170);
-            doc.text(lineasClausula, 20, y + 5);
-
-            doc.save("Presupuesto-Materiales.pdf");
-        }
-
-        function toggleAyuda() {
-            const modal = document.getElementById("modal-ayuda");
-            modal.style.display = (modal.style.display === "flex") ? "none" : "flex";
-        }
-
-        // Cargar datos al iniciar
-        window.onload = cargarCarrito;
-    </script>
-
-    <!-- Registro del Service Worker para PWA -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registrado con éxito');
-                    })
-                    .catch(err => {
-                        console.log('Fallo al registrar el ServiceWorker: ', err);
-                    });
-            });
-        }
-    </script>
+  </section>
+
+  <section class="screen" id="wall">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Tabique</div><p class="lead">Introduce medidas y configuración.</p>
+    <form id="wallForm"><div class="panel"><div class="grid">
+      <label>Largo (m)<input id="wL" value="4" inputmode="decimal"></label><label>Alto (m)<input id="wH" value="2.5" inputmode="decimal"></label>
+      <label>Placas cara 1<select id="wA"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
+      <label>Placas cara 2<select id="wB"><option value="1">1 placa</option><option value="2">2 placas</option></select></label>
+      <label>Montante<select id="wP"><option value="48">M48</option><option value="70" selected>M70</option><option value="90">M90</option></select></label>
+      <label>Intereje<select id="wS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
+    </div></div><button class="calc" type="submit">CALCULAR TABIQUE</button></form><div class="result" id="wallResult"></div>
+  </section>
+
+  <section class="screen" id="lining">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Trasdosado</div><p class="lead">Selecciona directo, semidirecto o autoportante.</p>
+    <form id="liningForm"><div class="panel"><label>Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label></div>
+    <div class="panel"><div class="grid">
+      <label>Largo (m)<input id="lL" value="4" inputmode="decimal"></label><label>Alto (m)<input id="lH" value="2.5" inputmode="decimal"></label>
+      <label>Placas<select id="lLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
+      <label>Intereje<select id="lS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
+      <label id="lProfileWrap">Perfil<select id="lP"><option value="48">48 mm</option><option value="70" selected>70 mm</option><option value="90">90 mm</option></select></label>
+    </div></div><button class="calc" type="submit">CALCULAR TRASDOSADO</button></form><div class="result" id="liningResult"></div>
+  </section>
+
+  <section class="screen" id="roof">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Techo</div><p class="lead">Configura superficie, sistema y plenum.</p>
+    <form id="roofForm"><div class="panel"><div class="grid">
+      <label>Largo (m)<input id="rL" value="5" inputmode="decimal"></label><label>Ancho (m)<input id="rW" value="4" inputmode="decimal"></label>
+      <label>Sistema<select id="rSys"><option value="double">Doble TC47</option><option value="simple">TC47 simple suspendido</option><option value="sierra">Perfil sierra + TC47</option><option value="cm70">Canal + montante M70</option></select></label>
+      <label>Plenum (cm)<input id="rDrop" value="30" inputmode="decimal"></label>
+      <label>Formato placa<select id="rBoard"><option value="2,1.2">2000 × 1200</option><option value="2.7,1.2">2700 × 1200</option><option value="2,.6">2000 × 600</option></select></label>
+      <label>Placas<select id="rLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
+    </div></div><button class="calc" type="submit">CALCULAR TECHO</button></form><div class="result" id="roofResult"></div>
+  </section>
+
+  <section class="screen" id="wet">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Obra húmeda</div><p class="lead">Selecciona categoría y producto.</p>
+    <div class="catgrid">
+      <button type="button" class="cat active" data-cat="ladrillos">Ladrillos · 10</button>
+      <button type="button" class="cat" data-cat="bloques">Bloques · 6</button>
+      <button type="button" class="cat" data-cat="revestimientos">Revestimientos · 6</button>
+      <button type="button" class="cat" data-cat="puentes">Puentes · 7</button>
+    </div>
+    <form id="wetForm"><div class="panel">
+      <label>Producto<select id="wetProduct"></select></label>
+      <div class="productCard">
+        <div class="productImgWrap"><img class="productImg" id="productImg" alt="Producto seleccionado"><div class="sourceTag" id="productTag">OBRAMAT</div></div>
+        <div><div class="productName" id="productName"></div><div class="productSpec" id="productSpec"></div><div class="chips" id="productChips"></div><a class="sourceLink" id="productLink" target="_blank" rel="noopener">Ver ficha en Obramat ↗</a></div>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <label>Modo de medida<select id="wetMeasureMode"><option value="direct">Introducir m² totales</option><option value="dims">Largo × alto</option></select></label>
+        <label id="wetAreaWrap">Superficie (m²)<input id="wetArea" value="10" inputmode="decimal"></label>
+        <label class="hidden" id="wetLWrap">Largo (m)<input id="wetL" value="4" inputmode="decimal"></label>
+        <label class="hidden" id="wetHWrap">Alto (m)<input id="wetH" value="2.5" inputmode="decimal"></label>
+        <label id="wetThicknessWrap" class="hidden">Espesor (mm)<input id="wetThickness" value="10" inputmode="decimal"></label>
+        <label id="wetSupportWrap" class="hidden">Soporte<select id="wetSupport"><option value="sin_absorcion">Sin absorción</option><option value="poco_poroso">Poco poroso</option><option value="poroso">Poroso</option></select></label>
+        <label id="wetMortarWrap">Mortero<select id="wetMortar"><option value="predosificado">Predosificado · 25 kg</option><option value="obra">Hecho en obra</option></select></label>
+        <label>Merma<select id="wetWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option></select></label>
+      </div>
+      <div class="info" id="wetInfo"></div>
+    </div><button class="calc" type="submit">CALCULAR OBRA HÚMEDA</button></form><div class="result" id="wetResult"></div>
+  </section>
+
+  <section class="screen" id="work"><div class="hero"><h2>Obra</h2><p>Partidas añadidas.</p></div><div class="panel" id="workContent"></div></section>
+  <section class="screen" id="list"><div class="hero"><h2>Lista</h2><p>Resumen de materiales.</p></div><div class="panel" id="listContent"></div></section>
+  <section class="screen" id="help"><div class="hero"><h2>Ayuda</h2><p>Conceptos básicos y técnicos.</p></div><div class="panel"><div class="small"><b>Rendimiento base:</b> se muestra separado de la merma. El ladrillo hueco sencillo 33 × 16,5 × 4 utiliza 18 ud/m² como base. La cantidad a pedir se redondea después de aplicar la merma.</div></div></section>
+
+  <nav class="nav"><button class="active" data-nav="home">Calcular</button><button data-nav="work">Obra</button><button data-nav="list">Lista</button><button data-nav="help">Ayuda</button></nav>
+</div></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const num = s => Math.max(0, Number(String($(s).value).replace(',','.')) || 0);
+  let currentCat = 'ladrillos';
+  let work = [];
+
+  const screens = [...document.querySelectorAll('.screen')];
+  const nav = [...document.querySelectorAll('[data-nav]')];
+
+  const data = {
+    ladrillos:{
+      'Hueco sencillo 33x16.5x4':{u:18,m:18,p:630,w:1.5,img:'https://media.adeo.com/media/4414479/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/ladrillo-hueco-sencillo-33x16-5x4-cm-10497186.html',spec:'Cerámica · 33 × 16,5 × 4 cm'},
+      'Hueco doble 33x20x7':{u:15,m:23,p:270,w:3.1,img:'https://media.adeo.com/media/4412349/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/ladrillo-hueco-doble-33x20x7-cm-25030325.html',spec:'Cerámica · 33 × 20 × 7 cm'},
+      'Hueco triple 33x20x11':{u:15,m:30,p:180,w:4.87,img:'https://media.adeo.com/media/4411617/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/ladrillo-hueco-triple-33x20x11-cm-10806782.html',spec:'Cerámica · 33 × 20 × 11 cm'},
+      'Termocerámico 14 cm':{u:15,m:40,p:135,w:6.5,img:'https://media.adeo.com/media/4408513/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-ladrillo-termoceramico-33x20x14-cm-10497165.html',spec:'Termocerámico · 33 × 20 × 14 cm'},
+      'Termocerámico 20 cm':{u:15,m:56,p:105,w:9,img:'https://media.adeo.com/media/4413192/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-ladrillo-termoceramico-33x20x20-cm-10497151.html',spec:'Termocerámico · 33 × 20 × 20 cm'},
+      'Termocerámico 24 cm':{u:15,m:67,p:90,w:10.1,img:'https://media.adeo.com/media/5987333/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-ladrillo-termoceramico-33x20x24-cm-10497130.html',spec:'Termocerámico · 33 × 20 × 24 cm'},
+      'Termocerámico 29 cm':{u:15,m:81,p:75,w:12.2,img:'https://media.adeo.com/media/4411230/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-ladrillo-termoceramico-33x20x29-cm-10860276.html',spec:'Termocerámico · 33 × 20 × 29 cm'},
+      'Perforado 10 cm':{u:40,m:60,p:360,w:2.3,img:'https://media.adeo.com/media/4405832/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/ladrillo-perforado-24x11-5x10-cm-10741444.html',spec:'Ladrillo perforado · 10 cm'},
+      'Perforado 20 cm':{u:20,m:35,p:180,w:4.2,img:'https://media.adeo.com/media/4405832/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/materiales-de-construccion/ladrillos-y-bloques/',spec:'Ladrillo perforado · 20 cm'},
+      'Rojo liso caravista 24x12x5':{u:67,m:null,p:578,w:1.15,img:'https://media.adeo.com/media/4421256/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/ladrillo-cara-vista-hidrofugo-rojo-24x12x5-cm-10743334.html',spec:'Caravista rojo · 24 × 12 × 5 cm'}
+    },
+    bloques:{
+      'Bloque ligero gris 39x19x19':{u:13.5,m:100,p:90,w:14.1,img:'https://media.adeo.com/media/4413313/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-de-hormigon-ligero-39x19x19-cm-gris-25077481.html',spec:'Hormigón ligero · gris'},
+      'Bloque tapado gris 39x19x19':{u:13.5,m:87.5,p:90,w:13,img:'https://media.adeo.com/media/4402990/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-de-hormigon-tapado-39x19x19-cm-gris-25077468.html',spec:'Hormigón · tapado'},
+      'Bloque redondo gris 39x19x19':{u:13.5,m:87.5,p:75,w:16,img:'https://media.adeo.com/media/4406324/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-de-hormigon-redondo-39x19x19-cm-gris-25077469.html',spec:'Hormigón · redondo'},
+      'Bloque ligero blanco 39x19x19':{u:13.5,m:100,p:90,w:14.1,img:'https://media.adeo.com/media/4398681/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-de-hormigon-ligero-39x19x19-cm-blanco-10806726.html',spec:'Hormigón ligero · blanco'},
+      'Bloque tapado gris 39x19x15':{u:13.5,m:75,p:105,w:12.48,img:'https://media.adeo.com/media/4413313/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-de-hormigon-tapado-39x19x15-cm-gris-25077490.html',spec:'Hormigón · 39 × 19 × 15 cm'},
+      'Bloque gris 39x19x10':{u:13.5,m:50,p:132,w:9,img:'https://media.adeo.com/media/4398369/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',url:'https://www.obramat.es/productos/bloque-de-hormigon-39x19x10-cm-gris-25077477.html',spec:'Hormigón · 39 × 19 × 10 cm'}
+    },
+    revestimientos:{
+      'weber.rev fino':{kg:1.7,max:5,p:48,img:'weberrev-fino.jpg',url:'https://www.obramat.es/productos/mortero-de-revoco-en-capa-fina-weberev-fino-25-kg-blanco-10260831.html',spec:'WEBER · saco 25 kg'},
+      'weberpral prisma':{kg:1.5,max:30,p:48,img:'weberpral-prisma.jpg',url:'https://www.obramat.es/productos/mortero-monocapa-weberpral-prisma-25-kg-blanco-10484964.html',spec:'WEBER · monocapa'},
+      'weberev hidro PLUS':{kg:1.8,max:20,p:48,img:'weberev-hidro-plus.jpg',url:'https://www.obramat.es/productos/mortero-de-revoco-weberev-hidro-plus-25-kg-blanco-25035052.html',spec:'WEBER · revoco hidrófugo'},
+      'APLICAREV Cal Nature Pro':{kg:1.9,max:20,p:64,img:'aplicarev-cal-nature-pro.jpg',url:'https://www.obramat.es/productos/mortero-revoco-base-cal-aplicarev-nature-pro-25-kg-blanco-25060942.html',spec:'CAPA · Nature Pro'},
+      'Mortero Cal base Aplicarev 25kg BCO':{kg:1.4,max:50,p:48,img:'mortero-cal-base-aplicarev-25kg-bco.jpg',url:'https://www.obramat.es/productos/mortero-base-cal-aplicarev-25-kg-blanco-25054254.html',spec:'CAPA · base cal'},
+      'Mortero Cal revoco Aplicarev 25kg BCO':{kg:1.4,max:9,p:48,img:'aplicarev-cal-nature-pro.jpg',url:'https://www.obramat.es/productos/mortero-aplica-rev-cal-revoco-25-kg-blanco-25054253.html',spec:'CAPA · revoco cal'}
+    },
+    puentes:{
+      'Puente de unión PLUS (MH)':{min:.2,max:.25,k:'litros',img:'puente-union-plus.jpg',url:'https://www.obramat.es/productos/imprimacion-de-adherencia-puente-de-union-plus-morteros-henares-25-l-25058268.html',spec:'Morteros Henares'},
+      'SikaTop-30':{min:.15,max:.175,k:'litros',img:'sikatop-30.jpg',url:'https://www.obramat.es/productos/aditivos-sikatop-30-imprimacion-de-adherencia-5-kg-10974131.html',spec:'SIKA · 5 kg'},
+      'SikaTop-50':{min:.125,max:.15,k:'litros',img:'SikaTop-50.jpg',url:'https://www.obramat.es/productos/imprimacion-de-adherencia-sikatop-50-resina-de-union-0-5-l-10590174.html',spec:'SIKA · resina de unión'},
+      'SikaTop®-10':{min:.8,max:.8,d:1.32,k:'sikatop10',img:'sikatop-10.jpg',url:'https://www.obramat.es/productos/imprimacion-de-adherencia-sikatop-10-5-kg-10418513.html',spec:'SIKA · 5 kg'},
+      'Puente de Unión Morteros Henares (PTU-20)':{min:.4,max:.45,d:1.4,k:'rango_kilos',img:'puente-de-union-morteros-henares-ptu-20.jpg',url:'https://www.obramat.es/nuestras-marcas/morteros-henares/',spec:'Morteros Henares · PTU-20'},
+      'Aplica primer TOP 5KG':{min:.125,max:.175,d:1.43,k:'rango_kilos',img:'aplica-primer-top-5kg.jpg',url:'https://www.obramat.es/productos/imprimacion-de-adherencia-aplica-primer-top-5-kg-10697106.html',spec:'CAPA · 5 kg'},
+      'Imprimacion Aplica Level Primer 5 L':{k:'level_primer',img:'aplica-primer-top-5kg.jpg',url:'https://www.obramat.es/productos/imprimacion-aplica-level-primer-5-l-10520580.html',spec:'CAPA · 5 L'}
+    }
+  };
+
+  function show(id){
+    screens.forEach(x=>x.classList.toggle('active',x.id===id));
+    nav.forEach(b=>b.classList.toggle('active',b.dataset.nav===(['wall','lining','roof','wet'].includes(id)?'home':id)));
+    if(id==='work') renderWork();
+    if(id==='list') renderList();
+  }
+
+  document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{show(b.dataset.open);if(b.dataset.open==='wet'){renderProducts();calcWet();}});
+  document.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>show('home'));
+  nav.forEach(b=>b.onclick=()=>show(b.dataset.nav));
+  $('#look').onclick=()=>$('#appearance').classList.toggle('open');
+
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{
+    document.body.dataset.mode=b.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  });
+
+  document.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>{
+    const [a,s,o]=b.dataset.ac.split('|');
+    document.documentElement.style.setProperty('--accent',a);
+    document.documentElement.style.setProperty('--accent2',a);
+    document.documentElement.style.setProperty('--accentSoft',s);
+    document.documentElement.style.setProperty('--on',o);
+    document.querySelectorAll('[data-ac]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  });
+
+  function resultHTML(title,meta,rows){
+    return '<div class="resultHead"><div class="eyebrow">RESULTADO</div><div class="resultTitle">'+title+'</div><div class="resultMeta">'+meta+'</div></div>'+
+      '<div class="groupHead">MATERIALES</div>'+
+      rows.map(x=>'<div class="row"><div class="rowName">'+x[0]+'</div><div class="rowVal">'+x[1]+'</div>'+(x[2]?'<div class="rowDetail">'+x[2]+'</div>':'')+'</div>').join('')+
+      '<div class="actions"><button class="btn addWork" type="button">Añadir a Obra</button></div>';
+  }
+  function bindAdd(el,obj){const b=el.querySelector('.addWork');if(b)b.onclick=e=>{work.push(obj);e.target.textContent='Añadido';setTimeout(()=>e.target.textContent='Añadir a Obra',700);};}
+
+  function calcWall(){
+    const L=num('#wL'),H=num('#wH'),A=L*H,a=num('#wA'),b=num('#wB'),sp=num('#wS')||.6,p=num('#wP'),studs=Math.ceil(L/sp)+1;
+    const rows=[['Placa PYL 1200 × 2500',Math.ceil(A*(a+b)/3*1.08)+' uds',(a+b)+' capas totales'],['Montante M'+p,studs*Math.ceil(H/3)+' barras',studs+' ejes'],['Canal R'+p,Math.ceil(2*L/3)+' barras','Suelo y techo']];
+    const obj={title:'Tabique · '+A.toFixed(2)+' m²',items:rows};
+    $('#wallResult').innerHTML=resultHTML(obj.title,'Intereje '+Math.round(sp*1000)+' mm',rows);bindAdd($('#wallResult'),obj);
+  }
+  $('#wallForm').onsubmit=e=>{e.preventDefault();calcWall();};
+
+  function calcLining(){
+    const L=num('#lL'),H=num('#lH'),A=L*H,t=$('#lType').value,l=num('#lLayers'),sp=num('#lS')||.6,p=num('#lP');
+    const rows=[['Placa PYL 1200 × 2500',Math.ceil(A*l/3*1.08)+' uds',l+' capa(s)']];
+    let title='';
+    $('#lProfileWrap').classList.toggle('hidden',t==='direct');
+    if(t==='direct'){title='Trasdosado directo';rows.push(['Pasta de agarre',Math.ceil(A*4.5)+' kg','Consumo orientativo']);}
+    else if(t==='semi'){title='Trasdosado semidirecto';const o=Math.ceil(L/sp)+1;rows.push(['Perfil omega / auxiliar',o*Math.ceil(H/3)+' barras',o+' ejes']);}
+    else{title='Trasdosado autoportante';const s=Math.ceil(L/sp)+1;rows.push(['Montante M'+p,s*Math.ceil(H/3)+' barras',s+' ejes'],['Canal R'+p,Math.ceil(2*L/3)+' barras','Suelo y techo']);}
+    const obj={title:title+' · '+A.toFixed(2)+' m²',items:rows};
+    $('#liningResult').innerHTML=resultHTML(obj.title,'Intereje '+Math.round(sp*1000)+' mm',rows);bindAdd($('#liningResult'),obj);
+  }
+  $('#liningForm').onsubmit=e=>{e.preventDefault();calcLining();};
+  ['#lType','#lLayers','#lS','#lP'].forEach(x=>$(x).onchange=calcLining);
+
+  function calcRoof(){
+    const L=num('#rL'),W=num('#rW'),A=L*W,l=num('#rLayers'),fmt=$('#rBoard').value.split(',').map(Number),plates=Math.ceil(A*l*1.08/(fmt[0]*fmt[1])),sys=$('#rSys').value,d=num('#rDrop');
+    const rows=[['Placa PYL '+Math.round(fmt[0]*1000)+' × '+Math.round(fmt[1]*1000),plates+' uds',l+' capa(s)']];
+    if(sys==='double')rows.push(['TC47 primario',Math.ceil(A/2.7)+' barras','Primaria'],['TC47 secundario',Math.ceil(A/1.5)+' barras','Secundaria'],['Crucetas',Math.ceil(A/.475)+' uds','Cruces'],['Horquillas',Math.ceil(A/.95)+' uds','Suspensiones'],['Varilla M6 1 m',Math.ceil(A/.95*Math.max(.05,d/100))+' uds','Plenum '+d+' cm']);
+    else if(sys==='simple')rows.push(['TC47 portante',Math.ceil(A/1.5)+' barras','Estructura'],['Horquillas',Math.ceil(A/1.2)+' uds','Suspensiones'],['Varilla M6 1 m',Math.ceil(A/1.2*Math.max(.05,d/100))+' uds','Plenum '+d+' cm']);
+    else if(sys==='sierra')rows.push(['Perfil sierra',Math.ceil(A/2.7)+' barras','Primario'],['TC47 secundario',Math.ceil(A/1.5)+' barras','Secundario'],['Suspensiones',Math.ceil(A/.95)+' uds','Puntos de suspensión']);
+    else rows.push(['Canal R70',Math.ceil(2*(L+W)/3)+' barras','Perímetro'],['Montante M70',Math.ceil(A/1.8)+' barras','Portante'],['Suspensiones MS',Math.ceil(A/2.7)+' uds','Puntos de suspensión']);
+    const obj={title:'Techo · '+A.toFixed(2)+' m²',items:rows};
+    $('#roofResult').innerHTML=resultHTML(obj.title,'Plenum '+d+' cm',rows);bindAdd($('#roofResult'),obj);
+  }
+  $('#roofForm').onsubmit=e=>{e.preventDefault();calcRoof();};
+
+  document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{
+    currentCat=b.dataset.cat;
+    document.querySelectorAll('[data-cat]').forEach(x=>x.classList.toggle('active',x===b));
+    $('#wetWaste').value=currentCat==='puentes'?'0':'8';
+    renderProducts();calcWet();
+  });
+
+  function renderProducts(){
+    const s=$('#wetProduct');s.innerHTML='';
+    Object.keys(data[currentCat]).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;s.appendChild(o);});
+    syncWet();
+  }
+  function wetArea(){return $('#wetMeasureMode').value==='direct'?num('#wetArea'):num('#wetL')*num('#wetH');}
+  function syncWet(){
+    const name=$('#wetProduct').value,it=data[currentCat][name],dims=$('#wetMeasureMode').value==='dims';
+    $('#wetAreaWrap').classList.toggle('hidden',dims);$('#wetLWrap').classList.toggle('hidden',!dims);$('#wetHWrap').classList.toggle('hidden',!dims);
+    $('#wetThicknessWrap').classList.toggle('hidden',currentCat!=='revestimientos');
+    $('#wetMortarWrap').classList.toggle('hidden',!(currentCat==='ladrillos'||currentCat==='bloques'));
+    $('#wetSupportWrap').classList.toggle('hidden',!(currentCat==='puentes'&&it&&it.k==='level_primer'));
+    if(it){
+      $('#productImg').src=it.img;$('#productName').textContent=name;$('#productSpec').textContent=it.spec||'';$('#productLink').href=it.url;
+      const chips=[];if(it.u)chips.push(it.u+' ud/m²');if(it.p)chips.push('Palet '+it.p);if(it.kg)chips.push(it.kg+' kg/m²·mm');if(it.min!=null&&it.max!=null)chips.push(it.min===it.max?it.min+' consumo':it.min+'–'+it.max+' consumo');
+      $('#productChips').innerHTML=chips.map(x=>'<span class="chip">'+x+'</span>').join('');
+    }
+    $('#wetInfo').textContent=currentCat==='ladrillos'||currentCat==='bloques'?'El rendimiento base se muestra separado de la merma.':currentCat==='revestimientos'?'El consumo depende del espesor seleccionado.':'Cada puente de unión mantiene su fórmula específica.';
+  }
+  function calcWet(){
+    syncWet();const name=$('#wetProduct').value,it=data[currentCat][name];if(!it)return;
+    const A=wetArea(),w=num('#wetWaste'),f=1+w/100,rows=[];
+    if(currentCat==='ladrillos'||currentCat==='bloques'){
+      const base=it.u*A,uds=Math.ceil(base*f),kg=uds*it.w;
+      rows.push([name,uds+' uds',it.u+' ud/m² base · '+Math.ceil(base)+' uds sin merma · '+kg.toFixed(2)+' kg · '+(uds/it.p).toFixed(2)+' palets equiv.']);
+      if(it.m){const mk=it.m*A*f;if($('#wetMortar').value==='predosificado')rows.push(['Mortero',Math.ceil(mk/25)+' sacos de 25 kg',mk.toFixed(2)+' kg estimados']);else rows.push(['Mortero hecho en obra',mk.toFixed(2)+' kg','Dosificación a verificar según mortero']);}
+    } else if(currentCat==='revestimientos'){
+      const th=Math.max(1,num('#wetThickness')),kg=it.kg*th*A*f;rows.push([name,Math.ceil(kg/25)+' sacos',kg.toFixed(2)+' kg · espesor '+th+' mm']);if(th>it.max)rows.push(['Aviso','Espesor excedido','Máximo almacenado: '+it.max+' mm']);
+    } else {
+      if(it.k==='level_primer'){const s=$('#wetSupport').value,c=s==='sin_absorcion'?.075:s==='poco_poroso'?.06:.11,total=A*c*f;rows.push([name,Math.ceil(total/5)+' botes de 5 L',total.toFixed(2)+' L estimados']);}
+      else if(it.k==='sikatop10'||it.k==='rango_kilos'){const c=it.k==='sikatop10'?it.min:(it.min+it.max)/2,kg=A*c*f,L=kg/it.d;rows.push([name,Math.ceil(L)+' L',L.toFixed(2)+' L exactos · '+kg.toFixed(2)+' kg aprox.']);}
+      else {const L=A*((it.min+it.max)/2)*f;rows.push([name,Math.ceil(L)+' L',L.toFixed(2)+' L calculados']);}
+    }
+    const obj={title:name+' · '+A.toFixed(2)+' m²',items:rows};
+    $('#wetResult').innerHTML=resultHTML(obj.title,'Merma '+w+' %',rows);bindAdd($('#wetResult'),obj);
+  }
+  $('#wetForm').onsubmit=e=>{e.preventDefault();calcWet();};
+  ['#wetProduct','#wetMeasureMode','#wetThickness','#wetSupport','#wetMortar','#wetWaste'].forEach(x=>$(x).onchange=calcWet);
+
+  function renderWork(){
+    const c=$('#workContent');
+    c.innerHTML=work.length?work.map((x,i)=>'<div class="workItem"><b>'+(i+1)+'. '+x.title+'</b><br><button class="btn" data-del="'+i+'" style="margin-top:8px">Eliminar</button></div>').join(''):'<div class="empty">Todavía no has añadido partidas.</div>';
+    c.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{work.splice(Number(b.dataset.del),1);renderWork();});
+  }
+  function renderList(){
+    const c=$('#listContent');
+    c.innerHTML=work.length?work.flatMap(x=>x.items).map(x=>'<div class="listLine"><span>'+x[0]+'</span><strong>'+x[1]+'</strong></div>').join(''):'<div class="empty">Añade partidas para generar la lista.</div>';
+  }
+
+  renderProducts();calcWall();calcLining();calcRoof();calcWet();
+})();
+</script>
 </body>
 </html>
