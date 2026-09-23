@@ -186,7 +186,8 @@
       </label></div>
       <button class="calc" id="loadObramatCeramic" type="button" style="margin-top:10px">BUSCAR PRODUCTO Y CALCULAR</button>
       <div id="cerProductStatus" class="small" style="margin-top:8px"></div>
-      <button class="btn" id="chooseObramatCeramic" type="button" style="margin-top:12px;width:100%">ELEGIR CERÁMICA EN OBRAMAT</button>
+      <div id="cerProductCard" class="hidden" style="margin-top:12px;padding:12px;border:1.5px solid var(--line);border-radius:14px;background:var(--soft)"></div>
+      <button class="btn" id="chooseObramatCeramic" type="button" style="margin-top:12px;width:100%">ABRIR CATÁLOGO OBRAMAT</button>
       <div class="info" style="margin-top:10px">Introduce la referencia OBRAMAT. Si el producto puede verificarse, sus dimensiones se incorporarán al cálculo. Precio y stock solo se mostrarán cuando puedan verificarse para el almacén seleccionado.</div>
     </div>
     <form id="levelForm"><div class="panel"><div class="grid">
@@ -311,13 +312,40 @@
     },{enableHighAccuracy:true,timeout:12000,maximumAge:300000});
   };
   $('#changePostal').onclick=()=>{$('#postalCode').value=postalState.code||'';$('#storebar').classList.remove('show');show('postal');};
-  $('#loadObramatCeramic').onclick=()=>{
+  $('#loadObramatCeramic').onclick=async()=>{
     const code=$('#cerProductCode').value.trim().replace(/\D/g,'');
-    const status=$('#cerProductStatus');
+    const status=$('#cerProductStatus'),card=$('#cerProductCard');
+    card.classList.add('hidden');card.innerHTML='';
     if(!/^\d{6,12}$/.test(code)){status.textContent='Introduce una referencia OBRAMAT válida.';return;}
-    status.textContent='Abriendo la ficha OBRAMAT de la referencia '+code+'. Si OBRAMAT no expone los datos al navegador, no se inventarán medidas, precio ni stock.';
-    // La URL de búsqueda permite resolver la referencia en OBRAMAT sin inventar un slug de producto.
-    window.open('https://www.obramat.es/catalogsearch/result/?q='+encodeURIComponent(code),'_blank','noopener');
+    const cp=postalState.code||'',store=postalState.store||resolveStore(cp);
+    status.textContent='Buscando la referencia '+code+' dentro de la calculadora…';
+    try{
+      const url='https://www.obramat.es/catalogsearch/result/?q='+encodeURIComponent(code);
+      const res=await fetch(url,{method:'GET',mode:'cors',headers:{'Accept':'text/html'}});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const html=await res.text();
+      if(!html.includes(code)) throw new Error('Referencia no localizada');
+      const plain=new DOMParser().parseFromString(html,'text/html').body.innerText.replace(/\s+/g,' ');
+      const dims=plain.match(/(\d{2,3}(?:[,.]\d+)?)\s*[x×]\s*(\d{2,3}(?:[,.]\d+)?)\s*cm/i);
+      const titleDoc=new DOMParser().parseFromString(html,'text/html');
+      const h=titleDoc.querySelector('h1,.product-item-name,.product-name');
+      const name=(h&&h.textContent.trim())||('Producto OBRAMAT '+code);
+      let body='<div style="font-weight:950">'+name+'</div><div class="small">Ref. '+code+' · '+store+(cp?' · CP '+cp:'')+'</div>';
+      if(dims){
+        const a=Number(dims[1].replace(',','.')),b=Number(dims[2].replace(',','.'));
+        body+='<div class="small" style="margin-top:6px">Formato detectado: '+a+' × '+b+' cm</div><button type="button" class="btn" id="useCerProduct" style="margin-top:10px;width:100%">AÑADIR AL CÁLCULO</button>';
+        card.innerHTML=body;card.classList.remove('hidden');
+        $('#useCerProduct').onclick=()=>{$('#cA').value=a;$('#cB').value=b;$('#aSize').value=Math.max(a,b);status.textContent='Producto '+code+' añadido al cálculo. Revisa superficie y condiciones de colocación.';calcLevel();};
+        status.textContent='Producto localizado. Confirma y añádelo al cálculo.';
+      }else{
+        card.innerHTML=body+'<div class="info" style="margin-top:8px">La referencia existe, pero OBRAMAT no ha expuesto un formato que pueda leerse con seguridad. No se rellenarán medidas inventadas.</div>';
+        card.classList.remove('hidden');status.textContent='Referencia localizada, datos técnicos incompletos.';
+      }
+    }catch(err){
+      status.textContent='No se ha podido consultar OBRAMAT desde esta página. Permaneces en la calculadora; no se abrirá ninguna web externa.';
+      card.innerHTML='<div style="font-weight:900">Ref. '+code+'</div><div class="small">Consulta online bloqueada o no disponible para '+store+'. Puedes seguir usando la calculadora manualmente sin perder los datos introducidos.</div>';
+      card.classList.remove('hidden');
+    }
   };
   $('#chooseObramatCeramic').onclick=()=>{
     const cp=postalState.code||'';
