@@ -181,8 +181,13 @@
     <div class="panel" style="margin-bottom:12px">
       <div style="font-weight:950;margin-bottom:6px">Cerámica de OBRAMAT</div>
       <div class="small" id="cerStoreText">El catálogo se abrirá usando el código postal seleccionado en la calculadora.</div>
-      <button class="calc" id="chooseObramatCeramic" type="button" style="margin-top:12px">ELEGIR CERÁMICA EN OBRAMAT</button>
-      <div class="info" style="margin-top:10px">Al volver, introduce o confirma las dimensiones del producto elegido. La integración automática de referencia, precio y stock solo se activará cuando esos datos puedan verificarse para el almacén seleccionado.</div>
+      <div style="margin-top:12px"><label>Código / referencia de producto OBRAMAT
+        <input id="cerProductCode" inputmode="numeric" autocomplete="off" placeholder="Ej. 10942085" style="width:100%;margin-top:6px">
+      </label></div>
+      <button class="calc" id="loadObramatCeramic" type="button" style="margin-top:10px">BUSCAR PRODUCTO Y CALCULAR</button>
+      <div id="cerProductStatus" class="small" style="margin-top:8px"></div>
+      <button class="btn" id="chooseObramatCeramic" type="button" style="margin-top:12px;width:100%">ELEGIR CERÁMICA EN OBRAMAT</button>
+      <div class="info" style="margin-top:10px">Introduce la referencia OBRAMAT. Si el producto puede verificarse, sus dimensiones se incorporarán al cálculo. Precio y stock solo se mostrarán cuando puedan verificarse para el almacén seleccionado.</div>
     </div>
     <form id="levelForm"><div class="panel"><div class="grid">
       <label>Lado A de baldosa (cm)<input id="cA" value="60" inputmode="decimal"></label>
@@ -306,6 +311,14 @@
     },{enableHighAccuracy:true,timeout:12000,maximumAge:300000});
   };
   $('#changePostal').onclick=()=>{$('#postalCode').value=postalState.code||'';$('#storebar').classList.remove('show');show('postal');};
+  $('#loadObramatCeramic').onclick=()=>{
+    const code=$('#cerProductCode').value.trim().replace(/\D/g,'');
+    const status=$('#cerProductStatus');
+    if(!/^\d{6,12}$/.test(code)){status.textContent='Introduce una referencia OBRAMAT válida.';return;}
+    status.textContent='Abriendo la ficha OBRAMAT de la referencia '+code+'. Si OBRAMAT no expone los datos al navegador, no se inventarán medidas, precio ni stock.';
+    // La URL de búsqueda permite resolver la referencia en OBRAMAT sin inventar un slug de producto.
+    window.open('https://www.obramat.es/catalogsearch/result/?q='+encodeURIComponent(code),'_blank','noopener');
+  };
   $('#chooseObramatCeramic').onclick=()=>{
     const cp=postalState.code||'';
     const store=postalState.store||resolveStore(cp);
