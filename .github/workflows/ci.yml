@@ -1,0 +1,89 @@
+name: CI Calculadora
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    name: Validar index.html
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Comprobar que index.html no está vacío ni recortado
+        run: |
+          set -euo pipefail
+          test -f index.html
+          BYTES=$(wc -c < index.html)
+          echo "Tamaño index.html: $BYTES bytes"
+          if [ "$BYTES" -lt 20000 ]; then
+            echo "::error::index.html mide ${BYTES} bytes. La calculadora completa supera 50 KB. No publiques un HTML recortado."
+            exit 1
+          fi
+
+      - name: Comprobar módulos y funciones obligatorias
+        run: |
+          set -euo pipefail
+          python3 - << 'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8", errors="replace")
+          missing = []
+          for token in [
+              'id="postal"',
+              'id="home"',
+              'id="wall"',
+              'id="lining"',
+              'id="roof"',
+              'id="wet"',
+              'id="ceramic"',
+              'id="work"',
+              'id="list"',
+              'id="help"',
+              'id="cBond"',
+              'data-cer-body',
+              "function calcWall",
+              "function calcLining",
+              "function calcRoof",
+              "function calcWet",
+              "function calcLevel",
+              "function pylPallets",
+              "function ceramicGlueKgM2",
+              "function adhesiveClass",
+          ]:
+              if token not in html:
+                  missing.append(token)
+          if missing:
+              print("Faltan piezas de la calculadora:")
+              for m in missing:
+                  print(" -", m)
+              raise SystemExit(1)
+          print("Módulos y funciones obligatorias presentes.")
+          PY
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Extraer JavaScript y comprobar sintaxis
+        run: |
+          set -euo pipefail
+          python3 - << 'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8", errors="replace")
+          start = html.find("<script>")
+          end = html.rfind("</script>")
+          if start < 0 or end < 0 or end <= start:
+              raise SystemExit("No hay bloque <script> en index.html")
+          js = html[start + len("<script>"):end].strip()
+          Path("/tmp/calc.js").write_text(js, encoding="utf-8")
+          print(f"JavaScript extraído: {len(js)} caracteres")
+          PY
+          node --check /tmp/calc.js
+          echo "Sintaxis JavaScript correcta."
