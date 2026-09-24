@@ -101,15 +101,15 @@
   }
   function mmRow(area, kind){
     const mm = mmScrews(area, kind);
-    const src = kind === 'roof' ? 'Placo techo 5 ud/m² · Knauf LN/LB' : 'Pladur Metal 3 ud/m² · Knauf LN 3,5×11';
-    return ['Tornillos metal-metal MM 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', src + ' · +10% · envase habitual 500 ud'];
+    const src = kind === 'roof' ? 'techo 5 ud/m² de estructura' : 'tabique 3 ud/m² de estructura';
+    return ['Tornillos metal-metal 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', 'UNE 102043 y UNE-EN 14566 · ' + src + ' · +10% merma · caja 500 ud'];
   }
   function screwBoxes(n){ return Math.ceil(Math.max(0, n) / 1000); }
   function pylFaceWork(area, layers){
     const A = Math.max(0, area), n = Math.max(0, Math.round(Number(layers) || 0)), waste = 1.10;
     const inner = Math.max(0, n - 1), visible = n > 0 ? 1 : 0;
     const firstRate = n >= 2 ? 8 : (n === 1 ? 15 : 0), secondRate = n >= 2 ? 15 : 0;
-    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'TN/PM 25', secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?'TN/PM 35':'', tapeInner:Math.ceil(inner*A*1.6*waste), tapeVisible:Math.ceil(visible*A*1.6*waste), pasteInner:Math.ceil(inner*A*0.20*waste), pasteVisible:Math.ceil(visible*A*0.40*waste)};
+    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'3,5 × 25', secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?'3,5 × 35':'', tapeInner:Math.ceil(inner*A*1.6*waste), tapeVisible:Math.ceil(visible*A*1.6*waste), pasteInner:Math.ceil(inner*A*0.20*waste), pasteVisible:Math.ceil(visible*A*0.40*waste)};
   }
   function mergeFaceWork(list){
     return list.reduce((acc, x) => {
@@ -121,16 +121,16 @@
       if(x.n >= 2) acc.hasInner = 1;
       acc.firstType = x.firstType; acc.secondType = x.secondType || acc.secondType;
       return acc;
-    }, {firstNeed:0,secondNeed:0,tapeInner:0,tapeVisible:0,pasteInner:0,pasteVisible:0,hasSecond:0,hasVisible:0,hasInner:0,firstType:'TN/PM 25',secondType:'TN/PM 35'});
+    }, {firstNeed:0,secondNeed:0,tapeInner:0,tapeVisible:0,pasteInner:0,pasteVisible:0,hasSecond:0,hasVisible:0,hasInner:0,firstType:'3,5 × 25',secondType:'3,5 × 35'});
   }
   function pylJoinRows(w){
     const rows = [];
-    if(w.firstNeed) rows.push([w.hasSecond ? 'Tornillos 1.ª placa ' + w.firstType : 'Tornillos PYL ' + w.firstType, w.firstNeed + ' uds · ' + screwBoxes(w.firstNeed) + ' caja(s) de 1.000', w.hasSecond ? 'Capa interior · Pladur/Knauf ≈ 8 ud/m²·cara · paso amplio · +10%' : 'Cara vista de 1 placa · 15 ud/m² · paso 250 mm · PM = espesor + 10 mm · +10%']);
-    if(w.hasSecond && w.secondNeed) rows.push(['Tornillos 2.ª placa ' + w.secondType, w.secondNeed + ' uds · ' + screwBoxes(w.secondNeed) + ' caja(s) de 1.000', 'Cara vista · 15 ud/m² · paso 250 mm · 2 placas + 10 mm · Pladur PM 35 / Knauf TN 35 · +10%']);
-    if(w.hasInner && w.tapeInner) rows.push(['Cinta de papel 1.ª capa', w.tapeInner + ' m · ' + Math.ceil(w.tapeInner / 150) + ' rollo(s) de 150 m', 'UNE 102043 / Pladur: juntas de todas las capas']);
-    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'Capa interior Q1 · ≈ 0,20 kg/m²']);
-    if(w.hasVisible && w.tapeVisible) rows.push(['Cinta de papel cara vista', w.tapeVisible + ' m · ' + Math.ceil(w.tapeVisible / 150) + ' rollo(s) de 150 m', 'Juntas de la última placa · 1,6 m/m² · +10%']);
-    if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'Q2 juntas + cabezas · ≈ 0,40 kg/m² · +10%']);
+    if(w.firstNeed) rows.push([w.hasSecond ? 'Tornillos 1.ª placa ' + w.firstType : 'Tornillos placa-metal ' + w.firstType, w.firstNeed + ' uds · ' + screwBoxes(w.firstNeed) + ' caja(s) de 1.000', w.hasSecond ? 'UNE 102043 · capa interior · ≈8 ud/m²·cara · paso amplio · +10% merma · UNE-EN 14566' : 'UNE 102043 · cara vista · 15 ud/m² · paso máx. 250 mm · largo = espesor + 10 mm · +10% merma']);
+    if(w.hasSecond && w.secondNeed) rows.push(['Tornillos 2.ª placa ' + w.secondType, w.secondNeed + ' uds · ' + screwBoxes(w.secondNeed) + ' caja(s) de 1.000', 'UNE 102043 · cara vista · 15 ud/m² · paso máx. 250 mm · largo = 2 placas + 10 mm · UNE-EN 14566 · +10% merma']);
+    if(w.hasInner && w.tapeInner) rows.push(['Cinta de papel 1.ª capa', w.tapeInner + ' m · ' + Math.ceil(w.tapeInner / 150) + ' rollo(s) de 150 m', 'UNE 102043 §18 · juntas de todas las capas · 1,6 m/m² · UNE-EN 13963']);
+    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'UNE 102043 · acabado Q1 interior · ≈0,20 kg/m² · UNE-EN 13963']);
+    if(w.hasVisible && w.tapeVisible) rows.push(['Cinta de papel cara vista', w.tapeVisible + ' m · ' + Math.ceil(w.tapeVisible / 150) + ' rollo(s) de 150 m', 'UNE 102043 §18 · junta de última placa · 1,6 m/m² · +10% merma · UNE-EN 13963']);
+    if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'UNE 102043 · acabado Q2 · juntas + cabezas · ≈0,40 kg/m² · +10% merma']);
     return rows;
   }
   on(el('loadObramatCeramic'), 'click', () => {
@@ -231,34 +231,34 @@
     const bandNeed = 2 * L + 2 * H;
     const finish = mergeFaceWork([pylFaceWork(A, a), pylFaceWork(A, b)]);
     const rows = [
-      ['Placa PYL ' + board.label, plateUds + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · cara 1: ' + a + ' · cara 2: ' + b],
-      ['Montante M' + p, studs * Math.ceil(H / 3) + ' barras', studs + ' ejes'],
-      ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo']
+      ['Placa PYL ' + board.label, plateUds + ' uds', 'UNE-EN 520 · elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · merma corte 8 % · cara 1: ' + a + ' · cara 2: ' + b],
+      ['Montante M' + p, studs * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + studs + ' ejes · barra 3 m'],
+      ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'UNE-EN 14195 · suelo y techo · barra 3 m']
     ];
     rows.push.apply(rows, pylJoinRows(finish));
     rows.push(mmRow(A, 'wall'));
-    rows.push(['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'Canales + encuentros laterales']);
+    rows.push(['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'UNE 102043 · perímetro de canales y arranques']);
     const obj = {title:'Tabique · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('wallResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, 'Intereje ' + Math.round(sp * 1000) + ' mm', rows); bindAdd(box, obj); }
+    if(box){ box.innerHTML = resultHTML(obj.title, 'UNE 102043 · intereje ' + Math.round(sp * 1000) + ' mm', rows); bindAdd(box, obj); }
   }
   on(el('wallForm'), 'submit', e => { e.preventDefault(); calcWall(); });
   function calcLining(){
     const L = num('lL'), H = num('lH'), A = L * H, t = el('lType') ? el('lType').value : 'auto', l = num('lLayers'), sp = num('lS') || .6, p = num('lP');
     const board = bestPylBoard(H);
     const liningPlates = Math.ceil(A * l / board.area * 1.08);
-    const rows = [['Placa PYL ' + board.label, liningPlates + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + l + ' capa(s)']];
+    const rows = [['Placa PYL ' + board.label, liningPlates + ' uds', 'UNE-EN 520 · elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · merma corte 8 % · ' + l + ' capa(s)']];
     let title = '';
     if(el('lProfileWrap')) el('lProfileWrap').classList.toggle('hidden', t === 'direct');
     const finish = mergeFaceWork([pylFaceWork(A, l)]);
-    if(t === 'direct'){ title = 'Trasdosado directo'; rows.push(['Pasta de agarre', Math.ceil(A * 4.5) + ' kg', 'Consumo orientativo']); }
-    else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', o + ' ejes']); }
-    else { title = 'Trasdosado autoportante'; const s = Math.ceil(L / sp) + 1; const bandNeed = 2 * L + 2 * H; rows.push(['Montante M' + p, s * Math.ceil(H / 3) + ' barras', s + ' ejes'], ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo'], ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'Canales + encuentros']); }
+    if(t === 'direct'){ title = 'Trasdosado directo'; rows.push(['Pasta de agarre', Math.ceil(A * 4.5) + ' kg', 'UNE 102043 · trasdosado directo · ≈4,5 kg/m²']); }
+    else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + o + ' ejes']); }
+    else { title = 'Trasdosado autoportante'; const s = Math.ceil(L / sp) + 1; const bandNeed = 2 * L + 2 * H; rows.push(['Montante M' + p, s * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + s + ' ejes · barra 3 m'], ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'UNE-EN 14195 · suelo y techo'], ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'UNE 102043 · perímetro']); }
     if(t !== 'direct'){ rows.push.apply(rows, pylJoinRows(finish)); rows.push(mmRow(A, 'lining')); }
     else rows.push.apply(rows, pylJoinRows(finish).filter(r => r[0].indexOf('Tornillos') !== 0));
     const obj = {title:title + ' · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('liningResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, 'Intereje ' + Math.round(sp * 1000) + ' mm', rows); bindAdd(box, obj); }
+    if(box){ box.innerHTML = resultHTML(obj.title, 'UNE 102043 · intereje ' + Math.round(sp * 1000) + ' mm', rows); bindAdd(box, obj); }
   }
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
   ['lType','lLayers','lS','lP'].forEach(id => on(el(id), 'change', calcLining));
@@ -267,16 +267,16 @@
     const fmt = (el('rBoard') ? el('rBoard').value : '2,1.2').split(',').map(Number);
     const plates = Math.ceil(A * l * 1.08 / (fmt[0] * fmt[1]));
     const sys = el('rSys') ? el('rSys').value : 'double', d = num('rDrop');
-    const rows = [['Placa PYL ' + Math.round(fmt[0] * 1000) + ' × ' + Math.round(fmt[1] * 1000), plates + ' uds', l + ' capa(s)']];
-    if(sys === 'double') rows.push(['TC47 primario', Math.ceil(A / 2.7) + ' barras', 'Primaria'], ['TC47 secundario', Math.ceil(A / 1.5) + ' barras', 'Secundaria'], ['Crucetas', Math.ceil(A / .475) + ' uds', 'Cruces'], ['Horquillas', Math.ceil(A / .95) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / .95 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
-    else if(sys === 'simple') rows.push(['TC47 portante', Math.ceil(A / 1.5) + ' barras', 'Estructura'], ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / 1.2 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
-    else if(sys === 'sierra') rows.push(['Perfil sierra', Math.ceil(A / 2.7) + ' barras', 'Primario'], ['TC47 secundario', Math.ceil(A / 1.5) + ' barras', 'Secundario'], ['Suspensiones', Math.ceil(A / .95) + ' uds', 'Puntos de suspensión']);
-    else rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'Perímetro'], ['Montante M70', Math.ceil(A / 1.8) + ' barras', 'Portante'], ['Suspensiones MS', Math.ceil(A / 2.7) + ' uds', 'Puntos de suspensión']);
+    const rows = [['Placa PYL ' + Math.round(fmt[0] * 1000) + ' × ' + Math.round(fmt[1] * 1000), plates + ' uds', 'UNE-EN 520 · ' + l + ' capa(s) · merma corte 8 %']];
+    if(sys === 'double') rows.push(['TC47 primario', Math.ceil(A / 2.7) + ' barras', 'UNE 102043 · primaria'], ['TC47 secundario', Math.ceil(A / 1.5) + ' barras', 'UNE 102043 · secundaria'], ['Crucetas', Math.ceil(A / .475) + ' uds', 'Cruces primaria-secundaria'], ['Horquillas', Math.ceil(A / .95) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / .95 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
+    else if(sys === 'simple') rows.push(['TC47 portante', Math.ceil(A / 1.5) + ' barras', 'UNE 102043 · estructura'], ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / 1.2 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
+    else if(sys === 'sierra') rows.push(['Perfil sierra', Math.ceil(A / 2.7) + ' barras', 'UNE 102043 · primario'], ['TC47 secundario', Math.ceil(A / 1.5) + ' barras', 'Secundario'], ['Suspensiones', Math.ceil(A / .95) + ' uds', 'Puntos de suspensión']);
+    else rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'UNE-EN 14195 · perímetro'], ['Montante M70', Math.ceil(A / 1.8) + ' barras', 'UNE-EN 14195 · portante'], ['Suspensiones MS', Math.ceil(A / 2.7) + ' uds', 'Puntos de suspensión']);
     rows.push.apply(rows, pylJoinRows(mergeFaceWork([pylFaceWork(A, l)])));
     rows.push(mmRow(A, 'roof'));
     const obj = {title:'Techo · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('roofResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, 'Plenum ' + d + ' cm', rows); bindAdd(box, obj); }
+    if(box){ box.innerHTML = resultHTML(obj.title, 'UNE 102043 · plenum ' + d + ' cm', rows); bindAdd(box, obj); }
   }
   on(el('roofForm'), 'submit', e => { e.preventDefault(); calcRoof(); });
   function renderProducts(){
@@ -318,28 +318,28 @@
     const A = wetArea(), w = num('wetWaste'), f = 1 + w / 100, rows = [];
     if(currentCat === 'ladrillos' || currentCat === 'bloques'){
       const base = it.u * A, uds = Math.ceil(base * f), kg = uds * it.w;
-      rows.push([name, uds + ' uds', it.u + ' ud/m² base · ' + Math.ceil(base) + ' uds sin merma · ' + kg.toFixed(2) + ' kg']);
+      rows.push([name, uds + ' uds', it.u + ' ud/m² base · ' + Math.ceil(base) + ' uds sin merma · +' + w + '% merma · ' + kg.toFixed(2) + ' kg']);
       if(it.m){
         const mk = it.m * A * f;
-        if(el('wetMortar') && el('wetMortar').value === 'predosificado') rows.push(['Mortero', Math.ceil(mk / 25) + ' sacos de 25 kg', mk.toFixed(2) + ' kg estimados']);
-        else rows.push(['Mortero hecho en obra', mk.toFixed(2) + ' kg', 'Dosificación a verificar según mortero']);
+        if(el('wetMortar') && el('wetMortar').value === 'predosificado') rows.push(['Mortero', Math.ceil(mk / 25) + ' sacos de 25 kg', mk.toFixed(2) + ' kg · consumo de tendel y llaga']);
+        else rows.push(['Mortero hecho en obra', mk.toFixed(2) + ' kg', 'Dosificación a verificar en obra']);
       }
     } else if(currentCat === 'revestimientos'){
       const th = Math.max(1, num('wetThickness')), kg = it.kg * th * A * f;
-      rows.push([name, Math.ceil(kg / 25) + ' sacos', kg.toFixed(2) + ' kg · espesor ' + th + ' mm']);
+      rows.push([name, Math.ceil(kg / 25) + ' sacos', kg.toFixed(2) + ' kg · espesor ' + th + ' mm · merma ' + w + ' %']);
       if(th > it.max) rows.push(['Aviso', 'Espesor excedido', 'Máximo almacenado: ' + it.max + ' mm']);
     } else {
       if(it.k === 'level_primer'){
         const s = el('wetSupport') ? el('wetSupport').value : 'poroso';
         const c = s === 'sin_absorcion' ? .075 : s === 'poco_poroso' ? .06 : .11;
         const total = A * c * f;
-        rows.push([name, Math.ceil(total / 5) + ' botes de 5 L', total.toFixed(2) + ' L estimados']);
+        rows.push([name, Math.ceil(total / 5) + ' botes de 5 L', total.toFixed(2) + ' L · consumo según absorción del soporte']);
       } else if(it.k === 'sikatop10' || it.k === 'rango_kilos'){
         const c = it.k === 'sikatop10' ? it.min : (it.min + it.max) / 2, kg = A * c * f, L = kg / it.d;
-        rows.push([name, Math.ceil(L) + ' L', L.toFixed(2) + ' L exactos · ' + kg.toFixed(2) + ' kg aprox.']);
+        rows.push([name, Math.ceil(L) + ' L', L.toFixed(2) + ' L · ' + kg.toFixed(2) + ' kg · ficha de consumo']);
       } else {
         const L = A * ((it.min + it.max) / 2) * f;
-        rows.push([name, Math.ceil(L) + ' L', L.toFixed(2) + ' L calculados']);
+        rows.push([name, Math.ceil(L) + ' L', L.toFixed(2) + ' L · media del rango de consumo']);
       }
     }
     const obj = {title:name + ' · ' + A.toFixed(2) + ' m²', items:rows};
@@ -364,17 +364,17 @@
     const bond = (el('cBond') && el('cBond').value) || 'doble', glueKgM2 = ceramicGlueKgM2(side, body, bond), bondLabel = bond === 'doble' ? 'Doble encolado' : 'Encolado simple';
     const glueKg = glueKgM2 * area * (1 + w / 100), groutKgM2 = side <= 30 ? 0.8 : side <= 60 ? 0.5 : 0.35, groutKg = groutKgM2 * area;
     const rows = [
-      ['Tipo de baldosa', ceramicBodyLabel(body), body === 'porcelanico' ? 'Baja absorción · adhesivo C2TE o superior' : 'Absorción media/alta · verificar ficha'],
-      ['Baldosas / piezas', tiles + ' uds', tilesM2.toFixed(2) + ' ud/m² base · formato ' + A + ' × ' + B + ' cm · merma ' + w + ' %'],
-      ['Calzos de nivelación', total + ' uds', clipsM2 + ' calzos/m² estimados'],
+      ['Tipo de baldosa', ceramicBodyLabel(body), body === 'porcelanico' ? 'UNE-EN 14411 · baja absorción · adhesivo C2TE o superior' : 'UNE-EN 14411 · absorción media/alta'],
+      ['Baldosas / piezas', tiles + ' uds', tilesM2.toFixed(2) + ' ud/m² · formato ' + A + ' × ' + B + ' cm · merma ' + w + ' %'],
+      ['Calzos de nivelación', total + ' uds', clipsM2 + ' calzos/m² · 2 puntos por pieza como base'],
       ['Cuñas reutilizables', 'No consumibles', 'Se reutilizan durante la colocación'],
-      ['Encolado', bondLabel, side > 45 || body === 'porcelanico' ? 'Recomendado doble si lado > 45 cm o porcelánico' : 'Capa en soporte y/o dorso'],
-      ['Cemento cola C2TE (consumo técnico)', Math.ceil(glueKg / 25) + ' saco(s) de 25 kg', glueKg.toFixed(1) + ' kg · ' + glueKgM2 + ' kg/m² · ' + bondLabel + '. No SKU OBRAMAT.'],
-      ['Mortero de juntas (consumo técnico)', Math.ceil(groutKg / 5) + ' saco(s) de 5 kg', groutKg.toFixed(1) + ' kg · estimación según formato.']
+      ['Encolado', bondLabel, side > 45 || body === 'porcelanico' ? 'Doble si lado > 45 cm o porcelánico · UNE-EN 12004' : 'Capa en soporte y/o dorso · UNE-EN 12004'],
+      ['Cemento cola C2TE', Math.ceil(glueKg / 25) + ' saco(s) de 25 kg', glueKg.toFixed(1) + ' kg · ' + glueKgM2 + ' kg/m² · ' + bondLabel + ' · UNE-EN 12004'],
+      ['Mortero de juntas', Math.ceil(groutKg / 5) + ' saco(s) de 5 kg', groutKg.toFixed(1) + ' kg · estimación por formato']
     ];
     const obj = {title:ceramicBodyLabel(body) + ' · ' + area.toFixed(2) + ' m²', items:rows};
     const box = el('levelResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, 'Baldosa ' + A + ' × ' + B + ' cm · merma ' + w + ' %', rows); bindAdd(box, obj); }
+    if(box){ box.innerHTML = resultHTML(obj.title, 'UNE-EN 14411 · ' + A + ' × ' + B + ' cm · merma ' + w + ' %', rows); bindAdd(box, obj); }
   }
   on(el('levelForm'), 'submit', e => { e.preventDefault(); calcLevel(); });
   on(el('cBond'), 'change', () => { calcLevel(); if(el('adhForm') && !el('adhForm').classList.contains('hidden')) adhesiveClass(); });
@@ -397,11 +397,11 @@
     const meanings = {C1:'Adhesivo cementoso de adherencia normal',C2:'Adhesivo cementoso de adherencia mejorada',C2TE:'Cementoso mejorado TE',C2TES1:'C2TE deformable',C2S1:'Cementoso mejorado deformable',C2S2:'Cementoso altamente deformable',R1:'Resinas reactivas',R2:'Resinas reactivas mejorado'};
     const area = num('cArea'), bond = (el('cBond') && el('cBond').value) || 'doble', glueKgM2 = ceramicGlueKgM2(size, body, bond), bondLabel = bond === 'doble' ? 'Doble encolado' : 'Encolado simple';
     const rows = [
-      ['Tipo de baldosa', ceramicBodyLabel(body), 'Influye en la clase mínima del adhesivo'],
-      ['Clasificación orientativa', cls, meanings[cls] || 'Consultar ficha'],
+      ['Tipo de baldosa', ceramicBodyLabel(body), 'UNE-EN 14411 · influye en la clase mínima'],
+      ['Clasificación orientativa', cls, 'UNE-EN 12004 · ' + (meanings[cls] || 'Consultar ficha')],
       ['Encolado', bondLabel, 'Simple ≈ 3–4 kg/m² · doble ≈ 5–6 kg/m²'],
-      ['Consumo técnico C2TE', area ? ((glueKgM2 * area).toFixed(1) + ' kg · ' + Math.ceil(glueKgM2 * area / 25) + ' saco(s) 25 kg') : glueKgM2 + ' kg/m²', glueKgM2 + ' kg/m² · ' + bondLabel],
-      ['Comprobación', 'Obligatoria', 'Verificar ficha técnica del fabricante']
+      ['Consumo técnico', area ? ((glueKgM2 * area).toFixed(1) + ' kg · ' + Math.ceil(glueKgM2 * area / 25) + ' saco(s) 25 kg') : glueKgM2 + ' kg/m²', glueKgM2 + ' kg/m² · ' + bondLabel + ' · UNE-EN 12004'],
+      ['Comprobación', 'Obligatoria', 'Verificar ficha técnica del adhesivo elegido']
     ];
     const box = el('adhResult');
     if(box){ box.classList.remove('hidden'); box.innerHTML = resultHTML('Cemento cola · ' + cls, ceramicBodyLabel(body) + ' · lado mayor ' + size + ' cm', rows); }
