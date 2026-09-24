@@ -55,41 +55,89 @@
   </section>
   <section class="screen" id="wall">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
-    <div class="sectionTitle">Tabique</div><p class="lead">Introduce medidas y configuración.</p>
+    <div class="sectionTitle">Tabique</div><p class="lead">Familia Tabique PYL. Medidas, capas y si lleva lana mineral en la cámara.</p>
+    <div class="famBanner"><span class="famName">Tabique PYL</span><span class="famSub">Autoportante · dos caras · UNE 102043</span></div>
     <form id="wallForm"><div class="panel"><div class="grid">
       <label>Largo (m)<input id="wL" value="4" inputmode="decimal"></label><label>Alto (m)<input id="wH" value="2.5" inputmode="decimal"></label>
       <label>Placas cara 1<select id="wA"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
       <label>Placas cara 2<select id="wB"><option value="1">1 placa</option><option value="2">2 placas</option></select></label>
       <label>Montante<select id="wP"><option value="48">M48</option><option value="70" selected>M70</option><option value="90">M90</option></select></label>
       <label>Intereje<select id="wS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
-    </div></div><button class="calc" type="submit">CALCULAR TABIQUE</button></form><div class="result" id="wallResult"></div>
+      <label>Lana mineral<select id="wWool"><option value="1" selected>Sí · relleno de cámara</option><option value="0">No</option></select></label>
+    </div>
+    <div class="info" id="wWoolHint">Espesor de lana según montante: M48 → 40 mm · M70 → 60 mm · M90 → 80 mm. 1 m²/m² + 8 % merma. UNE-EN 13162.</div>
+    </div><button class="calc" type="submit">CALCULAR TABIQUE</button></form><div class="result" id="wallResult"></div>
   </section>
   <section class="screen" id="lining">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
-    <div class="sectionTitle">Trasdosado</div><p class="lead">Selecciona directo, semidirecto o autoportante.</p>
-    <form id="liningForm"><div class="panel"><label>Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label></div>
-    <div class="panel"><div class="grid">
+    <div class="sectionTitle">Trasdosado</div><p class="lead">Elige la familia. Luego medidas y si lleva lana mineral.</p>
+    <div class="famBanner" id="liningFamNow"><span class="famName">Trasdosado autoportante</span><span class="famSub">Canal + montante · cámara para lana</span></div>
+    <div class="sysFamBar" id="liningFamBar" role="tablist">
+      <button type="button" class="sysFam" data-lining-type="direct" aria-pressed="false">Directo</button>
+      <button type="button" class="sysFam" data-lining-type="semi" aria-pressed="false">Semidirecto</button>
+      <button type="button" class="sysFam active" data-lining-type="auto" aria-pressed="true">Autoportante</button>
+    </div>
+    <form id="liningForm">
+      <label class="hidden">Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label>
+      <div class="panel"><div class="grid">
       <label>Largo (m)<input id="lL" value="4" inputmode="decimal"></label><label>Alto (m)<input id="lH" value="2.5" inputmode="decimal"></label>
       <label>Placas<select id="lLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
       <label>Intereje<select id="lS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
       <label id="lProfileWrap">Perfil<select id="lP"><option value="48">48 mm</option><option value="70" selected>70 mm</option><option value="90">90 mm</option></select></label>
-    </div></div><button class="calc" type="submit">CALCULAR TRASDOSADO</button></form><div class="result" id="liningResult"></div>
+      <label id="lWoolWrap">Lana mineral<select id="lWool"><option value="1" selected>Sí · relleno de cámara</option><option value="0">No</option></select></label>
+    </div>
+    <div class="info" id="lWoolHint">En autoportante el espesor sigue al perfil. En semidirecto, panel 40 mm entre omegas. El directo no tiene cámara: la lana no aplica.</div>
+    </div><button class="calc" type="submit">CALCULAR TRASDOSADO</button></form><div class="result" id="liningResult"></div>
   </section>
   <section class="screen" id="roof">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
-    <div class="sectionTitle">Techo</div><p class="lead">Elige el sistema arriba del todo. Luego introduce las medidas.</p>
-    <div class="apTitle">SISTEMA DE TECHO</div>
-    <div class="sysgrid" id="roofSys">
-      <button type="button" class="sysBtn active" data-roof-sys="double"><span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria + secundaria</small></button>
-      <button type="button" class="sysBtn" data-roof-sys="simple"><span class="sysTag">Continuo</span><strong>TC47 simple</strong><small>Una estructura 47/500</small></button>
-      <button type="button" class="sysBtn" data-roof-sys="sierra"><span class="sysTag">Continuo</span><strong>Sierra + TC47</strong><small>Rastrel y secundario</small></button>
-      <button type="button" class="sysBtn" data-roof-sys="cm70"><span class="sysTag">Continuo</span><strong>Canal + M70</strong><small>Estructura autoportante</small></button>
-      <button type="button" class="sysBtn" data-roof-sys="desmontable60"><span class="sysTag">Registrable</span><strong>60 × 60</strong><small>T24 vista</small></button>
-      <button type="button" class="sysBtn" data-roof-sys="desmontable120"><span class="sysTag">Registrable</span><strong>60 × 120</strong><small>T24 vista</small></button>
-      <button type="button" class="sysBtn" data-roof-sys="escayola"><span class="sysTag">Tradicional</span><strong>Escayola</strong><small>Fijación con estopa</small></button>
+    <div class="sectionTitle">Techo</div><p class="lead">Primero elige el sistema. Queda agrupado por familia, con un esquema de cada estructura.</p>
+    <div class="sysPanel" id="roofSysPanel">
+      <div class="sysPanelHead">
+        <div class="sysStep">1</div>
+        <div>
+          <div class="sysPanelTitle">Sistema de techo</div>
+          <div class="sysPanelHint">Toca una tarjeta. El cálculo usa esa estructura.</div>
+        </div>
+      </div>
+      <div class="sysNow" id="roofSysNow" aria-live="polite"><span class="sysNowFam">Continuo PYL</span><strong>Doble TC47</strong><span>Primaria + secundaria · 47/500</span></div>
+      <div class="sysFamBar" id="roofFamBar" role="tablist">
+        <button type="button" class="sysFam active" data-roof-fam="continuo" aria-pressed="true">Continuo PYL</button>
+        <button type="button" class="sysFam" data-roof-fam="registrable" aria-pressed="false">Registrable</button>
+        <button type="button" class="sysFam" data-roof-fam="tradicional" aria-pressed="false">Tradicional</button>
+      </div>
+      <div class="sysgrid" id="roofSys">
+        <button type="button" class="sysBtn active" data-roof-sys="double" data-fam="continuo" aria-pressed="true">
+          <span class="sysIco" aria-hidden="true"><svg viewBox="0 0 64 40"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 10h48M8 16h48M8 22h48M8 28h48" stroke="currentColor" stroke-width="1.4"/><path d="M16 6v28M32 6v28M48 6v28" stroke="currentColor" stroke-width="2.2"/></svg></span>
+          <span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria 1,00 m + secundaria 0,50 m</small>
+        </button>
+        <button type="button" class="sysBtn" data-roof-sys="simple" data-fam="continuo" aria-pressed="false">
+          <span class="sysIco" aria-hidden="true"><svg viewBox="0 0 64 40"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 12h48M8 20h48M8 28h48" stroke="currentColor" stroke-width="2"/><path d="M20 6v6M44 6v6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <span class="sysTag">Continuo</span><strong>TC47 simple</strong><small>Una estructura 47/500 suspendida</small>
+        </button>
+        <button type="button" class="sysBtn" data-roof-sys="sierra" data-fam="continuo" aria-pressed="false">
+          <span class="sysIco" aria-hidden="true"><svg viewBox="0 0 64 40"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 10l8 8 8-8 8 8 8-8 8 8 8-8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 26h48M8 32h48" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <span class="sysTag">Continuo</span><strong>Sierra + TC47</strong><small>Rastrel primario y secundario TC47</small>
+        </button>
+        <button type="button" class="sysBtn" data-roof-sys="cm70" data-fam="continuo" aria-pressed="false">
+          <span class="sysIco" aria-hidden="true"><svg viewBox="0 0 64 40"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h48v6H8z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 14v18M32 14v18M48 14v18" stroke="currentColor" stroke-width="2.2"/></svg></span>
+          <span class="sysTag">Continuo</span><strong>Canal + M70</strong><small>Estructura autoportante perimetral</small>
+        </button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="desmontable60" data-fam="registrable" aria-pressed="false">
+          <span class="sysIco" aria-hidden="true"><svg viewBox="0 0 64 40"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h16v16H8zm16 0h16v16H24zm16 0h16v16H40zM8 24h16v8H8zm16 0h16v8H24zm16 0h16v8H40z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <span class="sysTag">Registrable</span><strong>60 × 60</strong><small>T24 vista · placa 600 × 600</small>
+        </button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="desmontable120" data-fam="registrable" aria-pressed="false">
+          <span class="sysIco" aria-hidden="true"><svg viewBox="0 0 64 40"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h48v10H8zm0 12h48v10H8z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M32 8v24" stroke="currentColor" stroke-width="1.4"/></svg></span>
+          <span class="sysTag">Registrable</span><strong>60 × 120</strong><small>T24 vista · placa 600 × 1200</small>
+        </button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="escayola" data-fam="tradicional" aria-pressed="false">
+          <span class="sysIco" aria-hidden="true"><svg viewBox="0 0 64 40"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 8h22v24H8zm26 0h22v24H34z" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="15" cy="16" r="1.8" fill="currentColor"/><circle cx="23" cy="24" r="1.8" fill="currentColor"/><circle cx="41" cy="16" r="1.8" fill="currentColor"/><circle cx="49" cy="24" r="1.8" fill="currentColor"/></svg></span>
+          <span class="sysTag">Tradicional</span><strong>Escayola</strong><small>Placa fija con estopa al forjado</small>
+        </button>
+      </div>
     </div>
-    <div class="sysNow" id="roofSysNow">Seleccionado: Doble TC47</div>
-    <form id="roofForm"><div class="panel"><div class="grid">
+    <form id="roofForm"><div class="panel"><div class="sysPanelHead" style="margin-bottom:8px"><div class="sysStep">2</div><div><div class="sysPanelTitle">Medidas del techo</div><div class="sysPanelHint">Largo, ancho y plenum. La placa PYL solo aparece en sistemas continuos.</div></div></div><div class="grid">
       <label class="hidden">Sistema<select id="rSys"><option value="double" selected>Doble TC47</option><option value="simple">TC47 simple suspendido</option><option value="sierra">Perfil sierra + TC47</option><option value="cm70">Canal + montante M70</option><option value="desmontable60">Desmontable 60 × 60</option><option value="desmontable120">Desmontable 60 × 120</option><option value="escayola">Escayola fija · estopa</option></select></label>
       <label>Largo (m)<input id="rL" value="5" inputmode="decimal"></label><label>Ancho (m)<input id="rW" value="4" inputmode="decimal"></label>
       <label>Plenum (cm)<input id="rDrop" value="30" inputmode="decimal"></label>
