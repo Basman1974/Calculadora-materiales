@@ -109,6 +109,20 @@
     const src = kind === 'roof' ? 'techo 5 ud/m² de estructura' : 'tabique 3 ud/m² de estructura';
     return ['Tornillos metal-metal 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', 'UNE 102043 y UNE-EN 14566 · ' + src + ' · +10% merma · caja 500 ud'];
   }
+  function woolThick(profile, kind){
+    if(kind === 'semi') return 40;
+    const p = Number(profile) || 70;
+    if(p <= 48) return 40;
+    if(p <= 70) return 60;
+    return 80;
+  }
+  function woolRow(area, thickMm, kind){
+    const need = Math.max(0, area) * 1.08;
+    const panel = 1.2 * 0.6;
+    const uds = Math.ceil(need / panel);
+    const where = kind === 'semi' ? 'entre perfiles omega' : 'relleno de cámara entre montantes';
+    return ['Lana mineral ' + thickMm + ' mm', need.toFixed(1) + ' m² · ' + uds + ' panel(es) 1200 × 600', 'UNE 102043 · ' + where + ' · 1 m²/m² · merma corte 8 % · panel 0,72 m² · UNE-EN 13162'];
+  }
   function tacoRow(lengthM, runs, kind){
     const n = Math.max(0, runs) * (Math.ceil(Math.max(0, lengthM) / 0.6) + 1);
     const detail = kind === 'omega'
@@ -200,6 +214,10 @@
       $all('[data-ac]').forEach(x => x.setAttribute('aria-pressed', String(x === color)));
       return;
     }
+    const liningType = e.target.closest('[data-lining-type]');
+    if(liningType && liningType.dataset.liningType){ setLiningType(liningType.dataset.liningType); return; }
+    const roofFam = e.target.closest('[data-roof-fam]');
+    if(roofFam && roofFam.dataset.roofFam){ setRoofFam(roofFam.dataset.roofFam); return; }
     const roofSys = e.target.closest('[data-roof-sys]');
     if(roofSys && roofSys.dataset.roofSys){ setRoofSys(roofSys.dataset.roofSys); return; }
     const cat = e.target.closest('#wetCats [data-cat], [data-cat]');
@@ -251,11 +269,14 @@
     rows.push(mmRow(A, 'wall'));
     rows.push(['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'UNE 102043 · perímetro de canales y arranques']);
     rows.push(tacoRow(L, 2));
-    const obj = {title:'Tabique · ' + A.toFixed(2) + ' m²', items:rows};
+    const useWool = el('wWool') ? el('wWool').value !== '0' : true;
+    if(useWool) rows.push(woolRow(A, woolThick(p, 'wall'), 'wall'));
+    const obj = {title:'Tabique PYL · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('wallResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, 'UNE 102043 · intereje ' + Math.round(sp * 1000) + ' mm', rows); bindAdd(box, obj); }
+    if(box){ box.innerHTML = resultHTML(obj.title, 'Familia Tabique PYL · UNE 102043 · intereje ' + Math.round(sp * 1000) + ' mm' + (useWool ? ' · lana ' + woolThick(p, 'wall') + ' mm' : ''), rows); bindAdd(box, obj); }
   }
   on(el('wallForm'), 'submit', e => { e.preventDefault(); calcWall(); });
+  ['wA','wB','wP','wS','wWool'].forEach(id => on(el(id), 'change', calcWall));
   function calcLining(){
     const L = num('lL'), H = num('lH'), A = L * H, t = el('lType') ? el('lType').value : 'auto', l = num('lLayers'), sp = num('lS') || .6, p = num('lP');
     const board = bestPylBoard(H);
@@ -263,23 +284,75 @@
     const rows = [['Placa PYL ' + board.label, liningPlates + ' uds', 'UNE-EN 520 · elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · merma corte 8 % · ' + l + ' capa(s)']];
     let title = '';
     if(el('lProfileWrap')) el('lProfileWrap').classList.toggle('hidden', t === 'direct');
+    if(el('lWoolWrap')) el('lWoolWrap').classList.toggle('hidden', t === 'direct');
+    if(el('lWoolHint')) el('lWoolHint').classList.toggle('hidden', t === 'direct');
     const finish = mergeFaceWork([pylFaceWork(A, l)]);
+    const useWool = t !== 'direct' && el('lWool') && el('lWool').value !== '0';
     if(t === 'direct'){ title = 'Trasdosado directo'; rows.push(['Pasta de agarre', Math.ceil(A * 4.5) + ' kg', 'UNE 102043 · trasdosado directo · ≈4,5 kg/m²']); }
-    else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + o + ' ejes'], tacoRow(H, o, 'omega')); }
-    else { title = 'Trasdosado autoportante'; const s = Math.ceil(L / sp) + 1; const bandNeed = 2 * L + 2 * H; rows.push(['Montante M' + p, s * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + s + ' ejes · barra 3 m'], ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'UNE-EN 14195 · suelo y techo'], ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'UNE 102043 · perímetro'], tacoRow(L, 2)); }
+    else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + o + ' ejes'], tacoRow(H, o, 'omega')); if(useWool) rows.push(woolRow(A, woolThick(p, 'semi'), 'semi')); }
+    else { title = 'Trasdosado autoportante'; const s = Math.ceil(L / sp) + 1; const bandNeed = 2 * L + 2 * H; rows.push(['Montante M' + p, s * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + s + ' ejes · barra 3 m'], ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'UNE-EN 14195 · suelo y techo'], ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'UNE 102043 · perímetro'], tacoRow(L, 2)); if(useWool) rows.push(woolRow(A, woolThick(p, 'auto'), 'auto')); }
     if(t !== 'direct'){ rows.push.apply(rows, pylJoinRows(finish)); rows.push(mmRow(A, 'lining')); }
     else rows.push.apply(rows, pylJoinRows(finish).filter(r => r[0].indexOf('Tornillos') !== 0));
+    const famNote = t === 'direct' ? 'Familia Trasdosado directo' : t === 'semi' ? 'Familia Trasdosado semidirecto' : 'Familia Trasdosado autoportante';
     const obj = {title:title + ' · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('liningResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, 'UNE 102043 · intereje ' + Math.round(sp * 1000) + ' mm', rows); bindAdd(box, obj); }
+    if(box){ box.innerHTML = resultHTML(obj.title, famNote + ' · UNE 102043 · intereje ' + Math.round(sp * 1000) + ' mm' + (useWool ? ' · lana ' + woolThick(p, t === 'semi' ? 'semi' : 'auto') + ' mm' : ''), rows); bindAdd(box, obj); }
+  }
+  function setLiningType(t){
+    const names = {
+      direct:{name:'Trasdosado directo', sub:'Pasta de agarre · sin cámara de lana'},
+      semi:{name:'Trasdosado semidirecto', sub:'Omega al paramento · lana 40 mm'},
+      auto:{name:'Trasdosado autoportante', sub:'Canal + montante · cámara para lana'}
+    };
+    if(el('lType')) el('lType').value = t;
+    $all('[data-lining-type]').forEach(b => {
+      const on = b.dataset.liningType === t;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    const meta = names[t] || names.auto;
+    const banner = el('liningFamNow');
+    if(banner) banner.innerHTML = '<span class="famName">' + meta.name + '</span><span class="famSub">' + meta.sub + '</span>';
+    calcLining();
   }
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
-  ['lType','lLayers','lS','lP'].forEach(id => on(el(id), 'change', calcLining));
+  ['lType','lLayers','lS','lP','lWool'].forEach(id => on(el(id), 'change', calcLining));
+  const roofMeta = {
+    double:{fam:'continuo',famName:'Continuo PYL',name:'Doble TC47',hint:'Primaria + secundaria · 47/500'},
+    simple:{fam:'continuo',famName:'Continuo PYL',name:'TC47 simple',hint:'Una estructura 47/500 suspendida'},
+    sierra:{fam:'continuo',famName:'Continuo PYL',name:'Sierra + TC47',hint:'Rastrel primario y secundario TC47'},
+    cm70:{fam:'continuo',famName:'Continuo PYL',name:'Canal + M70',hint:'Estructura autoportante perimetral'},
+    desmontable60:{fam:'registrable',famName:'Registrable T24',name:'Desmontable 60 × 60',hint:'T24 vista · placa 600 × 600'},
+    desmontable120:{fam:'registrable',famName:'Registrable T24',name:'Desmontable 60 × 120',hint:'T24 vista · placa 600 × 1200'},
+    escayola:{fam:'tradicional',famName:'Tradicional',name:'Escayola con estopa',hint:'Placa fija con estopa al forjado'}
+  };
+  function setRoofFam(fam, keepSys){
+    const f = fam || 'continuo';
+    $all('[data-roof-fam]').forEach(b => {
+      const on = b.dataset.roofFam === f;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    $all('[data-roof-sys]').forEach(b => {
+      const match = (b.dataset.fam || 'continuo') === f;
+      b.classList.toggle('hidden', !match);
+    });
+    if(!keepSys){
+      const first = $all('[data-roof-sys]').find(b => (b.dataset.fam || 'continuo') === f);
+      if(first) setRoofSys(first.dataset.roofSys);
+    }
+  }
   function setRoofSys(sys){
-    const names = {double:'Doble TC47',simple:'TC47 simple',sierra:'Sierra + TC47',cm70:'Canal + M70',desmontable60:'Desmontable 60 × 60',desmontable120:'Desmontable 60 × 120',escayola:'Escayola con estopa'};
+    const meta = roofMeta[sys] || roofMeta.double;
     if(el('rSys')) el('rSys').value = sys;
-    $all('[data-roof-sys]').forEach(b => b.classList.toggle('active', b.dataset.roofSys === sys));
-    if(el('roofSysNow')) el('roofSysNow').textContent = 'Seleccionado: ' + (names[sys] || sys);
+    $all('[data-roof-sys]').forEach(b => {
+      const on = b.dataset.roofSys === sys;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    const now = el('roofSysNow');
+    if(now) now.innerHTML = '<span class="sysNowFam">' + meta.famName + '</span><strong>' + meta.name + '</strong><span>' + meta.hint + '</span>';
+    if(meta.fam) setRoofFam(meta.fam, true);
     calcRoof();
   }
   function tc47Pack(span, width, spacing, barLen){
