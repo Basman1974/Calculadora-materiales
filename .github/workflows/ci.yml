@@ -38,7 +38,7 @@ jobs:
           missing = []
           for token in ['id="postal"','id="wall"','id="lining"','id="roof"','id="wet"','id="ceramic"','id="cBond"','data-cer-body','src="app.js"','src="data.js"','href="style.css"']:
               if token not in html: missing.append('html:'+token)
-          for token in ['function calcWall','function calcLining','function calcRoof','function calcWet','function calcLevel','function pylPallets','function ceramicGlueKgM2','function adhesiveClass','CALC_DATA']:
+          for token in ['function calcWall','function calcLining','function calcRoof','function calcWet','function calcLevel','function pylFaceWork','function bestPylBoard','function mmScrews','function ceramicGlueKgM2','function adhesiveClass','CALC_DATA']:
               if token not in js: missing.append('js:'+token)
           if missing:
               print('Faltan:', missing)
