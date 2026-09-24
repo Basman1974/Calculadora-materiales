@@ -104,9 +104,12 @@
     const src = kind === 'roof' ? 'techo 5 ud/m² de estructura' : 'tabique 3 ud/m² de estructura';
     return ['Tornillos metal-metal 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', 'UNE 102043 y UNE-EN 14566 · ' + src + ' · +10% merma · caja 500 ud'];
   }
-  function tacoRow(lengthM, runs){
+  function tacoRow(lengthM, runs, kind){
     const n = Math.max(0, runs) * (Math.ceil(Math.max(0, lengthM) / 0.6) + 1);
-    return ['Tacos de golpeo', n + ' uds · ' + Math.ceil(n / 100) + ' caja(s) de 100', 'UNE 102043 §16.6 · anclaje de canales al soporte · paso máx. 600 mm · primer y último cerca del extremo'];
+    const detail = kind === 'omega'
+      ? 'UNE 102043 §16.6 · anclaje de omega al paramento · ala del perfil · paso máx. 600 mm · primer y último cerca del extremo'
+      : 'UNE 102043 §16.6 · anclaje de canales al soporte · paso máx. 600 mm · primer y último cerca del extremo';
+    return ['Tacos de golpeo', n + ' uds · ' + Math.ceil(n / 100) + ' caja(s) de 100', detail];
   }
   function screwBoxes(n){ return Math.ceil(Math.max(0, n) / 1000); }
   function pylFaceWork(area, layers){
@@ -257,7 +260,7 @@
     if(el('lProfileWrap')) el('lProfileWrap').classList.toggle('hidden', t === 'direct');
     const finish = mergeFaceWork([pylFaceWork(A, l)]);
     if(t === 'direct'){ title = 'Trasdosado directo'; rows.push(['Pasta de agarre', Math.ceil(A * 4.5) + ' kg', 'UNE 102043 · trasdosado directo · ≈4,5 kg/m²']); }
-    else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + o + ' ejes'], tacoRow(H, o)); }
+    else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + o + ' ejes'], tacoRow(H, o, 'omega')); }
     else { title = 'Trasdosado autoportante'; const s = Math.ceil(L / sp) + 1; const bandNeed = 2 * L + 2 * H; rows.push(['Montante M' + p, s * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + s + ' ejes · barra 3 m'], ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'UNE-EN 14195 · suelo y techo'], ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'UNE 102043 · perímetro'], tacoRow(L, 2)); }
     if(t !== 'direct'){ rows.push.apply(rows, pylJoinRows(finish)); rows.push(mmRow(A, 'lining')); }
     else rows.push.apply(rows, pylJoinRows(finish).filter(r => r[0].indexOf('Tornillos') !== 0));
