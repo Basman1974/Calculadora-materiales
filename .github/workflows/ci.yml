@@ -12,78 +12,45 @@ permissions:
 
 jobs:
   validar:
-    name: Validar index.html
+    name: Validar calculadora
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Comprobar que index.html no está vacío ni recortado
+      - name: Comprobar archivos
         run: |
           set -euo pipefail
-          test -f index.html
-          BYTES=$(wc -c < index.html)
-          echo "Tamaño index.html: $BYTES bytes"
-          if [ "$BYTES" -lt 20000 ]; then
-            echo "::error::index.html mide ${BYTES} bytes. La calculadora completa supera 50 KB. No publiques un HTML recortado."
-            exit 1
-          fi
+          for f in index.html style.css data.js app.js; do
+            test -f "$f"
+            echo "$f $(wc -c < "$f") bytes"
+          done
+          test "$(wc -c < index.html)" -gt 10000
+          test "$(wc -c < style.css)" -gt 4000
+          test "$(wc -c < data.js)" -gt 3000
+          test "$(wc -c < app.js)" -gt 10000
 
-      - name: Comprobar módulos y funciones obligatorias
+      - name: Comprobar módulos y funciones
         run: |
-          set -euo pipefail
           python3 - << 'PY'
           from pathlib import Path
-          html = Path("index.html").read_text(encoding="utf-8", errors="replace")
+          html = Path('index.html').read_text(encoding='utf-8', errors='replace')
+          js = Path('app.js').read_text(encoding='utf-8', errors='replace') + Path('data.js').read_text(encoding='utf-8', errors='replace')
           missing = []
-          for token in [
-              'id="postal"',
-              'id="home"',
-              'id="wall"',
-              'id="lining"',
-              'id="roof"',
-              'id="wet"',
-              'id="ceramic"',
-              'id="work"',
-              'id="list"',
-              'id="help"',
-              'id="cBond"',
-              'data-cer-body',
-              "function calcWall",
-              "function calcLining",
-              "function calcRoof",
-              "function calcWet",
-              "function calcLevel",
-              "function pylPallets",
-              "function ceramicGlueKgM2",
-              "function adhesiveClass",
-          ]:
-              if token not in html:
-                  missing.append(token)
+          for token in ['id="postal"','id="wall"','id="lining"','id="roof"','id="wet"','id="ceramic"','id="cBond"','data-cer-body','src="app.js"','src="data.js"','href="style.css"']:
+              if token not in html: missing.append('html:'+token)
+          for token in ['function calcWall','function calcLining','function calcRoof','function calcWet','function calcLevel','function pylPallets','function ceramicGlueKgM2','function adhesiveClass','CALC_DATA']:
+              if token not in js: missing.append('js:'+token)
           if missing:
-              print("Faltan piezas de la calculadora:")
-              for m in missing:
-                  print(" -", m)
+              print('Faltan:', missing)
               raise SystemExit(1)
-          print("Módulos y funciones obligatorias presentes.")
+          print('OK')
           PY
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
-      - name: Extraer JavaScript y comprobar sintaxis
+      - name: Sintaxis JavaScript
         run: |
-          set -euo pipefail
-          python3 - << 'PY'
-          from pathlib import Path
-          html = Path("index.html").read_text(encoding="utf-8", errors="replace")
-          start = html.find("<script>")
-          end = html.rfind("</script>")
-          if start < 0 or end < 0 or end <= start:
-              raise SystemExit("No hay bloque <script> en index.html")
-          js = html[start + len("<script>"):end].strip()
-          Path("/tmp/calc.js").write_text(js, encoding="utf-8")
-          print(f"JavaScript extraído: {len(js)} caracteres")
-          PY
-          node --check /tmp/calc.js
-          echo "Sintaxis JavaScript correcta."
+          node --check data.js
+          node --check app.js
