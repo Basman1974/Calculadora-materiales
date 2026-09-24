@@ -80,10 +80,10 @@
     <div class="sectionTitle">Techo</div><p class="lead">Configura superficie, sistema y plenum.</p>
     <form id="roofForm"><div class="panel"><div class="grid">
       <label>Largo (m)<input id="rL" value="5" inputmode="decimal"></label><label>Ancho (m)<input id="rW" value="4" inputmode="decimal"></label>
-      <label>Sistema<select id="rSys"><option value="double">Doble TC47</option><option value="simple">TC47 simple suspendido</option><option value="sierra">Perfil sierra + TC47</option><option value="cm70">Canal + montante M70</option></select></label>
+      <label>Sistema<select id="rSys"><option value="double">Doble TC47</option><option value="simple">TC47 simple suspendido</option><option value="sierra">Perfil sierra + TC47</option><option value="cm70">Canal + montante M70</option><option value="desmontable60">Desmontable 60 × 60</option><option value="desmontable120">Desmontable 60 × 120</option><option value="escayola">Escayola fija · estopa</option></select></label>
       <label>Plenum (cm)<input id="rDrop" value="30" inputmode="decimal"></label>
-      <label>Formato placa<select id="rBoard"><option value="2,1.2">2000 × 1200</option><option value="2.7,1.2">2700 × 1200</option><option value="2,.6">2000 × 600</option></select></label>
-      <label>Placas<select id="rLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
+      <label id="rBoardWrap">Formato placa PYL<select id="rBoard"><option value="2,1.2">2000 × 1200</option><option value="2.7,1.2">2700 × 1200</option><option value="2,.6">2000 × 600</option></select></label>
+      <label id="rLayersWrap">Capas PYL<select id="rLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
     </div></div><button class="calc" type="submit">CALCULAR TECHO</button></form><div class="result" id="roofResult"></div>
   </section>
   <section class="screen" id="wet">
