@@ -90,6 +90,20 @@
     if(!n) return '0 palets';
     return [30,36,50].map(p => Math.ceil(n / p) + ' pal. × ' + p).join(' · ');
   }
+  const PYL_LENGTHS = [2, 2.5, 2.6, 2.7, 2.8, 3];
+  function bestPylBoard(H){
+    const h = Math.max(0, Number(H) || 0);
+    const fit = PYL_LENGTHS.find(len => len + 0.0005 >= h);
+    const len = fit || 3;
+    const stacked = !fit;
+    const w = 1.2;
+    return {
+      w:w, h:len, area:w*len,
+      label:'1200 × ' + Math.round(len * 1000),
+      stacked:stacked,
+      note: stacked ? 'Altura > 3 m · usar 3000 mm y junta horizontal' : (Math.abs(len - h) < 0.02 ? 'Ajuste a la altura, casi sin recorte de largo' : 'Recorte de largo ≈ ' + Math.round(Math.max(0, len - h) * 1000) + ' mm')
+    };
+  }
   function mmScrews(area, kind){
     const rate = kind === 'roof' ? 5 : 3;
     const n = Math.ceil(Math.max(0, area) * rate * 1.10);
@@ -193,12 +207,13 @@
   }
   function calcWall(){
     const L = num('wL'), H = num('wH'), A = L * H, a = num('wA'), b = num('wB'), sp = num('wS') || .6, p = num('wP'), studs = Math.ceil(L / sp) + 1;
-    const totalLayers = a + b, plateUds = Math.ceil(A * totalLayers / 3 * 1.08);
+    const board = bestPylBoard(H);
+    const totalLayers = a + b, plateUds = Math.ceil(A * totalLayers / board.area * 1.08);
     const screwNeed = Math.ceil(A * totalLayers * 15 * 11 / 10), screwType = Math.max(a,b) >= 2 ? 'TN 35' : 'TN 25', screwBoxes = Math.ceil(screwNeed / 1000);
     const bandNeed = 2 * L + 2 * H, bandRolls = Math.ceil(bandNeed / 30);
     const visibleArea = A * 2, tapeNeed = Math.ceil(visibleArea * 1.4 * 1.10), tapeRolls = Math.ceil(tapeNeed / 150), pasteNeed = Math.ceil(visibleArea * 0.35 * 1.10), pasteBags = Math.ceil(pasteNeed / 20);
     const rows = [
-      ['Placa PYL 1200 × 2500', plateUds + ' uds', totalLayers + ' capas totales · paletización ' + pylPallets(plateUds)],
+      ['Placa PYL ' + board.label, plateUds + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + totalLayers + ' capas · ' + pylPallets(plateUds)],
       ['Montante M' + p, studs * Math.ceil(H / 3) + ' barras', studs + ' ejes'],
       ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo'],
       ['Tornillos PYL ' + screwType, screwNeed + ' uds · ' + screwBoxes + ' caja(s) de 1.000', 'Placa-metal · Pladur PM / Knauf TN / Placo THTPF · 15 ud/m²·capa · +10%'],
@@ -214,8 +229,9 @@
   on(el('wallForm'), 'submit', e => { e.preventDefault(); calcWall(); });
   function calcLining(){
     const L = num('lL'), H = num('lH'), A = L * H, t = el('lType') ? el('lType').value : 'auto', l = num('lLayers'), sp = num('lS') || .6, p = num('lP');
-    const liningPlates = Math.ceil(A * l / 3 * 1.08);
-    const rows = [['Placa PYL 1200 × 2500', liningPlates + ' uds', l + ' capa(s) · paletización ' + pylPallets(liningPlates)]];
+    const board = bestPylBoard(H);
+    const liningPlates = Math.ceil(A * l / board.area * 1.08);
+    const rows = [['Placa PYL ' + board.label, liningPlates + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + l + ' capa(s) · ' + pylPallets(liningPlates)]];
     let title = '';
     if(el('lProfileWrap')) el('lProfileWrap').classList.toggle('hidden', t === 'direct');
     const screwNeed = Math.ceil(A * l * 15 * 11 / 10), screwType = l >= 2 ? 'TN 35' : 'TN 25', screwBoxes = Math.ceil(screwNeed / 1000);
