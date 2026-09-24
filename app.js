@@ -31,6 +31,11 @@
     else if(id === 'lining' && !primed.lining){ calcLining(); primed.lining = 1; }
     else if(id === 'roof' && !primed.roof){ calcRoof(); primed.roof = 1; }
     else if(id === 'ceramic' && !primed.ceramic){ calcLevel(); primed.ceramic = 1; }
+    window.scrollTo(0, 0);
+    const shell = document.scrollingElement || document.documentElement;
+    if(shell) shell.scrollTop = 0;
+    const app = document.querySelector('.app') || document.querySelector('.shell');
+    if(app) app.scrollTop = 0;
   }
   function resolveStore(cp){
     const prefix = cp.slice(0,3);
