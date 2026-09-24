@@ -77,10 +77,21 @@
   </section>
   <section class="screen" id="roof">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
-    <div class="sectionTitle">Techo</div><p class="lead">Configura superficie, sistema y plenum.</p>
+    <div class="sectionTitle">Techo</div><p class="lead">Elige el sistema arriba del todo. Luego introduce las medidas.</p>
+    <div class="apTitle">SISTEMA DE TECHO</div>
+    <div class="sysgrid" id="roofSys">
+      <button type="button" class="sysBtn active" data-roof-sys="double"><span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria + secundaria</small></button>
+      <button type="button" class="sysBtn" data-roof-sys="simple"><span class="sysTag">Continuo</span><strong>TC47 simple</strong><small>Una estructura 47/500</small></button>
+      <button type="button" class="sysBtn" data-roof-sys="sierra"><span class="sysTag">Continuo</span><strong>Sierra + TC47</strong><small>Rastrel y secundario</small></button>
+      <button type="button" class="sysBtn" data-roof-sys="cm70"><span class="sysTag">Continuo</span><strong>Canal + M70</strong><small>Estructura autoportante</small></button>
+      <button type="button" class="sysBtn" data-roof-sys="desmontable60"><span class="sysTag">Registrable</span><strong>60 × 60</strong><small>T24 vista</small></button>
+      <button type="button" class="sysBtn" data-roof-sys="desmontable120"><span class="sysTag">Registrable</span><strong>60 × 120</strong><small>T24 vista</small></button>
+      <button type="button" class="sysBtn" data-roof-sys="escayola"><span class="sysTag">Tradicional</span><strong>Escayola</strong><small>Fijación con estopa</small></button>
+    </div>
+    <div class="sysNow" id="roofSysNow">Seleccionado: Doble TC47</div>
     <form id="roofForm"><div class="panel"><div class="grid">
+      <label class="hidden">Sistema<select id="rSys"><option value="double" selected>Doble TC47</option><option value="simple">TC47 simple suspendido</option><option value="sierra">Perfil sierra + TC47</option><option value="cm70">Canal + montante M70</option><option value="desmontable60">Desmontable 60 × 60</option><option value="desmontable120">Desmontable 60 × 120</option><option value="escayola">Escayola fija · estopa</option></select></label>
       <label>Largo (m)<input id="rL" value="5" inputmode="decimal"></label><label>Ancho (m)<input id="rW" value="4" inputmode="decimal"></label>
-      <label>Sistema<select id="rSys"><option value="double">Doble TC47</option><option value="simple">TC47 simple suspendido</option><option value="sierra">Perfil sierra + TC47</option><option value="cm70">Canal + montante M70</option><option value="desmontable60">Desmontable 60 × 60</option><option value="desmontable120">Desmontable 60 × 120</option><option value="escayola">Escayola fija · estopa</option></select></label>
       <label>Plenum (cm)<input id="rDrop" value="30" inputmode="decimal"></label>
       <label id="rBoardWrap">Formato placa PYL<select id="rBoard"><option value="2,1.2">2000 × 1200</option><option value="2.7,1.2">2700 × 1200</option><option value="2,.6">2000 × 600</option></select></label>
       <label id="rLayersWrap">Capas PYL<select id="rLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
