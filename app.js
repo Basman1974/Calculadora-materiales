@@ -92,12 +92,7 @@
     const len = fit || 3;
     const stacked = !fit;
     const w = 1.2;
-    return {
-      w:w, h:len, area:w*len,
-      label:'1200 × ' + Math.round(len * 1000),
-      stacked:stacked,
-      note: stacked ? 'Altura > 3 m · usar 3000 mm y junta horizontal' : (Math.abs(len - h) < 0.02 ? 'Ajuste a la altura, casi sin recorte de largo' : 'Recorte de largo ≈ ' + Math.round(Math.max(0, len - h) * 1000) + ' mm')
-    };
+    return {w:w,h:len,area:w*len,label:'1200 × '+Math.round(len*1000),stacked:stacked,note:stacked?'Altura > 3 m · usar 3000 mm y junta horizontal':(Math.abs(len-h)<0.02?'Ajuste a la altura, casi sin recorte de largo':'Recorte de largo ≈ '+Math.round(Math.max(0,len-h)*1000)+' mm')};
   }
   function mmScrews(area, kind){
     const rate = kind === 'roof' ? 5 : 3;
@@ -108,6 +103,35 @@
     const mm = mmScrews(area, kind);
     const src = kind === 'roof' ? 'Placo techo 5 ud/m² · Knauf LN/LB' : 'Pladur Metal 3 ud/m² · Knauf LN 3,5×11';
     return ['Tornillos metal-metal MM 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', src + ' · +10% · envase habitual 500 ud'];
+  }
+  function screwBoxes(n){ return Math.ceil(Math.max(0, n) / 1000); }
+  function pylFaceWork(area, layers){
+    const A = Math.max(0, area), n = Math.max(0, Math.round(Number(layers) || 0)), waste = 1.10;
+    const inner = Math.max(0, n - 1), visible = n > 0 ? 1 : 0;
+    const firstRate = n >= 2 ? 8 : (n === 1 ? 15 : 0), secondRate = n >= 2 ? 15 : 0;
+    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'TN/PM 25', secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?'TN/PM 35':'', tapeInner:Math.ceil(inner*A*1.6*waste), tapeVisible:Math.ceil(visible*A*1.6*waste), pasteInner:Math.ceil(inner*A*0.20*waste), pasteVisible:Math.ceil(visible*A*0.40*waste)};
+  }
+  function mergeFaceWork(list){
+    return list.reduce((acc, x) => {
+      acc.firstNeed += x.firstNeed; acc.secondNeed += x.secondNeed;
+      acc.tapeInner += x.tapeInner; acc.tapeVisible += x.tapeVisible;
+      acc.pasteInner += x.pasteInner; acc.pasteVisible += x.pasteVisible;
+      if(x.n >= 2) acc.hasSecond = 1;
+      if(x.n >= 1) acc.hasVisible = 1;
+      if(x.n >= 2) acc.hasInner = 1;
+      acc.firstType = x.firstType; acc.secondType = x.secondType || acc.secondType;
+      return acc;
+    }, {firstNeed:0,secondNeed:0,tapeInner:0,tapeVisible:0,pasteInner:0,pasteVisible:0,hasSecond:0,hasVisible:0,hasInner:0,firstType:'TN/PM 25',secondType:'TN/PM 35'});
+  }
+  function pylJoinRows(w){
+    const rows = [];
+    if(w.firstNeed) rows.push([w.hasSecond ? 'Tornillos 1.ª placa ' + w.firstType : 'Tornillos PYL ' + w.firstType, w.firstNeed + ' uds · ' + screwBoxes(w.firstNeed) + ' caja(s) de 1.000', w.hasSecond ? 'Capa interior · Pladur/Knauf ≈ 8 ud/m²·cara · paso amplio · +10%' : 'Cara vista de 1 placa · 15 ud/m² · paso 250 mm · PM = espesor + 10 mm · +10%']);
+    if(w.hasSecond && w.secondNeed) rows.push(['Tornillos 2.ª placa ' + w.secondType, w.secondNeed + ' uds · ' + screwBoxes(w.secondNeed) + ' caja(s) de 1.000', 'Cara vista · 15 ud/m² · paso 250 mm · 2 placas + 10 mm · Pladur PM 35 / Knauf TN 35 · +10%']);
+    if(w.hasInner && w.tapeInner) rows.push(['Cinta de papel 1.ª capa', w.tapeInner + ' m · ' + Math.ceil(w.tapeInner / 150) + ' rollo(s) de 150 m', 'UNE 102043 / Pladur: juntas de todas las capas']);
+    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'Capa interior Q1 · ≈ 0,20 kg/m²']);
+    if(w.hasVisible && w.tapeVisible) rows.push(['Cinta de papel cara vista', w.tapeVisible + ' m · ' + Math.ceil(w.tapeVisible / 150) + ' rollo(s) de 150 m', 'Juntas de la última placa · 1,6 m/m² · +10%']);
+    if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'Q2 juntas + cabezas · ≈ 0,40 kg/m² · +10%']);
+    return rows;
   }
   on(el('loadObramatCeramic'), 'click', () => {
     const raw = (el('cerProductCode') && el('cerProductCode').value.trim()) || '';
@@ -204,19 +228,16 @@
     const L = num('wL'), H = num('wH'), A = L * H, a = num('wA'), b = num('wB'), sp = num('wS') || .6, p = num('wP'), studs = Math.ceil(L / sp) + 1;
     const board = bestPylBoard(H);
     const totalLayers = a + b, plateUds = Math.ceil(A * totalLayers / board.area * 1.08);
-    const screwNeed = Math.ceil(A * totalLayers * 15 * 11 / 10), screwType = Math.max(a,b) >= 2 ? 'TN 35' : 'TN 25', screwBoxes = Math.ceil(screwNeed / 1000);
-    const bandNeed = 2 * L + 2 * H, bandRolls = Math.ceil(bandNeed / 30);
-    const visibleArea = A * 2, tapeNeed = Math.ceil(visibleArea * 1.4 * 1.10), tapeRolls = Math.ceil(tapeNeed / 150), pasteNeed = Math.ceil(visibleArea * 0.35 * 1.10), pasteBags = Math.ceil(pasteNeed / 20);
+    const bandNeed = 2 * L + 2 * H;
+    const finish = mergeFaceWork([pylFaceWork(A, a), pylFaceWork(A, b)]);
     const rows = [
-      ['Placa PYL ' + board.label, plateUds + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + totalLayers + ' capas'],
+      ['Placa PYL ' + board.label, plateUds + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · cara 1: ' + a + ' · cara 2: ' + b],
       ['Montante M' + p, studs * Math.ceil(H / 3) + ' barras', studs + ' ejes'],
-      ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo'],
-      ['Tornillos PYL ' + screwType, screwNeed + ' uds · ' + screwBoxes + ' caja(s) de 1.000', 'Placa-metal · Pladur PM / Knauf TN / Placo THTPF · 15 ud/m²·capa · +10%'],
-      mmRow(A, 'wall'),
-      ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + bandRolls + ' rollo(s) de 30 m', 'Canales + encuentros laterales'],
-      ['Cinta de papel para juntas', tapeNeed + ' m · ' + tapeRolls + ' rollo(s) de 150 m', 'Estimación según superficie visible'],
-      ['Pasta de juntas', pasteNeed + ' kg · ' + pasteBags + ' saco(s) de 20 kg', 'Consumo orientativo 0,35 kg/m² · incluye 10%']
+      ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo']
     ];
+    rows.push.apply(rows, pylJoinRows(finish));
+    rows.push(mmRow(A, 'wall'));
+    rows.push(['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'Canales + encuentros laterales']);
     const obj = {title:'Tabique · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('wallResult');
     if(box){ box.innerHTML = resultHTML(obj.title, 'Intereje ' + Math.round(sp * 1000) + ' mm', rows); bindAdd(box, obj); }
@@ -229,16 +250,12 @@
     const rows = [['Placa PYL ' + board.label, liningPlates + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + l + ' capa(s)']];
     let title = '';
     if(el('lProfileWrap')) el('lProfileWrap').classList.toggle('hidden', t === 'direct');
-    const screwNeed = Math.ceil(A * l * 15 * 11 / 10), screwType = l >= 2 ? 'TN 35' : 'TN 25', screwBoxes = Math.ceil(screwNeed / 1000);
-    const tapeNeed = Math.ceil(A * 1.4 * 1.10), tapeRolls = Math.ceil(tapeNeed / 150), pasteNeed = Math.ceil(A * 0.35 * 1.10), pasteBags = Math.ceil(pasteNeed / 20);
+    const finish = mergeFaceWork([pylFaceWork(A, l)]);
     if(t === 'direct'){ title = 'Trasdosado directo'; rows.push(['Pasta de agarre', Math.ceil(A * 4.5) + ' kg', 'Consumo orientativo']); }
     else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', o + ' ejes']); }
     else { title = 'Trasdosado autoportante'; const s = Math.ceil(L / sp) + 1; const bandNeed = 2 * L + 2 * H; rows.push(['Montante M' + p, s * Math.ceil(H / 3) + ' barras', s + ' ejes'], ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo'], ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'Canales + encuentros']); }
-    if(t !== 'direct'){
-      rows.push(['Tornillos PYL ' + screwType, screwNeed + ' uds · ' + screwBoxes + ' caja(s) de 1.000', 'Placa-metal · Pladur PM / Knauf TN · 15 ud/m²·capa · +10%']);
-      rows.push(mmRow(A, 'lining'));
-    }
-    rows.push(['Cinta de papel para juntas', tapeNeed + ' m · ' + tapeRolls + ' rollo(s) de 150 m', 'Estimación según superficie visible'], ['Pasta de juntas', pasteNeed + ' kg · ' + pasteBags + ' saco(s) de 20 kg', 'Consumo orientativo 0,35 kg/m² · incluye 10%']);
+    if(t !== 'direct'){ rows.push.apply(rows, pylJoinRows(finish)); rows.push(mmRow(A, 'lining')); }
+    else rows.push.apply(rows, pylJoinRows(finish).filter(r => r[0].indexOf('Tornillos') !== 0));
     const obj = {title:title + ' · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('liningResult');
     if(box){ box.innerHTML = resultHTML(obj.title, 'Intereje ' + Math.round(sp * 1000) + ' mm', rows); bindAdd(box, obj); }
@@ -255,6 +272,7 @@
     else if(sys === 'simple') rows.push(['TC47 portante', Math.ceil(A / 1.5) + ' barras', 'Estructura'], ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / 1.2 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
     else if(sys === 'sierra') rows.push(['Perfil sierra', Math.ceil(A / 2.7) + ' barras', 'Primario'], ['TC47 secundario', Math.ceil(A / 1.5) + ' barras', 'Secundario'], ['Suspensiones', Math.ceil(A / .95) + ' uds', 'Puntos de suspensión']);
     else rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'Perímetro'], ['Montante M70', Math.ceil(A / 1.8) + ' barras', 'Portante'], ['Suspensiones MS', Math.ceil(A / 2.7) + ' uds', 'Puntos de suspensión']);
+    rows.push.apply(rows, pylJoinRows(mergeFaceWork([pylFaceWork(A, l)])));
     rows.push(mmRow(A, 'roof'));
     const obj = {title:'Techo · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('roofResult');
