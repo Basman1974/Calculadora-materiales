@@ -90,6 +90,16 @@
     if(!n) return '0 palets';
     return [30,36,50].map(p => Math.ceil(n / p) + ' pal. × ' + p).join(' · ');
   }
+  function mmScrews(area, kind){
+    const rate = kind === 'roof' ? 5 : 3;
+    const n = Math.ceil(Math.max(0, area) * rate * 1.10);
+    return {n:n, rate:rate, boxes:Math.ceil(n / 1000)};
+  }
+  function mmRow(area, kind){
+    const mm = mmScrews(area, kind);
+    const src = kind === 'roof' ? 'Placo techo 5 ud/m² · Knauf LN/LB' : 'Pladur Metal 3 ud/m² · Knauf LN 3,5×11';
+    return ['Tornillos metal-metal MM 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 1.000', src + ' · +10% · no son tornillos de placa (TN/PM)'];
+  }
   on(el('loadObramatCeramic'), 'click', () => {
     const raw = (el('cerProductCode') && el('cerProductCode').value.trim()) || '';
     const code = raw.replace(/\D/g,'');
@@ -191,7 +201,8 @@
       ['Placa PYL 1200 × 2500', plateUds + ' uds', totalLayers + ' capas totales · paletización ' + pylPallets(plateUds)],
       ['Montante M' + p, studs * Math.ceil(H / 3) + ' barras', studs + ' ejes'],
       ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo'],
-      ['Tornillos PYL ' + screwType, screwNeed + ' uds · ' + screwBoxes + ' caja(s) de 1.000', 'Consumo orientativo · incluye 10%'],
+      ['Tornillos PYL ' + screwType, screwNeed + ' uds · ' + screwBoxes + ' caja(s) de 1.000', 'Placa-metal · Pladur PM / Knauf TN / Placo THTPF · 15 ud/m²·capa · +10%'],
+      mmRow(A, 'wall'),
       ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + bandRolls + ' rollo(s) de 30 m', 'Canales + encuentros laterales'],
       ['Cinta de papel para juntas', tapeNeed + ' m · ' + tapeRolls + ' rollo(s) de 150 m', 'Estimación según superficie visible'],
       ['Pasta de juntas', pasteNeed + ' kg · ' + pasteBags + ' saco(s) de 20 kg', 'Consumo orientativo 0,35 kg/m² · incluye 10%']
@@ -212,7 +223,10 @@
     if(t === 'direct'){ title = 'Trasdosado directo'; rows.push(['Pasta de agarre', Math.ceil(A * 4.5) + ' kg', 'Consumo orientativo']); }
     else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', o + ' ejes']); }
     else { title = 'Trasdosado autoportante'; const s = Math.ceil(L / sp) + 1; const bandNeed = 2 * L + 2 * H; rows.push(['Montante M' + p, s * Math.ceil(H / 3) + ' barras', s + ' ejes'], ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo'], ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'Canales + encuentros']); }
-    if(t !== 'direct') rows.push(['Tornillos PYL ' + screwType, screwNeed + ' uds · ' + screwBoxes + ' caja(s) de 1.000', 'Consumo orientativo · incluye 10%']);
+    if(t !== 'direct'){
+      rows.push(['Tornillos PYL ' + screwType, screwNeed + ' uds · ' + screwBoxes + ' caja(s) de 1.000', 'Placa-metal · Pladur PM / Knauf TN · 15 ud/m²·capa · +10%']);
+      rows.push(mmRow(A, 'lining'));
+    }
     rows.push(['Cinta de papel para juntas', tapeNeed + ' m · ' + tapeRolls + ' rollo(s) de 150 m', 'Estimación según superficie visible'], ['Pasta de juntas', pasteNeed + ' kg · ' + pasteBags + ' saco(s) de 20 kg', 'Consumo orientativo 0,35 kg/m² · incluye 10%']);
     const obj = {title:title + ' · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('liningResult');
@@ -230,6 +244,7 @@
     else if(sys === 'simple') rows.push(['TC47 portante', Math.ceil(A / 1.5) + ' barras', 'Estructura'], ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / 1.2 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
     else if(sys === 'sierra') rows.push(['Perfil sierra', Math.ceil(A / 2.7) + ' barras', 'Primario'], ['TC47 secundario', Math.ceil(A / 1.5) + ' barras', 'Secundario'], ['Suspensiones', Math.ceil(A / .95) + ' uds', 'Puntos de suspensión']);
     else rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'Perímetro'], ['Montante M70', Math.ceil(A / 1.8) + ' barras', 'Portante'], ['Suspensiones MS', Math.ceil(A / 2.7) + ' uds', 'Puntos de suspensión']);
+    rows.push(mmRow(A, 'roof'));
     const obj = {title:'Techo · ' + A.toFixed(2) + ' m²', items:rows};
     const box = el('roofResult');
     if(box){ box.innerHTML = resultHTML(obj.title, 'Plenum ' + d + ' cm', rows); bindAdd(box, obj); }
