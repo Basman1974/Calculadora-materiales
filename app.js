@@ -85,11 +85,6 @@
     if(el('storebar')) el('storebar').classList.remove('show');
     show('postal');
   });
-  function pylPallets(uds){
-    const n = Math.max(0, Math.ceil(Number(uds) || 0));
-    if(!n) return '0 palets';
-    return [30,36,50].map(p => Math.ceil(n / p) + ' pal. × ' + p).join(' · ');
-  }
   const PYL_LENGTHS = [2, 2.5, 2.6, 2.7, 2.8, 3];
   function bestPylBoard(H){
     const h = Math.max(0, Number(H) || 0);
@@ -213,7 +208,7 @@
     const bandNeed = 2 * L + 2 * H, bandRolls = Math.ceil(bandNeed / 30);
     const visibleArea = A * 2, tapeNeed = Math.ceil(visibleArea * 1.4 * 1.10), tapeRolls = Math.ceil(tapeNeed / 150), pasteNeed = Math.ceil(visibleArea * 0.35 * 1.10), pasteBags = Math.ceil(pasteNeed / 20);
     const rows = [
-      ['Placa PYL ' + board.label, plateUds + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + totalLayers + ' capas · ' + pylPallets(plateUds)],
+      ['Placa PYL ' + board.label, plateUds + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + totalLayers + ' capas'],
       ['Montante M' + p, studs * Math.ceil(H / 3) + ' barras', studs + ' ejes'],
       ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'Suelo y techo'],
       ['Tornillos PYL ' + screwType, screwNeed + ' uds · ' + screwBoxes + ' caja(s) de 1.000', 'Placa-metal · Pladur PM / Knauf TN / Placo THTPF · 15 ud/m²·capa · +10%'],
@@ -231,7 +226,7 @@
     const L = num('lL'), H = num('lH'), A = L * H, t = el('lType') ? el('lType').value : 'auto', l = num('lLayers'), sp = num('lS') || .6, p = num('lP');
     const board = bestPylBoard(H);
     const liningPlates = Math.ceil(A * l / board.area * 1.08);
-    const rows = [['Placa PYL ' + board.label, liningPlates + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + l + ' capa(s) · ' + pylPallets(liningPlates)]];
+    const rows = [['Placa PYL ' + board.label, liningPlates + ' uds', 'Elegida por altura ' + H.toFixed(2) + ' m · ' + board.note + ' · ' + l + ' capa(s)']];
     let title = '';
     if(el('lProfileWrap')) el('lProfileWrap').classList.toggle('hidden', t === 'direct');
     const screwNeed = Math.ceil(A * l * 15 * 11 / 10), screwType = l >= 2 ? 'TN 35' : 'TN 25', screwBoxes = Math.ceil(screwNeed / 1000);
@@ -255,7 +250,7 @@
     const fmt = (el('rBoard') ? el('rBoard').value : '2,1.2').split(',').map(Number);
     const plates = Math.ceil(A * l * 1.08 / (fmt[0] * fmt[1]));
     const sys = el('rSys') ? el('rSys').value : 'double', d = num('rDrop');
-    const rows = [['Placa PYL ' + Math.round(fmt[0] * 1000) + ' × ' + Math.round(fmt[1] * 1000), plates + ' uds', l + ' capa(s) · paletización ' + pylPallets(plates)]];
+    const rows = [['Placa PYL ' + Math.round(fmt[0] * 1000) + ' × ' + Math.round(fmt[1] * 1000), plates + ' uds', l + ' capa(s)']];
     if(sys === 'double') rows.push(['TC47 primario', Math.ceil(A / 2.7) + ' barras', 'Primaria'], ['TC47 secundario', Math.ceil(A / 1.5) + ' barras', 'Secundaria'], ['Crucetas', Math.ceil(A / .475) + ' uds', 'Cruces'], ['Horquillas', Math.ceil(A / .95) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / .95 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
     else if(sys === 'simple') rows.push(['TC47 portante', Math.ceil(A / 1.5) + ' barras', 'Estructura'], ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / 1.2 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
     else if(sys === 'sierra') rows.push(['Perfil sierra', Math.ceil(A / 2.7) + ' barras', 'Primario'], ['TC47 secundario', Math.ceil(A / 1.5) + ' barras', 'Secundario'], ['Suspensiones', Math.ceil(A / .95) + ' uds', 'Puntos de suspensión']);
@@ -291,7 +286,6 @@
       if(el('productLink')) el('productLink').href = it.url;
       const chips = [];
       if(it.u) chips.push(it.u + ' ud/m²');
-      if(it.p) chips.push('Palet ' + it.p);
       if(it.kg) chips.push(it.kg + ' kg/m²·mm');
       if(it.min != null && it.max != null) chips.push(it.min === it.max ? it.min + ' consumo' : it.min + '–' + it.max + ' consumo');
       if(el('productChips')) el('productChips').innerHTML = chips.map(x => '<span class="chip">' + x + '</span>').join('');
@@ -306,7 +300,7 @@
     const A = wetArea(), w = num('wetWaste'), f = 1 + w / 100, rows = [];
     if(currentCat === 'ladrillos' || currentCat === 'bloques'){
       const base = it.u * A, uds = Math.ceil(base * f), kg = uds * it.w;
-      rows.push([name, uds + ' uds', it.u + ' ud/m² base · ' + Math.ceil(base) + ' uds sin merma · ' + kg.toFixed(2) + ' kg · ' + (uds / it.p).toFixed(2) + ' palets equiv.']);
+      rows.push([name, uds + ' uds', it.u + ' ud/m² base · ' + Math.ceil(base) + ' uds sin merma · ' + kg.toFixed(2) + ' kg']);
       if(it.m){
         const mk = it.m * A * f;
         if(el('wetMortar') && el('wetMortar').value === 'predosificado') rows.push(['Mortero', Math.ceil(mk / 25) + ' sacos de 25 kg', mk.toFixed(2) + ' kg estimados']);
