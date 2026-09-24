@@ -200,12 +200,10 @@
       $all('[data-ac]').forEach(x => x.setAttribute('aria-pressed', String(x === color)));
       return;
     }
-    const cat = e.target.closest('[data-cat]');
+    const cat = e.target.closest('#wetCats [data-cat], [data-cat]');
     if(cat && cat.dataset.cat){
-      currentCat = cat.dataset.cat;
-      $all('[data-cat]').forEach(x => x.classList.toggle('active', x === cat));
-      if(el('wetWaste')) el('wetWaste').value = currentCat === 'puentes' ? '0' : '8';
-      renderProducts(); calcWet(); return;
+      setWetCat(cat.dataset.cat);
+      return;
     }
     const body = e.target.closest('[data-cer-body]');
     if(body && body.dataset.cerBody){
@@ -330,11 +328,35 @@
   }
   on(el('roofForm'), 'submit', e => { e.preventDefault(); calcRoof(); });
   ['rSys','rBoard','rLayers'].forEach(id => on(el(id), 'change', calcRoof));
+  function setWetCat(cat){
+    if(!data[cat]) return;
+    currentCat = cat;
+    $all('#wetCats [data-cat], [data-cat]').forEach(x => x.classList.toggle('active', x.dataset.cat === cat));
+    if(el('wetWaste')) el('wetWaste').value = cat === 'puentes' ? '0' : '8';
+    renderProducts();
+    calcWet();
+  }
+  function productImgSrc(it){
+    const img = (it && it.img) || '';
+    if(/^https?:\/\//i.test(img)) return img;
+    if(img) return img;
+    return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23eef3ef"/><text x="50%" y="50%" text-anchor="middle" fill="%23666" font-size="18">Producto</text></svg>';
+  }
   function renderProducts(){
     const s = el('wetProduct');
-    if(!s || !data[currentCat]) return;
+    const group = data[currentCat];
+    if(!s){ return; }
+    if(!group){
+      s.innerHTML = '';
+      const box = el('wetResult');
+      if(box) box.innerHTML = resultHTML('Obra húmeda', 'Sin catálogo', [['Aviso', 'No hay productos', 'La categoría ' + currentCat + ' no está en data.js']]);
+      return;
+    }
+    const prev = s.value;
     s.innerHTML = '';
-    Object.keys(data[currentCat]).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; s.appendChild(o); });
+    Object.keys(group).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; s.appendChild(o); });
+    if(prev && group[prev]) s.value = prev;
+    else s.selectedIndex = 0;
     syncWet();
   }
   function wetArea(){ return (el('wetMeasureMode') && el('wetMeasureMode').value === 'direct') ? num('wetArea') : num('wetL') * num('wetH'); }
@@ -349,7 +371,10 @@
     if(el('wetMortarWrap')) el('wetMortarWrap').classList.toggle('hidden', !(currentCat === 'ladrillos' || currentCat === 'bloques'));
     if(el('wetSupportWrap')) el('wetSupportWrap').classList.toggle('hidden', !(currentCat === 'puentes' && it && it.k === 'level_primer'));
     if(it){
-      if(el('productImg')) el('productImg').src = it.img;
+      if(el('productImg')){
+        el('productImg').onerror = function(){ this.onerror = null; this.src = productImgSrc({}); };
+        el('productImg').src = productImgSrc(it);
+      }
       if(el('productName')) el('productName').textContent = name;
       if(el('productSpec')) el('productSpec').textContent = it.spec || '';
       if(el('productLink')) el('productLink').href = it.url;
@@ -365,7 +390,11 @@
     syncWet();
     const name = el('wetProduct') ? el('wetProduct').value : '';
     const it = data[currentCat] && data[currentCat][name];
-    if(!it) return;
+    if(!it){
+      const box = el('wetResult');
+      if(box) box.innerHTML = resultHTML('Obra húmeda', currentCat, [['Aviso', 'Elige un producto', 'No hay ficha cargada para esta categoría']]);
+      return;
+    }
     const A = wetArea(), w = num('wetWaste'), f = 1 + w / 100, rows = [];
     if(currentCat === 'ladrillos' || currentCat === 'bloques'){
       const base = it.u * A, uds = Math.ceil(base * f), kg = uds * it.w;
@@ -399,6 +428,8 @@
   }
   on(el('wetForm'), 'submit', e => { e.preventDefault(); calcWet(); });
   ['wetProduct','wetMeasureMode','wetThickness','wetSupport','wetMortar','wetWaste'].forEach(id => on(el(id), 'change', calcWet));
+  ['wetArea','wetL','wetH'].forEach(id => on(el(id), 'input', calcWet));
+  $all('#wetCats [data-cat]').forEach(btn => on(btn, 'click', e => { e.preventDefault(); setWetCat(btn.dataset.cat); }));
   function ceramicBodyLabel(k){ return {porcelanico:'Porcelánico',pasta_roja:'Pasta roja',pasta_blanca:'Pasta blanca'}[k] || 'Porcelánico'; }
   function ceramicGlueKgM2(side, body, bond){
     const simple = side <= 30 ? 3 : side <= 60 ? 3.5 : 4.5;
