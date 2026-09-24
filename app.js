@@ -200,6 +200,8 @@
       $all('[data-ac]').forEach(x => x.setAttribute('aria-pressed', String(x === color)));
       return;
     }
+    const roofSys = e.target.closest('[data-roof-sys]');
+    if(roofSys && roofSys.dataset.roofSys){ setRoofSys(roofSys.dataset.roofSys); return; }
     const cat = e.target.closest('#wetCats [data-cat], [data-cat]');
     if(cat && cat.dataset.cat){
       setWetCat(cat.dataset.cat);
@@ -273,6 +275,13 @@
   }
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
   ['lType','lLayers','lS','lP'].forEach(id => on(el(id), 'change', calcLining));
+  function setRoofSys(sys){
+    const names = {double:'Doble TC47',simple:'TC47 simple',sierra:'Sierra + TC47',cm70:'Canal + M70',desmontable60:'Desmontable 60 × 60',desmontable120:'Desmontable 60 × 120',escayola:'Escayola con estopa'};
+    if(el('rSys')) el('rSys').value = sys;
+    $all('[data-roof-sys]').forEach(b => b.classList.toggle('active', b.dataset.roofSys === sys));
+    if(el('roofSysNow')) el('roofSysNow').textContent = 'Seleccionado: ' + (names[sys] || sys);
+    calcRoof();
+  }
   function tc47Pack(span, width, spacing, barLen){
     const sp = spacing || 0.5, bar = barLen || 3;
     const runs = Math.max(1, Math.ceil(Math.max(0, width) / sp) + 1);
