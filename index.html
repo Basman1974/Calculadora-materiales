@@ -48,7 +48,7 @@
     <div class="tiles">
       <button class="tile" data-open="wall" type="button"><img class="tilePhoto" width="800" height="537" sizes="(max-width:520px) 100vw, 50vw" fetchpriority="high" decoding="async" src="https://static.wixstatic.com/media/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png/v1/fill/w_800,h_537,al_c,q_75/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png" alt="Montaje real de tabique de placas de yeso laminado"><span class="tileShade"></span><span class="tileTop">OBRA SECA</span><span class="tileText"><strong>Tabique</strong><small>Estructura metálica y placas de yeso laminado.</small><span class="arrow">CALCULAR →</span></span></button>
       <button class="tile" data-open="lining" type="button"><img class="tilePhoto" width="800" height="532" sizes="(max-width:520px) 100vw, 50vw" fetchpriority="high" decoding="async" src="https://www.gyproclatenplaatsen.be/sites/89/images/kamerbrede-gipskarton.jpg" alt="Trasdosado interior con placas de yeso"><span class="tileShade"></span><span class="tileTop">REVESTIMIENTO</span><span class="tileText"><strong>Trasdosado</strong><small>Directo, semidirecto o autoportante.</small><span class="arrow">CALCULAR →</span></span></button>
-      <button class="tile" data-open="roof" type="button"><img class="tilePhoto" width="800" height="533" sizes="(max-width:520px) 100vw, 50vw" loading="lazy" decoding="async" src="https://images.squarespace-cdn.com/content/v1/688cd53107e36267f90172f3/1754060088863-WS71FRXOAHONWJFSGGA3/Commercial%2BDrywall%2BSan%2BFrancisco.webp?format=750w" alt="Montaje real de falso techo de placas"><span class="tileShade"></span><span class="tileTop">FALSO TECHO</span><span class="tileText"><strong>Techo</strong><small>Perfilería, suspensión, varillas y placas.</small><span class="arrow">CALCULAR →</span></span></button>
+      <button class="tile" data-open="roof" type="button"><img class="tilePhoto" width="800" height="533" sizes="(max-width:520px) 100vw, 50vw" loading="lazy" decoding="async" src="https://images.squarespace-cdn.com/content/v1/688cd53107e36267f90172f3/1754060088863-WS71FRXOAHONWJFSGGA3/Commercial%2BDrywall%2BSan%20Francisco.webp?format=750w" alt="Montaje real de falso techo de placas"><span class="tileShade"></span><span class="tileTop">FALSO TECHO</span><span class="tileText"><strong>Techo</strong><small>Perfilería, suspensión, varillas y placas.</small><span class="arrow">CALCULAR →</span></span></button>
       <button class="tile" data-open="wet" type="button"><img class="tilePhoto" width="600" height="439" sizes="(max-width:520px) 100vw, 50vw" loading="lazy" decoding="async" src="https://static.wixstatic.com/media/eb1c04_5bc2f9ab534a45d69f719a63cb656a0f~mv2.jpg/v1/fill/w_600,h_439,al_c,lg_1,q_75/eb1c04_5bc2f9ab534a45d69f719a63cb656a0f~mv2.jpg" alt="Albañilería tradicional levantando un muro"><span class="tileShade"></span><span class="tileTop">ALBAÑILERÍA</span><span class="tileText"><strong>Obra húmeda</strong><small>Ladrillos, bloques, revestimientos y puentes de unión.</small><span class="arrow">CALCULAR →</span></span></button>
       <button class="tile" data-open="ceramic" type="button"><img class="tilePhoto" width="800" height="533" sizes="(max-width:520px) 100vw, 50vw" loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=800&q=70" alt="Colocación de revestimiento cerámico"><span class="tileShade"></span><span class="tileTop">COLOCACIÓN</span><span class="tileText"><strong>Cerámica</strong><small>Nivelación y selección orientativa de cemento cola.</small><span class="arrow">CALCULAR →</span></span></button>
     </div>
@@ -89,7 +89,7 @@
   <section class="screen" id="wet">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
     <div class="sectionTitle">Obra húmeda</div><p class="lead">Selecciona categoría y producto.</p>
-    <div class="catgrid">
+    <div class="catgrid" id="wetCats">
       <button type="button" class="cat active" data-cat="ladrillos">Ladrillos · 10</button>
       <button type="button" class="cat" data-cat="bloques">Bloques · 6</button>
       <button type="button" class="cat" data-cat="revestimientos">Revestimientos · 6</button>
@@ -98,7 +98,7 @@
     <form id="wetForm"><div class="panel">
       <label>Producto<select id="wetProduct"></select></label>
       <div class="productCard">
-        <div class="productImgWrap"><img class="productImg" id="productImg" alt="Producto seleccionado" loading="lazy" decoding="async"><div class="sourceTag" id="productTag">OBRAMAT</div></div>
+        <div class="productImgWrap"><img class="productImg" id="productImg" alt="Producto seleccionado" loading="lazy" decoding="async" width="300" height="300"><div class="sourceTag" id="productTag">OBRAMAT</div></div>
         <div><div class="productName" id="productName"></div><div class="productSpec" id="productSpec"></div><div class="chips" id="productChips"></div><a class="sourceLink" id="productLink" target="_blank" rel="noopener">Ver ficha en Obramat ↗</a></div>
       </div>
       <div class="grid" style="margin-top:12px">
