@@ -120,6 +120,7 @@
     const rows=[['Placa PYL '+kind+' '+thick.toString().replace('.',',')+' mm · '+board.label,liningPlates+' uds','UNE-EN 520 · '+kind+' · altura '+H.toFixed(2)+' m · '+board.note+' · merma 8 % · '+l+' capa(s) · neto '+net.toFixed(2)+' m²']];
     let title='', structural=null, useP=p, useSp=sp, doubled=false;
     if(el('lProfileWrap'))el('lProfileWrap').classList.toggle('hidden',t==='direct');
+    if(el('lSpacingWrap'))el('lSpacingWrap').classList.toggle('hidden',t==='direct');
     if(el('lWoolWrap'))el('lWoolWrap').classList.toggle('hidden',t==='direct');
     if(el('lWoolHint'))el('lWoolHint').classList.toggle('hidden',t==='direct');
     const finish=mergeFaceWork([pylFaceWork(net,l,thick)]);
