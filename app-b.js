@@ -43,36 +43,51 @@
   ['wetArea','wetL','wetH'].forEach(id => on(el(id), 'input', calcWet));
   $all('#wetCats [data-cat]').forEach(btn => on(btn, 'click', e => { e.preventDefault(); setWetCat(btn.dataset.cat); }));
   function ceramicBodyLabel(k){ return {porcelanico:'Porcelánico',pasta_roja:'Pasta roja',pasta_blanca:'Pasta blanca'}[k] || 'Porcelánico'; }
-  function ceramicGlueKgM2(side, body, bond){
-    const simple = side <= 30 ? 3 : side <= 60 ? 3.5 : 4.5;
-    const doble = side <= 30 ? 5 : side <= 60 ? 6 : 6.5;
-    let kg = bond === 'doble' ? doble : simple;
-    if(body === 'porcelanico' && bond === 'simple' && side > 45) kg += 0.5;
-    return kg;
+  function ceramicGlueKgM2(side, body, bond, trowel){
+    const t=Math.max(6, Number(trowel)||10);
+    let simple = t<=6 ? 2.5 : t<=8 ? 3.2 : t<=10 ? 4.0 : 4.8;
+    if(side>60) simple += 0.4;
+    if(body==='porcelanico') simple += 0.2;
+    return bond==='doble' ? simple+1.8 : simple;
+  }
+  function groutKgM2(aCm,bCm,thickMm,jointMm,density){
+    const A=Math.max(1,aCm*10),B=Math.max(1,bCm*10),T=Math.max(1,thickMm),J=Math.max(.5,jointMm),D=Math.max(1,Number(density)||1.6);
+    return ((A+B)/(A*B))*T*J*D;
+  }
+  function patternWaste(pattern, manual){
+    const base={recto:5,tercio:8,mitad:10,diagonal:15}[pattern]||5;
+    return Math.max(Number(manual)||0,base);
   }
   function calcLevel(){
-    const A = Math.max(10, num('cA')), B = Math.max(10, num('cB')), area = num('cArea'), w = num('cWaste'), body = currentCerBody;
-    if(el('aSize')) el('aSize').value = Math.max(A, B);
-    const tileAreaM2 = (A * B) / 10000, tilesBase = tileAreaM2 > 0 ? area / tileAreaM2 : 0, tiles = Math.ceil(tilesBase * (1 + w / 100)), tilesM2 = tileAreaM2 > 0 ? 1 / tileAreaM2 : 0;
-    const clipsM2 = Math.max(4, Math.ceil(tilesM2 * 2)), total = Math.ceil(clipsM2 * area * (1 + w / 100)), side = Math.max(A, B);
-    const bond = (el('cBond') && el('cBond').value) || 'doble', glueKgM2 = ceramicGlueKgM2(side, body, bond), bondLabel = bond === 'doble' ? 'Doble encolado' : 'Encolado simple';
-    const glueKg = glueKgM2 * area * (1 + w / 100), groutKgM2 = side <= 30 ? 0.8 : side <= 60 ? 0.5 : 0.35, groutKg = groutKgM2 * area;
-    const rows = [
-      ['Tipo de baldosa', ceramicBodyLabel(body), body === 'porcelanico' ? 'UNE-EN 14411 · baja absorción · adhesivo C2TE o superior' : 'UNE-EN 14411 · absorción media/alta'],
-      ['Baldosas / piezas', tiles + ' uds', tilesM2.toFixed(2) + ' ud/m² · formato ' + A + ' × ' + B + ' cm · merma ' + w + ' %'],
-      ['Calzos de nivelación', total + ' uds', clipsM2 + ' calzos/m² · 2 puntos por pieza como base'],
-      ['Cuñas reutilizables', 'No consumibles', 'Se reutilizan durante la colocación'],
-      ['Encolado', bondLabel, side > 45 || body === 'porcelanico' ? 'Doble si lado > 45 cm o porcelánico · UNE-EN 12004' : 'Capa en soporte y/o dorso · UNE-EN 12004'],
-      ['Cemento cola C2TE', Math.ceil(glueKg / 25) + ' saco(s) de 25 kg', glueKg.toFixed(1) + ' kg · ' + glueKgM2 + ' kg/m² · ' + bondLabel + ' · UNE-EN 12004'],
-      ['Mortero de juntas', Math.ceil(groutKg / 5) + ' saco(s) de 5 kg', groutKg.toFixed(1) + ' kg · estimación por formato']
+    const A=Math.max(5,num('cA')),B=Math.max(5,num('cB')),area=num('cArea'),body=currentCerBody;
+    const pattern=(el('cPattern')&&el('cPattern').value)||'recto';
+    const w=patternWaste(pattern,num('cWaste'));
+    const thick=Math.max(3,num('cThickness')||10),joint=Math.max(1,num('cJoint')||3),trowel=num('cTrowel')||10;
+    if(el('aSize')) el('aSize').value=Math.max(A,B);
+    const tileAreaM2=(A*B)/10000,tilesBase=tileAreaM2>0?area/tileAreaM2:0,tiles=Math.ceil(tilesBase*(1+w/100)),tilesM2=tileAreaM2>0?1/tileAreaM2:0;
+    const side=Math.max(A,B);
+    const edgesPerTile=(A>=60||B>=60)?4:2;
+    const clipsM2=Math.max(4,Math.ceil(tilesM2*edgesPerTile)),total=Math.ceil(clipsM2*area*(1+w/100));
+    const bond=(el('cBond')&&el('cBond').value)||'doble',bondLabel=bond==='doble'?'Doble encolado':'Encolado simple';
+    const glueKgM2=ceramicGlueKgM2(side,body,bond,trowel),glueKg=glueKgM2*area*(1+w/100);
+    const groutRate=groutKgM2(A,B,thick,joint,1.6),groutKg=groutRate*area*1.10;
+    const rows=[
+      ['Tipo de baldosa',ceramicBodyLabel(body),body==='porcelanico'?'UNE-EN 14411 · baja absorción · verificar adhesivo compatible':'UNE-EN 14411 · verificar grupo y absorción de la baldosa'],
+      ['Baldosas / piezas',tiles+' uds',tilesM2.toFixed(2)+' ud/m² · formato '+A+' × '+B+' cm · patrón '+pattern+' · merma aplicada '+w+' %'],
+      ['Calzos de nivelación',total+' uds',clipsM2+' calzos/m² · estimación geométrica según formato; verificar sistema de nivelación elegido'],
+      ['Cuñas reutilizables','No consumibles','Se reutilizan durante la colocación'],
+      ['Encolado',bondLabel,'Llana '+trowel+' mm · consumo estimado '+glueKgM2.toFixed(1)+' kg/m² · verificar ficha del adhesivo'],
+      ['Cemento cola',Math.ceil(glueKg/25)+' saco(s) de 25 kg',glueKg.toFixed(1)+' kg · llana '+trowel+' mm · '+bondLabel+' · UNE-EN 12004'],
+      ['Mortero de juntas',Math.ceil(groutKg/5)+' saco(s) de 5 kg',groutKg.toFixed(1)+' kg · '+groutRate.toFixed(3)+' kg/m² × 1,10 · fórmula geométrica: formato '+A+'×'+B+' cm · espesor '+thick+' mm · junta '+joint+' mm · densidad 1,6']
     ];
-    const obj = {title:ceramicBodyLabel(body) + ' · ' + area.toFixed(2) + ' m²', items:rows};
-    const box = el('levelResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, 'UNE-EN 14411 · ' + A + ' × ' + B + ' cm · merma ' + w + ' %', rows); bindAdd(box, obj); }
+    const obj={title:ceramicBodyLabel(body)+' · '+area.toFixed(2)+' m²',items:rows};
+    const box=el('levelResult');
+    if(box){box.innerHTML=resultHTML(obj.title,'UNE-EN 14411/12004 · '+A+' × '+B+' cm · patrón '+pattern+' · merma '+w+' %',rows);bindAdd(box,obj);}
   }
-  on(el('levelForm'), 'submit', e => { e.preventDefault(); calcLevel(); });
-  on(el('cBond'), 'change', () => { calcLevel(); if(el('adhForm') && !el('adhForm').classList.contains('hidden')) adhesiveClass(); });
-  function adhesiveClass(){
+  on(el('levelForm'),'submit',e=>{e.preventDefault();calcLevel();});
+  ['cBond','cPattern','cWaste','cTrowel'].forEach(id=>on(el(id),'change',()=>{calcLevel();if(el('adhForm')&&!el('adhForm').classList.contains('hidden'))adhesiveClass();}));
+  ['cA','cB','cArea','cThickness','cJoint'].forEach(id=>on(el(id),'input',calcLevel));
+    function adhesiveClass(){
     const zone = el('aZone') ? el('aZone').value : 'floor';
     const place = el('aPlace') ? el('aPlace').value : 'interior';
     const size = num('aSize');
@@ -89,12 +104,12 @@
     else if(body === 'porcelanico') cls = size > 45 ? 'C2TES1' : 'C2TE';
     else cls = 'C2TE';
     const meanings = {C1:'Adhesivo cementoso de adherencia normal',C2:'Adhesivo cementoso de adherencia mejorada',C2TE:'Cementoso mejorado TE',C2TES1:'C2TE deformable',C2S1:'Cementoso mejorado deformable',C2S2:'Cementoso altamente deformable',R1:'Resinas reactivas',R2:'Resinas reactivas mejorado'};
-    const area = num('cArea'), bond = (el('cBond') && el('cBond').value) || 'doble', glueKgM2 = ceramicGlueKgM2(size, body, bond), bondLabel = bond === 'doble' ? 'Doble encolado' : 'Encolado simple';
+    const area = num('cArea'), bond = (el('cBond') && el('cBond').value) || 'doble', trowel=num('cTrowel')||10, glueKgM2 = ceramicGlueKgM2(size, body, bond, trowel), bondLabel = bond === 'doble' ? 'Doble encolado' : 'Encolado simple';
     const rows = [
       ['Tipo de baldosa', ceramicBodyLabel(body), 'UNE-EN 14411 · influye en la clase mínima'],
       ['Clasificación orientativa', cls, 'UNE-EN 12004 · ' + (meanings[cls] || 'Consultar ficha')],
       ['Encolado', bondLabel, 'Simple ≈ 3–4 kg/m² · doble ≈ 5–6 kg/m²'],
-      ['Consumo técnico', area ? ((glueKgM2 * area).toFixed(1) + ' kg · ' + Math.ceil(glueKgM2 * area / 25) + ' saco(s) 25 kg') : glueKgM2 + ' kg/m²', glueKgM2 + ' kg/m² · ' + bondLabel + ' · UNE-EN 12004'],
+      ['Consumo técnico', area ? ((glueKgM2 * area).toFixed(1) + ' kg · ' + Math.ceil(glueKgM2 * area / 25) + ' saco(s) 25 kg') : glueKgM2 + ' kg/m²', glueKgM2.toFixed(1) + ' kg/m² · llana '+trowel+' mm · ' + bondLabel + ' · UNE-EN 12004 · verificar ficha'],
       ['Comprobación', 'Obligatoria', 'Verificar ficha técnica del adhesivo elegido']
     ];
     const box = el('adhResult');
@@ -124,7 +139,7 @@
     renderSavedJobs();
     const c = el('workContent');
     if(!c) return;
-    c.innerHTML = work.length ? work.map((x,i) => '<div class="workItem"><b>' + (i + 1) + '. ' + esc(x.title) + '</b><div class="small">' + (x.items||[]).length + ' líneas</div><button class="btn" data-del="' + i + '" style="margin-top:8px">Eliminar</button></div>').join('') : '<div class="empty">Todavía no has añadido partidas.</div>';
+    c.innerHTML = work.length ? work.map((x,i) => '<div class="workItem"><b>' + (i + 1) + '. ' + esc(x.title) + '</b><div class="small">Zona: ' + esc(x.zone||'General') + ' · ' + (x.items||[]).length + ' líneas</div><button class="btn" data-del="' + i + '" style="margin-top:8px">Eliminar</button></div>').join('') : '<div class="empty">Todavía no has añadido partidas.</div>';
     c.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { work.splice(Number(b.dataset.del), 1); saveWork(); renderWork(); renderList(); });
   }
   function renderList(){
@@ -136,7 +151,7 @@
     const tot = budgetTotals();
     const co = company.name || 'Tu empresa';
     const head = '<div class="quoteHead"><div><div class="quoteBrand">' + esc(co) + '</div><div class="small">' + esc([company.nif, company.phone, company.mail].filter(Boolean).join(' · ')) + '</div><div class="small">' + esc(company.addr||'') + '</div></div><div class="quoteMeta"><div><b>' + esc(jobMeta.num || 'Presupuesto') + '</b></div><div>' + esc(jobMeta.name || 'Obra sin nombre') + '</div><div>' + esc(jobMeta.client ? ('Cliente: ' + jobMeta.client) : '') + '</div><div>' + esc(jobMeta.addr||'') + '</div><div>CP ' + esc(postalState.code||'') + (postalState.store ? ' · ' + esc(postalState.store) : '') + '</div></div></div>';
-    const parts = '<div class="groupHead">PARTIDAS</div>' + work.map((x,i) => '<div class="listLine"><span>' + (i+1) + '. ' + esc(x.title) + '</span><strong>' + (x.items||[]).length + '</strong></div>').join('');
+    const parts = '<div class="groupHead">PARTIDAS POR ESTANCIA</div>' + work.map((x,i) => '<div class="listLine"><span><b>' + esc(x.zone||'General') + '</b> · ' + (i+1) + '. ' + esc(x.title) + '</span><strong>' + (x.items||[]).length + '</strong></div>').join('');
     const table = '<div class="groupHead">MATERIALES Y PRECIOS</div><div class="budgetHead"><span>Concepto</span><span>Ud</span><span>€/ud</span><span>Importe</span></div>' +
       tot.rows.map(r => '<div class="budgetLine"><div>' + esc(r.name) + '<div class="rowDetail">' + esc((r.qty ? (String(r.qty).replace('.',',') + ' ' + r.unit) : '') + (r.detail ? ' · ' + r.detail : '')) + '</div></div><div class="money">' + esc(r.labor ? '—' : (String(r.qty).replace('.',',') + ' ' + r.unit)) + '</div><div>' + (r.labor ? '<span class="money">' + money(r.total) + '</span>' : '<input class="price" data-price-key="' + esc(r.name) + '" inputmode="decimal" value="' + (r.unitPrice||'') + '">') + '</div><div class="budgetAmt">' + money(r.total) + ' €</div></div>').join('');
     const sums = '<div class="budgetTot"><span>Materiales</span><span>' + money(tot.mat) + ' €</span></div>' +
@@ -167,7 +182,7 @@
     if(jobMeta.client) lines.push('Cliente: ' + jobMeta.client);
     if(jobMeta.addr) lines.push('Dirección: ' + jobMeta.addr);
     lines.push('');
-    work.forEach((x,i) => lines.push((i+1) + '. ' + x.title));
+    work.forEach((x,i) => lines.push((i+1) + '. [' + (x.zone||'General') + '] ' + x.title));
     lines.push('');
     tot.rows.forEach(r => lines.push(r.name + ' · ' + (r.labor ? money(r.total)+' €' : (String(r.qty).replace('.',',') + ' ' + r.unit + ' × ' + money(r.unitPrice) + ' = ' + money(r.total) + ' €'))));
     lines.push('');
@@ -250,6 +265,41 @@
   on(el('exportWa'), 'click', exportWa);
   on(el('jobNew'), 'click', newJob);
   on(el('jobSaveSnap'), 'click', saveSnap);
+  on(el('priceCsv'),'change',async e=>{
+    const file=e.target.files&&e.target.files[0],status=el('priceCsvStatus');
+    if(!file) return;
+    try{
+      const txt=await file.text();
+      let count=0;
+      txt.split(/\r?\n/).forEach(line=>{
+        if(!line.trim()) return;
+        const sep=line.includes(';')?';':',';
+        const parts=line.split(sep);
+        if(parts.length<2) return;
+        const name=parts[0].replace(/^"|"$/g,'').trim();
+        const raw=parts[1].replace(/^"|"$/g,'').trim().replace(',','.');
+        const price=Number(raw);
+        if(name&&isFinite(price)&&price>=0){priceBook[name]=price;count++;}
+      });
+      savePrices(); if(status) status.textContent=count+' precios importados'; renderList();
+    }catch(err){if(status)status.textContent='No se pudo leer el CSV';}
+    e.target.value='';
+  });
+  let deferredInstall=null;
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault(); deferredInstall=e;
+    if(el('installApp')) el('installApp').classList.remove('hidden');
+  });
+  on(el('installApp'),'click',async()=>{
+    if(!deferredInstall) return;
+    deferredInstall.prompt();
+    try{await deferredInstall.userChoice;}catch(e){}
+    deferredInstall=null;
+    if(el('installApp')) el('installApp').classList.add('hidden');
+  });
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
+  }
   ['jobName','jobClient','jobAddr','jobVat','jobDisc','jobLaborExtra','jobExtra','jobValid','jobNotes','jobNum','coName','coNif','coPhone','coMail','coAddr'].forEach(id => {
     on(el(id), 'change', () => { saveJob(); if(id==='jobVat'||id==='jobDisc'||id==='jobLaborExtra'||id==='jobExtra') renderList(); });
     on(el(id), 'blur', saveJob);
