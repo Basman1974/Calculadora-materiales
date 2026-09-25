@@ -71,7 +71,6 @@ jobs:
           tabs = {
               'data-wall-preset':['vivienda','bano','doble'],
               'data-lining-type':['direct','semi','auto'],
-              'data-lining-preset':['direct','semi','auto'],
               'data-roof-fam':['continuo','registrable','tradicional'],
               'data-roof-sys':['double','simple','sierra','cm70','desmontable60','desmontable120','escayola'],
               'data-cat':['ladrillos','bloques','revestimientos','puentes'],
