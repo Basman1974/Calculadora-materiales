@@ -67,7 +67,29 @@ body[data-locked="1"] .nav,body[data-locked="1"] .storebar,body[data-locked="1"]
 .budgetTot{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-weight:950}
 .budgetTot.grand{font-size:1.05rem;color:var(--accent);border-top:2px solid var(--accent);margin-top:6px;padding-top:10px}
 .disclaimer{margin-top:10px;font-size:.68rem;color:var(--muted);line-height:1.4;font-weight:650}
-@media print{body{background:#fff;color:#000}.top,#look,.storebar,.appearance,.nav,.backWrap,.calc,.actions,.passToggle,.disclaimer{display:none!important}.app{box-shadow:none;border:0;padding:0}.shell{max-width:none;padding:0}.budgetLine input{border:0;background:transparent;padding:0}}
+.legalBox{margin:12px 0 14px;padding:12px 14px;border:1.5px solid var(--accent,#285940);border-radius:14px;background:var(--accentSoft,#dfece3);color:var(--text,#15251b);font-size:.78rem;line-height:1.45;font-weight:700}
+.legalBox b{display:block;letter-spacing:.07em;font-size:.68rem;margin-bottom:6px}
+.helpSteps{display:flex;flex-direction:column;gap:8px;margin:4px 0 12px}
+.helpStep{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1.5px solid var(--line);border-radius:14px;background:var(--card)}
+.helpStep span{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--accent);color:var(--on);font-size:.82rem;font-weight:950}
+.helpStep b{display:block;font-size:.86rem;font-weight:950}
+.helpStep small{display:block;margin-top:2px;color:var(--muted);font-size:.72rem;font-weight:650;line-height:1.4}
+.helpAcc{margin-top:8px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.helpAcc summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:.9rem;font-weight:950}
+.helpAcc summary::-webkit-details-marker{display:none}
+.helpAcc summary::after{content:'+';float:right;color:var(--accent);font-weight:950}
+.helpAcc[open] summary::after{content:'\2013'}
+.helpBody{padding:0 14px 14px;font-size:.78rem;line-height:1.45;font-weight:650;color:var(--text)}
+.helpBody p{margin:0 0 8px}
+.helpBody ul{margin:0 0 10px;padding-left:18px}
+.helpBody li{margin:0 0 6px}
+.helpBody .btn{margin:0 6px 6px 0;min-height:40px}
+.helpTable{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 8px}
+.helpTable div{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-top:1px solid var(--line);font-size:.74rem;font-weight:800}
+.helpTable div:first-child{border-top:0}
+.helpTable span:last-child{color:var(--accent);text-align:right;font-weight:950}
+.helpFoot{margin:8px 0 0;color:var(--muted);font-size:.72rem;font-weight:700}
+@media print{body{background:#fff;color:#000}.top,#look,.storebar,.appearance,.nav,.backWrap,.calc,.actions,.passToggle{display:none!important}.app{box-shadow:none;border:0}}
 .hidden{display:none!important}
 @media(max-width:520px){.shell{padding:0}.app{border-radius:0;min-height:100vh}.tiles,.grid{grid-template-columns:1fr}.tile{height:245px}.palette{grid-template-columns:repeat(2,minmax(0,1fr))}.modes{grid-template-columns:1fr}.productCard{grid-template-columns:110px 1fr}.productImgWrap{height:112px}.back{width:100%;justify-content:flex-start}.sysFam{font-size:.68rem;padding:6px 4px}.sysBtn{min-height:112px}}
 textarea{width:100%;min-height:84px;margin-top:5px;padding:9px 10px;border:1.5px solid var(--line);border-radius:11px;background:var(--soft);color:var(--text);font-weight:700;resize:vertical}
@@ -78,3 +100,10 @@ textarea{width:100%;min-height:84px;margin-top:5px;padding:9px 10px;border:1.5px
 .savedJob b{font-size:.82rem}
 .money,.budgetAmt{text-align:right;font-variant-numeric:tabular-nums;font-weight:950}
 .budgetLine input.price{text-align:right}
+@media print{
+  body{background:#fff;color:#000}
+  .top,#look,.storebar,.appearance,.nav,.backWrap,.calc,.actions,.passToggle,.disclaimer{display:none!important}
+  .app{box-shadow:none;border:0;padding:0}
+  .shell{max-width:none;padding:0}
+  .budgetLine input{border:0;background:transparent;padding:0}
+}
