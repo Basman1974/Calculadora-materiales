@@ -84,6 +84,10 @@
   on(el('wallForm'),'submit',e=>{e.preventDefault();calcWall();});
   ['wA','wB','wP','wS','wBoardThick','wWool','wBoardType','wDoors','wWins','wLabor'].forEach(id=>on(el(id),'change',calcWall));
   ['wL','wH'].forEach(id=>on(el(id),'input',calcWall));
+  document.addEventListener('change', e => {
+    const id=e.target && e.target.id;
+    if(['wA','wB','wP','wS','wBoardThick','wWool','wBoardType'].includes(id)) calcWall();
+  });
 
   function calcLining(){
     const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15;
