@@ -114,11 +114,12 @@
   }));
 
   function calcLining(){
-    const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15;
+    const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=t==='direct'?1:num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15;
     const holes=openingsM2(num('lDoors'),num('lWins')),net=netArea(A,holes),board=bestPylBoard(H),kind=boardTypeLabel('lBoardType');
     const liningPlates=Math.ceil(net*l/board.area*1.08);
     const rows=[['Placa PYL '+kind+' '+thick.toString().replace('.',',')+' mm · '+board.label,liningPlates+' uds','UNE-EN 520 · '+kind+' · altura '+H.toFixed(2)+' m · '+board.note+' · merma 8 % · '+l+' capa(s) · neto '+net.toFixed(2)+' m²']];
     let title='', structural=null, useP=p, useSp=sp, doubled=false;
+    if(el('lLayersWrap'))el('lLayersWrap').classList.toggle('hidden',t==='direct');
     if(el('lProfileWrap'))el('lProfileWrap').classList.toggle('hidden',t==='direct');
     if(el('lSpacingWrap'))el('lSpacingWrap').classList.toggle('hidden',t==='direct');
     if(el('lWoolWrap'))el('lWoolWrap').classList.toggle('hidden',t==='direct');
@@ -153,7 +154,7 @@
     const famNote=t==='direct'?'Familia Trasdosado directo':t==='semi'?'Familia Trasdosado semidirecto':'Familia Trasdosado autoportante';
     const obj={title:title+' · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
     const box=el('liningResult');
-    const metaStruct=t==='auto'?(structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA'):' · intereje '+Math.round(sp*1000)+' mm';
+    const metaStruct=t==='auto'?(structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA'):t==='semi'?(' · intereje '+Math.round(sp*1000)+' mm'):' · fijación directa sin perfilería';
     if(box){box.innerHTML=resultHTML(obj.title,famNote+' · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,t==='semi'?'semi':'auto')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows);bindAdd(box,obj);}
   }
   function setLiningType(t){
@@ -163,6 +164,7 @@
       auto:{name:'Trasdosado autoportante', sub:'Canal + montante · cámara para lana'}
     };
     if(el('lType')) el('lType').value = t;
+    if(t==='direct' && el('lLayers')) el('lLayers').value='1';
     $all('[data-lining-type]').forEach(b => {
       const on = b.dataset.liningType === t;
       b.classList.toggle('active', on);
