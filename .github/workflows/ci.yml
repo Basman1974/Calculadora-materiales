@@ -59,13 +59,42 @@ jobs:
               if ("el('" + form_id + "')") not in js:
                   missing.append('form-sin-handler:'+form_id)
 
-          critical = ['look','changePostal','useLocation','gateToggle','jobNew','jobSaveSnap','exportPrint','exportCsv','exportWa']
+          critical = ['installApp','look','changePostal','useLocation','gateToggle','jobNew','jobSaveSnap','exportPrint','exportCsv','exportWa']
           for bid in critical:
               if ('id="' + bid + '"') not in html:
                   missing.append('boton-falta:'+bid)
               handled = ("el('" + bid + "')") in js or ("closest('#" + bid + "')") in js or ('id="' + bid + '"') in html and 'onclick=' in html
               if not handled:
                   missing.append('boton-sin-handler:'+bid)
+
+          # Todas las familias de pestañas deben existir y tener lógica asociada.
+          tabs = {
+              'data-wall-preset':['vivienda','bano','doble'],
+              'data-lining-type':['direct','semi','auto'],
+              'data-lining-preset':['direct','semi','auto'],
+              'data-roof-fam':['continuo','registrable','tradicional'],
+              'data-roof-sys':['double','simple','sierra','cm70','desmontable60','desmontable120','escayola'],
+              'data-cat':['ladrillos','bloques','revestimientos','puentes'],
+              'data-cer-body':['porcelanico','pasta_roja','pasta_blanca'],
+              'data-cer-tab':['level','adhesive'],
+              'data-nav':['home','work','list','help'],
+          }
+          for attr, values in tabs.items():
+              for value in values:
+                  if (attr + '="' + value + '"') not in html:
+                      missing.append('pestana-falta:'+attr+'='+value)
+              camel = attr[5:].split('-')
+              camel = camel[0] + ''.join(x.title() for x in camel[1:])
+              if ('dataset.' + camel) not in js:
+                  missing.append('pestana-sin-logica:'+attr)
+
+          if 'cdn.jsdelivr.net/gh/Basman1974/Calculadora-materiales@' in Path('app.js').read_text(encoding='utf-8'):
+              missing.append('loader:fallback-antiguo-remoto')
+          if 'manifest.json' not in html:
+              missing.append('pwa:manifest-no-enlazado')
+          sw = Path('service-worker.js').read_text(encoding='utf-8')
+          if 'ignoreSearch:true' not in sw:
+              missing.append('pwa:cache-versionado-no-compatible')
 
           if missing:
               print('Faltan o sobran:', missing)
