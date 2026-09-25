@@ -1,5 +1,5 @@
 (() => {
-  const v = '20260925-audit1';
+  const v = '20260925-selectfix1';
   const parts = ['app-a1.js?v=' + v, 'app-a2.js?v=' + v, 'app-b.js?v=' + v];
   function fail(err){
     console.error(err);
