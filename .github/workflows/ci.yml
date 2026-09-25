@@ -37,7 +37,7 @@ jobs:
           html = ''.join(Path(p).read_text(encoding='utf-8', errors='replace') for p in ['ui-a.html','ui-b.html','ui-c.html'])
           js = ''.join(Path(p).read_text(encoding='utf-8', errors='replace') for p in ['app-a1.js','app-a2.js','app-b.js']) + Path('data.js').read_text(encoding='utf-8', errors='replace')
           missing = []
-          for token in ['id="postal"','id="wall"','id="lining"','id="roof"','id="wet"','id="ceramic"','id="wBoardThick"','id="lBoardThick"','id="cBond"','data-cer-body','src="app.js"','src="data.js"','href="style.css']:
+          for token in ['id="postal"','id="wall"','id="lining"','id="roof"','id="wet"','id="ceramic"','id="wBoardThick"','id="lBoardThick"','id="cBond"','data-cer-body','src="app.js?v=','src="data.js?v=','href="style.css']:
               if token not in html: missing.append('html:'+token)
           for token in ['function calcWall','function calcLining','function calcRoof','function calcWet','function calcLevel','function pylFaceWork','function bestPylBoard','function mmScrews','function ceramicGlueKgM2','function adhesiveClass','PLACO_HEIGHT_WALL','PLACO_HEIGHT_LINING','choosePlacoHeight','CALC_DATA']:
               if token not in js: missing.append('js:'+token)
