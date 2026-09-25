@@ -63,7 +63,8 @@ jobs:
           for bid in critical:
               if ('id="' + bid + '"') not in html:
                   missing.append('boton-falta:'+bid)
-              if ("el('" + bid + "')") not in js and ('id="' + bid + '"') in html and 'onclick=' not in html:
+              handled = ("el('" + bid + "')") in js or ("closest('#" + bid + "')") in js or ('id="' + bid + '"') in html and 'onclick=' in html
+              if not handled:
                   missing.append('boton-sin-handler:'+bid)
 
           if missing:
