@@ -43,10 +43,33 @@ jobs:
               if token not in js: missing.append('js:'+token)
           for forbidden in ['id="cerProductCode"','id="loadObramatCeramic"']:
               if forbidden in html: missing.append('obsoleto:'+forbidden)
+
+          import re
+          ids = re.findall(r'\bid="([^"]+)"', html)
+          if len(ids) != len(set(ids)):
+              missing.append('html:ids duplicados')
+
+          screens = set(re.findall(r'<section[^>]+id="([^"]+)"', html))
+          for target in re.findall(r'data-open="([^"]+)"', html):
+              if target not in screens: missing.append('data-open:'+target)
+          for target in re.findall(r'data-nav="([^"]+)"', html):
+              if target not in screens: missing.append('data-nav:'+target)
+
+          for form_id in re.findall(r'<form[^>]+id="([^"]+)"', html):
+              if ("el('" + form_id + "')") not in js:
+                  missing.append('form-sin-handler:'+form_id)
+
+          critical = ['look','changePostal','useLocation','gateToggle','jobNew','jobSaveSnap','exportPrint','exportCsv','exportWa']
+          for bid in critical:
+              if ('id="' + bid + '"') not in html:
+                  missing.append('boton-falta:'+bid)
+              if ("el('" + bid + "')") not in js and ('id="' + bid + '"') in html and 'onclick=' not in html:
+                  missing.append('boton-sin-handler:'+bid)
+
           if missing:
               print('Faltan o sobran:', missing)
               raise SystemExit(1)
-          print('OK')
+          print('OK: navegación, formularios y botones críticos enlazados')
           PY
 
       - uses: actions/setup-node@v4
