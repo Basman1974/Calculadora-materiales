@@ -1,3 +1,40 @@
+  const PLACO_HEIGHT_WALL = {
+    600:{48:{s:{a15:2.60,b15:3.05,a18:2.85,b18:3.40},d:{a15:3.00,b15:3.60,a18:3.40,b18:4.05}},70:{s:{a15:3.20,b15:3.85,a18:3.60,b18:4.30},d:{a15:3.80,b15:4.55,a18:4.25,b18:5.10}},90:{s:{a15:3.70,b15:4.45,a18:4.15,b18:5.00},d:{a15:4.45,b15:5.30,a18:4.95,b18:5.95}}},
+    400:{48:{s:{a15:2.80,b15:3.35,a18:3.15,b18:3.75},d:{a15:3.35,b15:4.00,a18:3.75,b18:4.45}},70:{s:{a15:3.55,b15:4.25,a18:3.95,b18:4.75},d:{a15:4.20,b15:5.05,a18:4.75,b18:5.65}},90:{s:{a15:4.10,b15:4.95,a18:4.60,b18:5.50},d:{a15:4.90,b15:5.90,a18:5.50,b18:6.55}}}
+  };
+  const PLACO_HEIGHT_LINING = {
+    600:{48:{s:{a15:2.15,a18:2.30,b125:2.55,b15:2.55,b18:2.85},d:{a15:2.55,a18:2.70,b125:3.00,b15:3.00,b18:3.40}},70:{s:{a15:2.70,a18:2.90,b125:3.20,b15:3.20,b18:3.60},d:{a15:3.20,a18:3.45,b125:3.80,b15:3.80,b18:4.25}},90:{s:{a15:3.15,a18:3.35,b125:3.70,b15:3.70,b18:4.10},d:{a15:3.70,a18:4.00,b125:4.45,b15:4.45,b18:4.95}}},
+    400:{48:{s:{a15:2.35,a18:2.55,b125:2.80,b15:2.80,b18:3.15},d:{a15:2.80,a18:3.00,b125:3.35,b15:3.35,b18:3.75}},70:{s:{a15:3.00,a18:3.20,b125:3.55,b15:3.55,b18:3.95},d:{a15:3.55,a18:3.80,b125:4.20,b15:4.20,b18:4.70}},90:{s:{a15:3.45,a18:3.70,b125:4.10,b15:4.10,b18:4.60},d:{a15:4.10,a18:4.40,b125:4.90,b15:4.90,b18:5.50}}}
+  };
+  function wallHeightKey(layers, thick){ return Number(thick)>=17 ? (layers>=2?'b18':'a18') : (layers>=2?'b15':'a15'); }
+  function liningHeightKey(layers, thick){
+    const t=Number(thick)||15;
+    if(layers>=2) return t<14?'b125':(t>=17?'b18':'b15');
+    if(t<14) return null;
+    return t>=17?'a18':'a15';
+  }
+  function placoLimit(kind, spacing, profile, doubled, layers, thick){
+    const table=kind==='wall'?PLACO_HEIGHT_WALL:PLACO_HEIGHT_LINING;
+    const key=kind==='wall'?wallHeightKey(layers,thick):liningHeightKey(layers,thick);
+    if(!key) return null;
+    return table[spacing]&&table[spacing][profile]&&table[spacing][profile][doubled?'d':'s'] ? table[spacing][profile][doubled?'d':'s'][key] : null;
+  }
+  function choosePlacoHeight(kind,H,profile,spacing,layers,thick){
+    const p0=Number(profile), s0=Number(spacing)<=.4?400:600;
+    const candidates=[];
+    const add=(p,s,d)=>{const limit=placoLimit(kind,s,p,d,layers,thick);if(limit!=null)candidates.push({profile:p,spacing:s,double:d,limit:limit});};
+    add(p0,s0,false); add(p0,s0,true);
+    if(s0===600){add(p0,400,false);add(p0,400,true);}
+    [48,70,90].filter(p=>p>p0).forEach(p=>{add(p,s0,false);add(p,s0,true);if(s0===600){add(p,400,false);add(p,400,true);}});
+    const ok=candidates.find(x=>H<=x.limit+0.0001);
+    return ok||null;
+  }
+  function profileSegments(height, profile){
+    const overlap={48:.25,70:.35,90:.45}[Number(profile)]||.35;
+    let n=1;
+    while(n*3-overlap*Math.max(0,n-1)<height && n<5)n++;
+    return {segments:n,overlap:overlap};
+  }
   function resultHTML(title, meta, rows){
     return '<div class="resultHead"><div class="eyebrow">RESULTADO</div><div class="resultTitle">' + title + '</div><div class="resultMeta">' + meta + '</div></div>' +
       '<div class="groupHead">MATERIALES</div>' +
@@ -10,62 +47,84 @@
     if(b) b.onclick = e => { work.push(obj); saveWork(); e.target.textContent = 'Añadido'; setTimeout(() => e.target.textContent = 'Añadir a Obra', 700); };
   }
   function calcWall(){
-    const L = num('wL'), H = num('wH'), A = L * H, a = num('wA'), b = num('wB'), sp = num('wS') || .6, p = num('wP'), jambs = jambStuds(num('wDoors'), num('wWins')), studs = Math.ceil(L / sp) + 1 + jambs;
-    const holes = openingsM2(num('wDoors'), num('wWins'));
-    const net = netArea(A, holes);
-    const board = bestPylBoard(H);
-    const kind = boardTypeLabel('wBoardType');
-    const totalLayers = a + b, plateUds = Math.ceil(net * totalLayers / board.area * 1.08);
-    const bandNeed = 2 * L + 2 * H;
-    const finish = mergeFaceWork([pylFaceWork(net, a), pylFaceWork(net, b)]);
-    const rows = [
-      ['Placa PYL ' + kind + ' ' + board.label, plateUds + ' uds', 'UNE-EN 520 · ' + kind + ' · altura ' + H.toFixed(2) + ' m · ' + board.note + ' · merma 8 % · cara 1: ' + a + ' · cara 2: ' + b + ' · neto ' + net.toFixed(2) + ' m²'],
-      ['Montante M' + p, studs * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + (studs - jambs) + ' ejes de paño + ' + jambs + ' jambas de hueco · barra 3 m'],
-      ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'UNE-EN 14195 · suelo y techo · barra 3 m']
+    const L=num('wL'),H=num('wH'),A=L*H,a=num('wA'),b=num('wB'),sp=num('wS')||.6,p=num('wP'),thick=num('wBoardThick')||15;
+    const jambs=jambStuds(num('wDoors'),num('wWins')), holes=openingsM2(num('wDoors'),num('wWins')), net=netArea(A,holes);
+    const board=bestPylBoard(H),kind=boardTypeLabel('wBoardType'),layersGov=Math.max(a,b);
+    const structural=choosePlacoHeight('wall',H,p,sp,layersGov,thick);
+    const useP=structural?structural.profile:p, useSp=structural?structural.spacing/1000:sp, doubled=!!(structural&&structural.double);
+    const axes=Math.ceil(L/useSp)+1+jambs, mult=doubled?2:1, seg=profileSegments(H,useP), totalStudBars=axes*mult*seg.segments;
+    const totalLayers=a+b,plateUds=Math.ceil(net*totalLayers/board.area*1.08),bandNeed=2*L+2*H;
+    const finish=mergeFaceWork([pylFaceWork(net,a,thick),pylFaceWork(net,b,thick)]);
+    const rows=[
+      ['Placa PYL '+kind+' '+thick.toString().replace('.',',')+' mm · '+board.label,plateUds+' uds','UNE-EN 520 · '+kind+' · altura '+H.toFixed(2)+' m · '+board.note+' · merma 8 % · cara 1: '+a+' · cara 2: '+b+' · neto '+net.toFixed(2)+' m²']
     ];
-    rows.push.apply(rows, pylJoinRows(finish));
-    rows.push(mmRow(A, 'wall'));
-    rows.push(['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'UNE 102043 · perímetro de canales y arranques']);
-    rows.push(tacoRow(L, 2));
-    const useWool = el('wWool') ? el('wWool').value !== '0' : true;
-    if(useWool) rows.push(woolRow(net, woolThick(p, 'wall'), 'wall'));
-    if(holes) rows.push(['Huecos descontados', holes.toFixed(2) + ' m²', (num('wDoors')||0) + ' puerta(s) 0,80×2,10 · ' + (num('wWins')||0) + ' ventana(s) 1,20×1,20 · restan placa, pasta, cinta y lana']);
-    rows.push(cornerBeadRow(H, num('wDoors')));
-    const lab = laborRow(net, num('wLabor'), 'tabique');
-    if(lab) rows.push(lab);
-    const obj = {title:'Tabique PYL · ' + kind + ' · ' + A.toFixed(2) + ' m²', items:rows, area:A, net:net};
-    const box = el('wallResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, 'Familia Tabique PYL · UNE 102043 · intereje ' + Math.round(sp * 1000) + ' mm' + (useWool ? ' · lana ' + woolThick(p, 'wall') + ' mm' : '') + ' · neto ' + net.toFixed(2) + ' m²', rows); bindAdd(box, obj); }
+    if(structural){
+      const mode=doubled?'doble H/cajón':'simple';
+      rows.push(['Comprobación de altura Placo',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla fabricante · M'+useP+' · '+structural.spacing+' mm · '+mode+' · gobierna '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
+      rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),totalStudBars+' barras de 3 m',axes+' ejes/jambas × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
+    }else{
+      rows.push(['ALTURA FUERA DE TABLA','Requiere sistema de gran altura','No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm. Revisar sistema específico de fabricante.']);
+      rows.push(['Montantes','No dimensionados','No se genera una cantidad estructural falsa fuera de la tabla verificada.']);
+    }
+    rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo · barra 3 m']);
+    rows.push.apply(rows,pylJoinRows(finish));
+    rows.push(mmRow(A,'wall'));
+    rows.push(['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','UNE 102043 · perímetro de canales y arranques']);
+    rows.push(tacoRow(L,2));
+    const useWool=el('wWool')?el('wWool').value!=='0':true;
+    if(useWool)rows.push(woolRow(net,woolThick(useP,'wall'),'wall'));
+    if(holes)rows.push(['Huecos descontados',holes.toFixed(2)+' m²',(num('wDoors')||0)+' puerta(s) 0,80×2,10 · '+(num('wWins')||0)+' ventana(s) 1,20×1,20 · restan placa, pasta, cinta y lana']);
+    rows.push(cornerBeadRow(H,num('wDoors')));
+    const lab=laborRow(net,num('wLabor'),'tabique');if(lab)rows.push(lab);
+    const obj={title:'Tabique PYL · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
+    const box=el('wallResult');
+    const metaStruct=structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA';
+    if(box){box.innerHTML=resultHTML(obj.title,'Familia Tabique PYL · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,'wall')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows);bindAdd(box,obj);}
   }
-  on(el('wallForm'), 'submit', e => { e.preventDefault(); calcWall(); });
-  ['wA','wB','wP','wS','wWool','wBoardType','wDoors','wWins','wLabor'].forEach(id => on(el(id), 'change', calcWall));
+  on(el('wallForm'),'submit',e=>{e.preventDefault();calcWall();});
+  ['wA','wB','wP','wS','wBoardThick','wWool','wBoardType','wDoors','wWins','wLabor'].forEach(id=>on(el(id),'change',calcWall));
+
   function calcLining(){
-    const L = num('lL'), H = num('lH'), A = L * H, t = el('lType') ? el('lType').value : 'auto', l = num('lLayers'), sp = num('lS') || .6, p = num('lP');
-    const holes = openingsM2(num('lDoors'), num('lWins'));
-    const net = netArea(A, holes);
-    const board = bestPylBoard(H);
-    const kind = boardTypeLabel('lBoardType');
-    const liningPlates = Math.ceil(net * l / board.area * 1.08);
-    const rows = [['Placa PYL ' + kind + ' ' + board.label, liningPlates + ' uds', 'UNE-EN 520 · ' + kind + ' · altura ' + H.toFixed(2) + ' m · ' + board.note + ' · merma 8 % · ' + l + ' capa(s) · neto ' + net.toFixed(2) + ' m²']];
-    let title = '';
-    if(el('lProfileWrap')) el('lProfileWrap').classList.toggle('hidden', t === 'direct');
-    if(el('lWoolWrap')) el('lWoolWrap').classList.toggle('hidden', t === 'direct');
-    if(el('lWoolHint')) el('lWoolHint').classList.toggle('hidden', t === 'direct');
-    const finish = mergeFaceWork([pylFaceWork(net, l)]);
-    const useWool = t !== 'direct' && el('lWool') && el('lWool').value !== '0';
-    if(t === 'direct'){ title = 'Trasdosado directo'; rows.push(['Pasta de agarre', Math.ceil(net * 4.5) + ' kg', 'UNE 102043 · trasdosado directo · ≈4,5 kg/m²']); }
-    else if(t === 'semi'){ title = 'Trasdosado semidirecto'; const o = Math.ceil(L / sp) + 1; rows.push(['Perfil omega / auxiliar', o * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + o + ' ejes'], tacoRow(H, o, 'omega')); if(useWool) rows.push(woolRow(net, woolThick(p, 'semi'), 'semi')); }
-    else { title = 'Trasdosado autoportante'; const jambs = jambStuds(num('lDoors'), num('lWins')); const s = Math.ceil(L / sp) + 1 + jambs; const bandNeed = 2 * L + 2 * H; rows.push(['Montante M' + p, s * Math.ceil(H / 3) + ' barras', 'UNE-EN 14195 · ' + (s - jambs) + ' ejes + ' + jambs + ' jambas · barra 3 m'], ['Canal R' + p, Math.ceil(2 * L / 3) + ' barras', 'UNE-EN 14195 · suelo y techo'], ['Banda acústica', bandNeed.toFixed(1) + ' m · ' + Math.ceil(bandNeed / 30) + ' rollo(s) de 30 m', 'UNE 102043 · perímetro'], tacoRow(L, 2)); if(useWool) rows.push(woolRow(net, woolThick(p, 'auto'), 'auto')); }
-    if(t !== 'direct'){ rows.push.apply(rows, pylJoinRows(finish)); rows.push(mmRow(A, 'lining')); }
-    else rows.push.apply(rows, pylJoinRows(finish).filter(r => r[0].indexOf('Tornillos') !== 0));
-    if(holes) rows.push(['Huecos descontados', holes.toFixed(2) + ' m²', (num('lDoors')||0) + ' puerta(s) · ' + (num('lWins')||0) + ' ventana(s) · restan placa y acabado']);
-    if(t !== 'direct') rows.push(cornerBeadRow(H, num('lDoors')));
-    const lab = laborRow(net, num('lLabor'), 'trasdosado');
-    if(lab) rows.push(lab);
-    const famNote = t === 'direct' ? 'Familia Trasdosado directo' : t === 'semi' ? 'Familia Trasdosado semidirecto' : 'Familia Trasdosado autoportante';
-    const obj = {title:title + ' · ' + kind + ' · ' + A.toFixed(2) + ' m²', items:rows, area:A, net:net};
-    const box = el('liningResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, famNote + ' · UNE 102043 · intereje ' + Math.round(sp * 1000) + ' mm' + (useWool ? ' · lana ' + woolThick(p, t === 'semi' ? 'semi' : 'auto') + ' mm' : '') + ' · neto ' + net.toFixed(2) + ' m²', rows); bindAdd(box, obj); }
+    const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15;
+    const holes=openingsM2(num('lDoors'),num('lWins')),net=netArea(A,holes),board=bestPylBoard(H),kind=boardTypeLabel('lBoardType');
+    const liningPlates=Math.ceil(net*l/board.area*1.08);
+    const rows=[['Placa PYL '+kind+' '+thick.toString().replace('.',',')+' mm · '+board.label,liningPlates+' uds','UNE-EN 520 · '+kind+' · altura '+H.toFixed(2)+' m · '+board.note+' · merma 8 % · '+l+' capa(s) · neto '+net.toFixed(2)+' m²']];
+    let title='', structural=null, useP=p, useSp=sp, doubled=false;
+    if(el('lProfileWrap'))el('lProfileWrap').classList.toggle('hidden',t==='direct');
+    if(el('lWoolWrap'))el('lWoolWrap').classList.toggle('hidden',t==='direct');
+    if(el('lWoolHint'))el('lWoolHint').classList.toggle('hidden',t==='direct');
+    const finish=mergeFaceWork([pylFaceWork(net,l,thick)]);
+    const useWool=t!=='direct'&&el('lWool')&&el('lWool').value!=='0';
+    if(t==='direct'){
+      title='Trasdosado directo';rows.push(['Pasta de agarre',Math.ceil(net*4.5)+' kg','UNE 102043 · trasdosado directo · ≈4,5 kg/m²']);
+    }else if(t==='semi'){
+      title='Trasdosado semidirecto';const o=Math.ceil(L/sp)+1;rows.push(['Perfil omega / auxiliar',o*Math.ceil(H/3)+' barras','UNE-EN 14195 · '+o+' ejes'],tacoRow(H,o,'omega'));if(useWool)rows.push(woolRow(net,woolThick(p,'semi'),'semi'));
+    }else{
+      title='Trasdosado autoportante';
+      structural=choosePlacoHeight('lining',H,p,sp,l,thick);
+      if(structural){useP=structural.profile;useSp=structural.spacing/1000;doubled=!!structural.double;}
+      const jambs=jambStuds(num('lDoors'),num('lWins')),axes=Math.ceil(L/useSp)+1+jambs,bandNeed=2*L+2*H;
+      if(structural){
+        const mult=doubled?2:1,seg=profileSegments(H,useP),bars=axes*mult*seg.segments,mode=doubled?'doble H/cajón':'simple';
+        rows.push(['Comprobación de altura Placo',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla de trasdosado autoportante sin arriostrar · M'+useP+' · '+structural.spacing+' mm · '+mode+' · '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
+        rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),bars+' barras de 3 m',axes+' ejes/jambas × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
+      }else{
+        const bad125=(l===1&&thick<14);
+        rows.push(['ALTURA / CONFIGURACIÓN FUERA DE TABLA','Revisar sistema de fabricante',bad125?'La tabla cargada no da valor para 1×12,5 mm en trasdosado autoportante.':'No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm.']);
+        rows.push(['Montantes','No dimensionados','No se genera una cantidad estructural falsa fuera de la tabla verificada.']);
+      }
+      rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo'],['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','UNE 102043 · perímetro'],tacoRow(L,2));
+      if(useWool)rows.push(woolRow(net,woolThick(useP,'auto'),'auto'));
+    }
+    if(t!=='direct'){rows.push.apply(rows,pylJoinRows(finish));rows.push(mmRow(A,'lining'));}else rows.push.apply(rows,pylJoinRows(finish).filter(r=>r[0].indexOf('Tornillos')!==0));
+    if(holes)rows.push(['Huecos descontados',holes.toFixed(2)+' m²',(num('lDoors')||0)+' puerta(s) · '+(num('lWins')||0)+' ventana(s) · restan placa y acabado']);
+    if(t!=='direct')rows.push(cornerBeadRow(H,num('lDoors')));
+    const lab=laborRow(net,num('lLabor'),'trasdosado');if(lab)rows.push(lab);
+    const famNote=t==='direct'?'Familia Trasdosado directo':t==='semi'?'Familia Trasdosado semidirecto':'Familia Trasdosado autoportante';
+    const obj={title:title+' · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
+    const box=el('liningResult');
+    const metaStruct=t==='auto'?(structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA'):' · intereje '+Math.round(sp*1000)+' mm';
+    if(box){box.innerHTML=resultHTML(obj.title,famNote+' · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,t==='semi'?'semi':'auto')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows);bindAdd(box,obj);}
   }
   function setLiningType(t){
     const names = {
