@@ -49,7 +49,7 @@
   function calcWall(){
     const L=num('wL'),H=num('wH'),A=L*H,a=num('wA'),b=num('wB'),sp=num('wS')||.6,p=num('wP'),thick=num('wBoardThick')||15;
     const jambs=jambStuds(num('wDoors'),num('wWins')), holes=openingsM2(num('wDoors'),num('wWins')), net=netArea(A,holes);
-    const board=bestPylBoard(H),kind=boardTypeLabel('wBoardType'),layersGov=Math.max(a,b);
+    const board=bestPylBoard(H),kind=boardTypeLabel('wBoardType'),layersGov=Math.min(a,b);
     const structural=choosePlacoHeight('wall',H,p,sp,layersGov,thick);
     const useP=structural?structural.profile:p, useSp=structural?structural.spacing/1000:sp, doubled=!!(structural&&structural.double);
     const axes=Math.ceil(L/useSp)+1+jambs, mult=doubled?2:1, seg=profileSegments(H,useP), totalStudBars=axes*mult*seg.segments;
@@ -60,7 +60,7 @@
     ];
     if(structural){
       const mode=doubled?'doble H/cajón':'simple';
-      rows.push(['Comprobación de altura Placo',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla fabricante · M'+useP+' · '+structural.spacing+' mm · '+mode+' · gobierna '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
+      rows.push(['Comprobación de altura Placo',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla fabricante · M'+useP+' · '+structural.spacing+' mm · '+mode+' · gobierna la cara menos revestida: '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
       rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),totalStudBars+' barras de 3 m',axes+' ejes/jambas × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
     }else{
       rows.push(['ALTURA FUERA DE TABLA','Requiere sistema de gran altura','No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm. Revisar sistema específico de fabricante.']);
@@ -83,6 +83,7 @@
   }
   on(el('wallForm'),'submit',e=>{e.preventDefault();calcWall();});
   ['wA','wB','wP','wS','wBoardThick','wWool','wBoardType','wDoors','wWins','wLabor'].forEach(id=>on(el(id),'change',calcWall));
+  ['wL','wH'].forEach(id=>on(el(id),'input',calcWall));
 
   function calcLining(){
     const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15;
@@ -144,7 +145,8 @@
     calcLining();
   }
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
-  ['lType','lLayers','lS','lP','lWool','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
+  ['lType','lLayers','lS','lP','lBoardThick','lWool','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
+  ['lL','lH'].forEach(id => on(el(id), 'input', calcLining));
   const roofMeta = {
     double:{fam:'continuo',famName:'Continuo PYL',name:'Doble TC47',hint:'Primaria + secundaria · 47/500'},
     simple:{fam:'continuo',famName:'Continuo PYL',name:'TC47 simple',hint:'Una estructura 47/500 suspendida'},
