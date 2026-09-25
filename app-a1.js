@@ -345,6 +345,56 @@
   setLocked(!hasAccess);
   if(hasAccess) enterApp();
   else show('gate');
+  // Controles estáticos: listeners directos para evitar fallos táctiles en Android/WebView.
+  $all('[data-open]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault(); e.stopPropagation(); show(btn.dataset.open);
+  }));
+  $all('[data-home]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault(); e.stopPropagation(); show('home');
+  }));
+  $all('[data-nav]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault(); e.stopPropagation(); show(btn.dataset.nav);
+  }));
+  on(el('look'), 'click', e => {
+    e.preventDefault(); e.stopPropagation();
+    const ap=el('appearance'); if(ap) ap.classList.toggle('open');
+  });
+  $all('[data-mode]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault(); e.stopPropagation();
+    document.body.dataset.mode=btn.dataset.mode;
+    $all('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));
+  }));
+  $all('[data-ac]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault(); e.stopPropagation();
+    const parts=(btn.dataset.ac||'').split('|');
+    if(parts.length===3){
+      const root=document.documentElement.style;
+      root.setProperty('--accent',parts[0]); root.setProperty('--accent2',parts[0]);
+      root.setProperty('--accentSoft',parts[1]); root.setProperty('--on',parts[2]);
+      $all('[data-ac]').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));
+    }
+  }));
+  $all('#wetCats [data-cat]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault(); e.stopPropagation(); setWetCat(btn.dataset.cat);
+  }));
+  $all('[data-cer-body]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault(); e.stopPropagation();
+    currentCerBody=btn.dataset.cerBody;
+    $all('[data-cer-body]').forEach(x=>x.classList.toggle('active',x===btn));
+    calcLevel();
+    if(el('adhForm')&&!el('adhForm').classList.contains('hidden')) adhesiveClass();
+  }));
+  $all('[data-cer-tab]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault(); e.stopPropagation();
+    const level=btn.dataset.cerTab==='level';
+    $all('[data-cer-tab]').forEach(x=>x.classList.toggle('active',x===btn));
+    if(el('levelForm')) el('levelForm').classList.toggle('hidden',!level);
+    if(el('levelResult')) el('levelResult').classList.toggle('hidden',!level);
+    if(el('adhForm')) el('adhForm').classList.toggle('hidden',level);
+    if(el('adhResult')) el('adhResult').classList.toggle('hidden',level);
+    if(level) calcLevel(); else adhesiveClass();
+  }));
+
   document.addEventListener('click', e => {
     const open = e.target.closest('[data-open]');
     if(open){ show(open.dataset.open); return; }
