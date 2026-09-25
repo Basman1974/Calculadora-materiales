@@ -189,6 +189,16 @@
     if(meta.fam) setRoofFam(meta.fam, true);
     calcRoof();
   }
+  $all('[data-roof-fam]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRoofFam(btn.dataset.roofFam);
+  }));
+  $all('[data-roof-sys]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRoofSys(btn.dataset.roofSys);
+  }));
   function tc47Pack(span, width, spacing, barLen){
     const sp = spacing || 0.5, bar = barLen || 3;
     const runs = Math.max(1, Math.ceil(Math.max(0, width) / sp) + 1);
@@ -271,6 +281,7 @@
   }
   on(el('roofForm'), 'submit', e => { e.preventDefault(); calcRoof(); });
   ['rSys','rBoard','rLayers','rBoardType','rHoles','rLabor'].forEach(id => on(el(id), 'change', calcRoof));
+  ['rL','rW','rDrop'].forEach(id => on(el(id), 'input', calcRoof));
   function setWetCat(cat){
     if(!data[cat]) return;
     currentCat = cat;
