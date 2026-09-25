@@ -1,0 +1,97 @@
+<section class="screen" id="roof">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
+    <div class="sectionTitle">Techo</div><p class="lead">Elige el sistema y luego las medidas de la estancia.</p>
+    <div class="sysPanel" id="roofSysPanel">
+      <div class="sysPanelHead"><div class="sysStep">1</div><div><div class="sysPanelTitle">Tipo de techo</div><div class="sysPanelHint">Primero la familia, luego la tarjeta.</div></div></div>
+      <div class="sysNow" id="roofSysNow"><span class="sysNowFam">Continuo PYL</span><strong>Doble TC47</strong><span>Primaria + secundaria</span></div>
+      <div class="sysFamBar" id="roofFamBar">
+        <button type="button" class="sysFam active" data-roof-fam="continuo" aria-pressed="true">Continuo PYL</button>
+        <button type="button" class="sysFam" data-roof-fam="registrable" aria-pressed="false">Registrable</button>
+        <button type="button" class="sysFam" data-roof-fam="tradicional" aria-pressed="false">Tradicional</button>
+      </div>
+      <div class="sysgrid" id="roofSys">
+        <button type="button" class="sysBtn active" data-roof-sys="double" data-fam="continuo" aria-pressed="true"><span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria 1,00 m + secundaria 0,50 m</small></button>
+        <button type="button" class="sysBtn" data-roof-sys="simple" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>TC47 simple</strong><small>Una estructura 47/500</small></button>
+        <button type="button" class="sysBtn" data-roof-sys="sierra" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>Sierra + TC47</strong><small>Rastrel y secundario TC47</small></button>
+        <button type="button" class="sysBtn" data-roof-sys="cm70" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>Canal + M70</strong><small>Autoportante perimetral</small></button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="desmontable60" data-fam="registrable" aria-pressed="false"><span class="sysTag">Registrable</span><strong>60 × 60</strong><small>T24 vista</small></button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="desmontable120" data-fam="registrable" aria-pressed="false"><span class="sysTag">Registrable</span><strong>60 × 120</strong><small>T24 vista</small></button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="escayola" data-fam="tradicional" aria-pressed="false"><span class="sysTag">Tradicional</span><strong>Escayola</strong><small>Estopa al forjado</small></button>
+      </div>
+    </div>
+    <form id="roofForm">
+      <label class="hidden">Sistema<select id="rSys"><option value="double" selected>Doble TC47</option><option value="simple">TC47 simple</option><option value="sierra">Sierra + TC47</option><option value="cm70">Canal + M70</option><option value="desmontable60">60 × 60</option><option value="desmontable120">60 × 120</option><option value="escayola">Escayola</option></select></label>
+      <div class="panel easyBlock">
+        <div class="easyTitle">Medidas</div>
+        <div class="grid">
+          <label>Largo (m)<input id="rL" value="5" inputmode="decimal"></label>
+          <label>Ancho (m)<input id="rW" value="4" inputmode="decimal"></label>
+          <label>Plenum (cm)<input id="rDrop" value="30" inputmode="decimal"></label>
+        </div>
+      </div>
+      <details class="moreBox">
+        <summary>Placa, huecos y mano de obra</summary>
+        <div class="grid">
+          <label id="rBoardWrap">Formato placa PYL<select id="rBoard"><option value="2,1.2">2000 × 1200</option><option value="2.7,1.2">2700 × 1200</option><option value="2,.6">2000 × 600</option></select></label>
+          <label id="rLayersWrap">Capas PYL<select id="rLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
+          <label id="rBoardTypeWrap">Tipo de placa PYL<select id="rBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
+          <label>Huecos (m²)<input id="rHoles" value="0" inputmode="decimal"></label>
+          <label>Mano de obra (€/m²)<input id="rLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
+        </div>
+      </details>
+      <button class="calc" type="submit">Calcular techo</button>
+    </form><div class="result" id="roofResult"></div>
+  </section>
+  <section class="screen" id="wet">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
+    <div class="sectionTitle">Obra húmeda</div><p class="lead">Elige el material y los metros. El rendimiento sale solo.</p>
+    <div class="catgrid" id="wetCats">
+      <button type="button" class="cat active" data-cat="ladrillos">Ladrillos · 10</button>
+      <button type="button" class="cat" data-cat="bloques">Bloques · 6</button>
+      <button type="button" class="cat" data-cat="revestimientos">Revestimientos · 6</button>
+      <button type="button" class="cat" data-cat="puentes">Puentes · 7</button>
+    </div>
+    <form id="wetForm"><div class="panel">
+      <label>Producto<select id="wetProduct"></select></label>
+      <div class="productCard">
+        <div class="productImgWrap"><img class="productImg" id="productImg" alt="Producto" loading="lazy" decoding="async" width="300" height="300"><div class="sourceTag" id="productTag">OBRAMAT</div></div>
+        <div><div class="productName" id="productName"></div><div class="productSpec" id="productSpec"></div><div class="chips" id="productChips"></div><a class="sourceLink" id="productLink" target="_blank" rel="noopener">Ver ficha en Obramat ↗</a></div>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <label>Modo de medida<select id="wetMeasureMode"><option value="direct">Introducir m² totales</option><option value="dims">Largo × alto</option></select></label>
+        <label id="wetAreaWrap">Superficie (m²)<input id="wetArea" value="10" inputmode="decimal"></label>
+        <label class="hidden" id="wetLWrap">Largo (m)<input id="wetL" value="4" inputmode="decimal"></label>
+        <label class="hidden" id="wetHWrap">Alto (m)<input id="wetH" value="2.5" inputmode="decimal"></label>
+        <label id="wetThicknessWrap" class="hidden">Espesor (mm)<input id="wetThickness" value="10" inputmode="decimal"></label>
+        <label id="wetSupportWrap" class="hidden">Soporte<select id="wetSupport"><option value="sin_absorcion">Sin absorción</option><option value="poco_poroso">Poco poroso</option><option value="poroso">Poroso</option></select></label>
+        <label id="wetMortarWrap">Mortero<select id="wetMortar"><option value="predosificado">Predosificado · 25 kg</option><option value="obra">Hecho en obra</option></select></label>
+        <label>Merma<select id="wetWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option></select></label>
+      </div>
+      <div class="info" id="wetInfo"></div>
+    </div><button class="calc" type="submit">Calcular húmeda</button></form><div class="result" id="wetResult"></div>
+  </section>
+  <section class="screen" id="ceramic">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
+    <div class="sectionTitle">Cerámica</div><p class="lead">Tipo de baldosa, formato y metros. Luego nivelación o cola.</p>
+    <div class="apTitle" style="margin-top:8px">TIPO DE BALDOSA</div>
+    <div class="catgrid" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:10px">
+      <button type="button" class="cat active" data-cer-body="porcelanico">Porcelánico</button>
+      <button type="button" class="cat" data-cer-body="pasta_roja">Pasta roja</button>
+      <button type="button" class="cat" data-cer-body="pasta_blanca">Pasta blanca</button>
+    </div>
+    <div class="apTitle">CÁLCULO</div>
+    <div class="catgrid"><button type="button" class="cat active" data-cer-tab="level">Sistema de nivelación</button><button type="button" class="cat" data-cer-tab="adhesive">Cemento cola</button></div>
+    <form id="levelForm"><div class="panel"><div class="grid">
+      <label>Lado A (cm)<input id="cA" value="60" inputmode="decimal"></label>
+      <label>Lado B (cm)<input id="cB" value="60" inputmode="decimal"></label>
+      <label>Superficie (m²)<input id="cArea" value="10" inputmode="decimal"></label>
+      <label>Encolado<select id="cBond"><option value="simple">Simple</option><option value="doble" selected>Doble encolado</option></select></label>
+      <label>Merma<select id="cWaste"><option value="0">0 %</option><option value="5" selected>5 %</option><option value="10">10 %</option></select></label>
+    </div></div><button class="calc" type="submit">Calcular cerámica</button></form><div class="result" id="levelResult"></div>
+    <form id="adhForm" class="hidden"><div class="panel"><div class="grid">
+      <label>Aplicación<select id="aZone"><option value="floor">Pavimento</option><option value="wall">Pared / techo</option></select></label>
+      <label>Ubicación<select id="aPlace"><option value="interior">Interior</option><option value="exterior">Exterior</option></select></label>
+      <label>Lado mayor (cm)<input id="aSize" value="60" inputmode="decimal"></label>
+      <label>Soporte<select id="aSupport"><option value="cement">Cementoso</option><option value="radiant">Radiante</option><option value="existing">Cerámica existente</option><option value="gypsum">PYL</option><option value="cementboard">Fibrocemento</option><option value="wood">Madera</option><option value="metal">Metal</option></select></label>
+    </div></div><button class="calc" type="submit">Ver adhesivo</button></form><div class="result hidden" id="adhResult"></div>
+  </section>
