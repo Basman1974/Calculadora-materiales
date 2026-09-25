@@ -35,16 +35,32 @@
     while(n*3-overlap*Math.max(0,n-1)<height && n<5)n++;
     return {segments:n,overlap:overlap};
   }
+  function rowConfidence(row){
+    const text=((row&&row[0])+' '+(row&&row[2]||'')).toLowerCase();
+    if(/fuera de tabla|revisar|verificar|obligatoria|no dimensionad/.test(text)) return {c:'review',t:'REVISAR'};
+    if(/tabla fabricante|une |une-|ficha/.test(text)) return {c:'verified',t:'VERIFICADO'};
+    return {c:'estimate',t:'ESTIMACIÓN'};
+  }
   function resultHTML(title, meta, rows){
-    return '<div class="resultHead"><div class="eyebrow">RESULTADO</div><div class="resultTitle">' + title + '</div><div class="resultMeta">' + meta + '</div></div>' +
-      '<div class="groupHead">MATERIALES</div>' +
-      rows.map(x => '<div class="row"><div class="rowName">' + x[0] + '</div><div class="rowVal">' + x[1] + '</div>' + (x[2] ? '<div class="rowDetail">' + x[2] + '</div>' : '') + '</div>').join('') +
+    const quick=rows.filter(x=>!/comprobación de altura|huecos descontados|aviso/i.test(String(x[0]))).slice(0,6);
+    const quickHtml=quick.map(x=>'<div class="quickLine"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
+    const tech=rows.map(x=>{const q=rowConfidence(x);return '<div class="row"><div class="rowName">'+esc(x[0])+' <span class="trust '+q.c+'">'+q.t+'</span></div><div class="rowVal">'+esc(x[1])+'</div>'+(x[2]?'<div class="rowDetail">'+esc(x[2])+'</div>':'')+'</div>';}).join('');
+    return '<div class="resultHead"><div class="eyebrow">RESULTADO RÁPIDO</div><div class="resultTitle">'+esc(title)+'</div><div class="resultMeta">'+esc(meta)+'</div></div>'+
+      '<div class="quickResult">'+quickHtml+'</div>'+
+      '<details class="techDetails"><summary>Ver cálculo técnico, fórmulas y fuentes</summary><div class="groupHead">DETALLE TÉCNICO</div>'+tech+'</details>'+
+      '<div class="workZoneWrap"><label>Estancia / zona<input class="workZone" placeholder="Ej. Baño principal"></label></div>'+
       '<div class="actions"><button class="btn addWork" type="button">Añadir a Obra</button></div>';
   }
   function bindAdd(node, obj){
     if(!node) return;
-    const b = node.querySelector('.addWork');
-    if(b) b.onclick = e => { work.push(obj); saveWork(); e.target.textContent = 'Añadido'; setTimeout(() => e.target.textContent = 'Añadir a Obra', 700); };
+    const b=node.querySelector('.addWork');
+    if(b) b.onclick=e=>{
+      const z=node.querySelector('.workZone');
+      const copy=Object.assign({},obj,{zone:(z&&z.value.trim())||'General'});
+      work.push(copy); saveWork();
+      e.target.textContent='Añadido';
+      setTimeout(()=>e.target.textContent='Añadir a Obra',700);
+    };
   }
   function calcWall(){
     const L=num('wL'),H=num('wH'),A=L*H,a=num('wA'),b=num('wB'),sp=num('wS')||.6,p=num('wP'),thick=num('wBoardThick')||15;
@@ -88,6 +104,14 @@
     const id=e.target && e.target.id;
     if(['wA','wB','wP','wS','wBoardThick','wWool','wBoardType'].includes(id)) calcWall();
   });
+  $all('[data-wall-preset]').forEach(btn=>on(btn,'click',()=>{
+    const p=btn.dataset.wallPreset;
+    const set=(id,v)=>{if(el(id)) el(id).value=String(v);};
+    if(p==='vivienda'){set('wA',1);set('wB',1);set('wP',70);set('wS',.6);set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
+    if(p==='bano'){set('wA',1);set('wB',1);set('wP',70);set('wS',.4);set('wBoardThick',15);set('wBoardType','hidro');set('wWool',1);}
+    if(p==='doble'){set('wA',2);set('wB',2);set('wP',70);set('wS',.6);set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
+    calcWall();
+  }));
 
   function calcLining(){
     const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15;
@@ -151,6 +175,13 @@
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
   ['lType','lLayers','lS','lP','lBoardThick','lWool','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
   ['lL','lH'].forEach(id => on(el(id), 'input', calcLining));
+  $all('[data-lining-preset]').forEach(btn=>on(btn,'click',()=>{
+    const p=btn.dataset.liningPreset;
+    if(p==='direct'){setLiningType('direct');if(el('lLayers'))el('lLayers').value='1';}
+    if(p==='semi'){setLiningType('semi');if(el('lLayers'))el('lLayers').value='1';if(el('lS'))el('lS').value='.6';}
+    if(p==='auto'){setLiningType('auto');if(el('lLayers'))el('lLayers').value='1';if(el('lP'))el('lP').value='70';if(el('lS'))el('lS').value='.6';if(el('lBoardThick'))el('lBoardThick').value='15';}
+    calcLining();
+  }));
   const roofMeta = {
     double:{fam:'continuo',famName:'Continuo PYL',name:'Doble TC47',hint:'Primaria + secundaria · 47/500'},
     simple:{fam:'continuo',famName:'Continuo PYL',name:'TC47 simple',hint:'Una estructura 47/500 suspendida'},
