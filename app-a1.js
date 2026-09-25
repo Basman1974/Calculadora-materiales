@@ -172,8 +172,6 @@
       if(el('storeTitle')) el('storeTitle').textContent = postalState.store || resolveStore(postalState.code);
       if(el('storeSub')) el('storeSub').textContent = 'CP ' + postalState.code + ' · referencias vinculadas a zona';
       if(el('storebar')) el('storebar').classList.add('show');
-      const cerTxt = el('cerStoreText');
-      if(cerTxt) cerTxt.textContent = 'CP ' + postalState.code + ' · ' + (postalState.store || resolveStore(postalState.code));
       show('home');
     } else show('postal');
   }
@@ -203,11 +201,10 @@
     const store = resolveStore(cp);
     postalState = {code:cp,store};
     try { localStorage.setItem('calculadora-postal-v1', JSON.stringify(postalState)); } catch(e){}
-    const title = el('storeTitle'), sub = el('storeSub'), bar = el('storebar'), cerTxt = el('cerStoreText');
+    const title = el('storeTitle'), sub = el('storeSub'), bar = el('storebar');
     if(title) title.textContent = store;
     if(sub) sub.textContent = 'CP ' + cp + ' · referencias vinculadas a zona';
     if(bar) bar.classList.add('show');
-    if(cerTxt) cerTxt.textContent = 'CP ' + cp + ' · ' + store + ' · precio y stock solo si OBRAMAT los confirma para este almacén.';
     show('home');
   }
   on(el('postalForm'), 'submit', e => {
@@ -241,6 +238,14 @@
       const msg = err3.code === 1 ? 'Permiso de ubicación denegado. Actívalo en el navegador para usar esta opción.' : err3.code === 2 ? 'No se ha podido determinar tu ubicación.' : 'La ubicación ha tardado demasiado en responder.';
       if(status) status.textContent = msg;
     }, {enableHighAccuracy:true,timeout:12000,maximumAge:300000});
+  });
+  on(el('gateToggle'), 'click', e => {
+    const input=el('gateKey'); if(!input) return;
+    const show=input.type==='password';
+    input.type=show?'text':'password';
+    e.currentTarget.textContent=show?'Ocultar':'Ver';
+    e.currentTarget.setAttribute('aria-pressed',String(show));
+    e.currentTarget.setAttribute('aria-label',show?'Ocultar clave':'Mostrar clave');
   });
   on(el('changePostal'), 'click', () => {
     if(el('postalCode')) el('postalCode').value = postalState.code || '';
