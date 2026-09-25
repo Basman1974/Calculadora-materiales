@@ -395,6 +395,16 @@
     if(level) calcLevel(); else adhesiveClass();
   }));
 
+  // Ayuda y desplegables: control directo para evitar fallos de <details> en Android/WebView.
+  $all('.helpAcc > summary, .moreBox > summary').forEach(summary => on(summary, 'click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const details=summary.parentElement;
+    if(!details || details.tagName!=='DETAILS') return;
+    details.open=!details.open;
+    summary.setAttribute('aria-expanded',String(details.open));
+  }));
+
   document.addEventListener('click', e => {
     const open = e.target.closest('[data-open]');
     if(open){ show(open.dataset.open); return; }
