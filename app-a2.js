@@ -183,13 +183,6 @@
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
   ['lType','lLayers','lS','lP','lBoardThick','lWool','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
   ['lL','lH'].forEach(id => on(el(id), 'input', calcLining));
-  $all('[data-lining-preset]').forEach(btn=>on(btn,'click',()=>{
-    const p=btn.dataset.liningPreset;
-    if(p==='direct'){setLiningType('direct');if(el('lLayers'))el('lLayers').value='1';}
-    if(p==='semi'){setLiningType('semi');if(el('lLayers'))el('lLayers').value='1';if(el('lS'))el('lS').value='.6';}
-    if(p==='auto'){setLiningType('auto');if(el('lLayers'))el('lLayers').value='1';if(el('lP'))el('lP').value='70';if(el('lS'))el('lS').value='.6';if(el('lBoardThick'))el('lBoardThick').value='15';}
-    calcLining();
-  }));
   const roofMeta = {
     double:{fam:'continuo',famName:'Continuo PYL',name:'Doble TC47',hint:'Primaria + secundaria · 47/500'},
     simple:{fam:'continuo',famName:'Continuo PYL',name:'TC47 simple',hint:'Una estructura 47/500 suspendida'},
