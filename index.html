@@ -39,7 +39,7 @@
     <div class="postalGate"><div class="postalCard">
       <div class="postalIcon">⌥</div><h2>Acceso a la calculadora</h2>
       <p>Introduce la clave de acceso. Queda guardada en este dispositivo para no pedirla en cada visita.</p>
-      <form id="gateForm"><label>Clave de acceso<input id="gateKey" type="password" autocomplete="current-password" placeholder="Clave" required></label><div class="postalError" id="gateError" aria-live="polite"></div><button class="calc" type="submit">ENTRAR</button></form>
+      <form id="gateForm"><label>Clave de acceso<div class="passWrap"><input id="gateKey" type="password" autocomplete="current-password" placeholder="Clave" required><button class="passToggle" id="gateToggle" type="button" aria-pressed="false" aria-label="Mostrar clave" onclick="var i=document.getElementById('gateKey');if(!i)return;var s=i.type==='password';i.type=s?'text':'password';this.textContent=s?'Ocultar':'Ver';this.setAttribute('aria-pressed',String(s));this.setAttribute('aria-label',s?'Ocultar clave':'Mostrar clave');">Ver</button></div></label><div class="postalError" id="gateError" aria-live="polite"></div><button class="calc" type="submit">ENTRAR</button></form>
       <div class="postalNote">La clave la facilita quien administra la herramienta. No se envía a ningún servidor: se comprueba en este dispositivo.</div>
     </div></div>
   </section>
