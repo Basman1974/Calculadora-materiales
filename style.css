@@ -131,3 +131,6 @@ textarea{width:100%;min-height:84px;margin-top:5px;padding:9px 10px;border:1.5px
 /* Selectores nativos: evitar bloqueos de interacción en Chrome/WebView Android */
 label{position:relative}
 select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation;-webkit-appearance:menulist;appearance:auto}
+
+/* Techo: controles táctiles nativos y tarjetas siempre clicables */
+.sysFam,.sysBtn{pointer-events:auto;touch-action:manipulation;position:relative;z-index:2}
