@@ -41,7 +41,6 @@
   on(el('wetForm'), 'submit', e => { e.preventDefault(); calcWet(); });
   ['wetProduct','wetMeasureMode','wetThickness','wetSupport','wetMortar','wetWaste'].forEach(id => on(el(id), 'change', calcWet));
   ['wetArea','wetL','wetH'].forEach(id => on(el(id), 'input', calcWet));
-  $all('#wetCats [data-cat]').forEach(btn => on(btn, 'click', e => { e.preventDefault(); setWetCat(btn.dataset.cat); }));
   function ceramicBodyLabel(k){ return {porcelanico:'Porcelánico',pasta_roja:'Pasta roja',pasta_blanca:'Pasta blanca'}[k] || 'Porcelánico'; }
   function ceramicGlueKgM2(side, body, bond, trowel){
     const t=Math.max(6, Number(trowel)||10);
