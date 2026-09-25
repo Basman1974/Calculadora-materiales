@@ -6,6 +6,9 @@
   <meta name="theme-color" content="#285940">
   <title>Calculadora Construcción</title>
   <link rel="icon" href="logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Calculadora Construcción">
   <link rel="stylesheet" href="style.css?v=20260925-rooffix1">
   <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
@@ -16,7 +19,7 @@
 <div class="shell"><div class="app">
   <div class="top">
     <div><div class="brand">Calculadora Construcción</div><div class="small">Materiales de obra, en este teléfono</div></div>
-    <button class="btn lookBtn" id="look" type="button">Tema</button>
+    <div class="topActions"><button class="btn lookBtn hidden" id="installApp" type="button">Instalar</button><button class="btn lookBtn" id="look" type="button">Tema</button></div>
   </div>
   <div class="storebar" id="storebar"><div class="storemeta"><div class="storetitle" id="storeTitle">Almacén OBRAMAT</div><div class="storesub" id="storeSub"></div></div><button class="storechange" id="changePostal" type="button">Cambiar CP</button></div>
   <div class="appearance" id="appearance">
@@ -76,6 +79,7 @@
       </div>
       <div class="panel easyBlock">
         <div class="easyTitle">Sistema</div>
+        <div class="presetBar" aria-label="Plantillas de tabique"><button type="button" class="preset" data-wall-preset="vivienda">Vivienda 1+1</button><button type="button" class="preset" data-wall-preset="bano">Baño 1+1 @400</button><button type="button" class="preset" data-wall-preset="doble">Doble 2+2</button></div>
         <div class="grid">
           <label>Placas cara 1<select id="wA"><option value="1" selected>1 placa</option><option value="2">2 placas</option></select></label>
           <label>Placas cara 2<select id="wB"><option value="1">1 placa</option><option value="2">2 placas</option></select></label>
@@ -118,6 +122,7 @@
       </div>
       <div class="panel easyBlock">
         <div class="easyTitle">Sistema</div>
+        <div class="presetBar" aria-label="Plantillas de trasdosado"><button type="button" class="preset" data-lining-preset="direct">Directo</button><button type="button" class="preset" data-lining-preset="semi">Semidirecto</button><button type="button" class="preset" data-lining-preset="auto">Auto M70</button></div>
         <div class="grid">
           <label>Placas<select id="lLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
           <label>Separación<select id="lS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
