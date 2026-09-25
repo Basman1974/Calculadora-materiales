@@ -6,7 +6,11 @@
   <meta name="theme-color" content="#285940">
   <title>Calculadora Construcción</title>
   <link rel="icon" href="logo.png">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20260925h">
+  <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
+  <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 </head>
 <body data-mode="normal" data-locked="1">
 <div class="shell"><div class="app">
@@ -35,52 +39,56 @@
   <section class="screen active" id="gate">
     <div class="postalGate"><div class="postalCard">
       <div class="postalIcon">⌥</div><h2>Acceso a la calculadora</h2>
-      <p>Introduce la clave de acceso. Queda guardada en este dispositivo.</p>
-      <form id="gateForm"><label>Clave de acceso<div class="passWrap"><input id="gateKey" type="password" autocomplete="current-password" placeholder="Clave" required><button class="passToggle" id="gateToggle" type="button">Ver</button></div></label><div class="postalError" id="gateError"></div><button class="calc" type="submit">ENTRAR</button></form>
+      <p>Introduce la clave de acceso. Queda guardada en este dispositivo para no pedirla en cada visita.</p>
+      <form id="gateForm"><label>Clave de acceso<div class="passWrap"><input id="gateKey" type="password" autocomplete="current-password" placeholder="Clave" required><button class="passToggle" id="gateToggle" type="button" aria-pressed="false" aria-label="Mostrar clave" onclick="var i=document.getElementById('gateKey');if(!i)return;var s=i.type==='password';i.type=s?'text':'password';this.textContent=s?'Ocultar':'Ver';this.setAttribute('aria-pressed',String(s));this.setAttribute('aria-label',s?'Ocultar clave':'Mostrar clave');">Ver</button></div></label><div class="postalError" id="gateError" aria-live="polite"></div><button class="calc" type="submit">ENTRAR</button></form>
+      <div class="postalNote">La clave la facilita quien administra la herramienta. No se envía a ningún servidor: se comprueba en este dispositivo.</div>
     </div></div>
   </section>
   <section class="screen" id="postal">
     <div class="postalGate"><div class="postalCard">
       <div class="postalIcon">⌍</div><h2>¿Dónde vas a realizar la obra?</h2>
-      <form id="postalForm"><label>Código postal<input id="postalCode" type="text" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" placeholder="Ej. 04738" required></label><div class="postalError" id="postalError"></div><button class="calc" type="submit">CONTINUAR</button><button class="btn" id="useLocation" type="button" style="width:100%;margin-top:10px">USAR UBICACIÓN</button></form>
-      <div class="locationStatus" id="locationStatus"></div>
+      <p>Introduce el código postal. Es obligatorio para asociar la calculadora al almacén OBRAMAT correspondiente y preparar referencias y fichas de producto por zona.</p>
+      <form id="postalForm"><label>Código postal<input id="postalCode" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}" placeholder="Ej. 04738" required></label><div class="postalError" id="postalError" aria-live="polite"></div><button class="calc" type="submit">CONTINUAR</button><button class="btn" id="useLocation" type="button" style="width:100%;margin-top:10px">⌍ USAR UBICACIÓN DEL TELÉFONO</button></form>
+      <div class="locationStatus" id="locationStatus"></div><div class="postalNote">El código postal se guarda únicamente en este dispositivo.</div>
     </div></div>
   </section>
   <section class="screen" id="home">
-    <div class="hero"><h2>Tipo de obra</h2></div>
+    <div class="hero"><h2>Tipo de obra</h2><p>Selecciona el trabajo que quieres calcular.</p></div>
     <div class="tiles">
-      <button class="tile" data-open="wall" type="button"><img class="tilePhoto" width="800" height="537" fetchpriority="high" decoding="async" src="https://static.wixstatic.com/media/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png/v1/fill/w_800,h_537,al_c,q_75/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png" alt="Tabique PYL"><span class="tileShade"></span><span class="tileTop">OBRA SECA</span><span class="tileText"><strong>Tabique</strong><small>Estructura y placas PYL.</small><span class="arrow">CALCULAR →</span></span></button>
-      <button class="tile" data-open="lining" type="button"><img class="tilePhoto" width="800" height="532" fetchpriority="high" decoding="async" src="https://www.gyproclatenplaatsen.be/sites/89/images/kamerbrede-gipskarton.jpg" alt="Trasdosado"><span class="tileShade"></span><span class="tileTop">REVESTIMIENTO</span><span class="tileText"><strong>Trasdosado</strong><small>Directo, semidirecto o autoportante.</small><span class="arrow">CALCULAR →</span></span></button>
-      <button class="tile" data-open="roof" type="button"><img class="tilePhoto" width="800" height="533" loading="lazy" decoding="async" src="https://images.squarespace-cdn.com/content/v1/688cd53107e36267f90172f3/1754060088863-WS71FRXOAHONWJFSGGA3/Commercial%2BDrywall%2BSan%20Francisco.webp?format=750w" alt="Techo"><span class="tileShade"></span><span class="tileTop">FALSO TECHO</span><span class="tileText"><strong>Techo</strong><small>Perfilería y placas.</small><span class="arrow">CALCULAR →</span></span></button>
-      <button class="tile" data-open="wet" type="button"><img class="tilePhoto" width="600" height="439" loading="lazy" decoding="async" src="https://static.wixstatic.com/media/eb1c04_5bc2f9ab534a45d69f719a63cb656a0f~mv2.jpg/v1/fill/w_600,h_439,al_c,lg_1,q_75/eb1c04_5bc2f9ab534a45d69f719a63cb656a0f~mv2.jpg" alt="Obra húmeda"><span class="tileShade"></span><span class="tileTop">ALBAÑILERÍA</span><span class="tileText"><strong>Obra húmeda</strong><small>Ladrillos, bloques y revestimientos.</small><span class="arrow">CALCULAR →</span></span></button>
-      <button class="tile" data-open="ceramic" type="button"><img class="tilePhoto" width="800" height="533" loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=800&q=70" alt="Cerámica"><span class="tileShade"></span><span class="tileTop">COLOCACIÓN</span><span class="tileText"><strong>Cerámica</strong><small>Nivelación y cemento cola.</small><span class="arrow">CALCULAR →</span></span></button>
+      <button class="tile" data-open="wall" type="button"><img class="tilePhoto" width="800" height="537" sizes="(max-width:520px) 100vw, 50vw" fetchpriority="high" decoding="async" src="https://static.wixstatic.com/media/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png/v1/fill/w_800,h_537,al_c,q_75/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png" alt="Tabique PYL"><span class="tileShade"></span><span class="tileTop">OBRA SECA</span><span class="tileText"><strong>Tabique</strong><small>Estructura metálica y placas de yeso laminado.</small><span class="arrow">CALCULAR →</span></span></button>
+      <button class="tile" data-open="lining" type="button"><img class="tilePhoto" width="800" height="532" sizes="(max-width:520px) 100vw, 50vw" fetchpriority="high" decoding="async" src="https://www.gyproclatenplaatsen.be/sites/89/images/kamerbrede-gipskarton.jpg" alt="Trasdosado"><span class="tileShade"></span><span class="tileTop">REVESTIMIENTO</span><span class="tileText"><strong>Trasdosado</strong><small>Directo, semidirecto o autoportante.</small><span class="arrow">CALCULAR →</span></span></button>
+      <button class="tile" data-open="roof" type="button"><img class="tilePhoto" width="800" height="533" sizes="(max-width:520px) 100vw, 50vw" loading="lazy" decoding="async" src="https://images.squarespace-cdn.com/content/v1/688cd53107e36267f90172f3/1754060088863-WS71FRXOAHONWJFSGGA3/Commercial%2BDrywall%2BSan%20Francisco.webp?format=750w" alt="Techo"><span class="tileShade"></span><span class="tileTop">FALSO TECHO</span><span class="tileText"><strong>Techo</strong><small>Perfilería, suspensión, varillas y placas.</small><span class="arrow">CALCULAR →</span></span></button>
+      <button class="tile" data-open="wet" type="button"><img class="tilePhoto" width="600" height="439" sizes="(max-width:520px) 100vw, 50vw" loading="lazy" decoding="async" src="https://static.wixstatic.com/media/eb1c04_5bc2f9ab534a45d69f719a63cb656a0f~mv2.jpg/v1/fill/w_600,h_439,al_c,lg_1,q_75/eb1c04_5bc2f9ab534a45d69f719a63cb656a0f~mv2.jpg" alt="Obra húmeda"><span class="tileShade"></span><span class="tileTop">ALBAÑILERÍA</span><span class="tileText"><strong>Obra húmeda</strong><small>Ladrillos, bloques, revestimientos y puentes de unión.</small><span class="arrow">CALCULAR →</span></span></button>
+      <button class="tile" data-open="ceramic" type="button"><img class="tilePhoto" width="800" height="533" sizes="(max-width:520px) 100vw, 50vw" loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=800&q=70" alt="Cerámica"><span class="tileShade"></span><span class="tileTop">COLOCACIÓN</span><span class="tileText"><strong>Cerámica</strong><small>Nivelación y selección orientativa de cemento cola.</small><span class="arrow">CALCULAR →</span></span></button>
     </div>
   </section>
   <section class="screen" id="wall">
-    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
-    <div class="sectionTitle">Tabique</div>
-    <div class="famBanner"><span class="famName">Tabique PYL</span><span class="famSub">Autoportante · UNE 102043</span></div>
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Tabique</div><p class="lead">Familia Tabique PYL. Medidas, capas, huecos y tipo de placa.</p>
+    <div class="famBanner"><span class="famName">Tabique PYL</span><span class="famSub">Autoportante · dos caras · UNE 102043</span></div>
     <form id="wallForm"><div class="panel"><div class="grid">
       <label>Largo (m)<input id="wL" value="4" inputmode="decimal"></label><label>Alto (m)<input id="wH" value="2.5" inputmode="decimal"></label>
       <label>Placas cara 1<select id="wA"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
       <label>Placas cara 2<select id="wB"><option value="1">1 placa</option><option value="2">2 placas</option></select></label>
       <label>Montante<select id="wP"><option value="48">M48</option><option value="70" selected>M70</option><option value="90">M90</option></select></label>
       <label>Intereje<select id="wS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
-      <label>Lana mineral<select id="wWool"><option value="1" selected>Sí</option><option value="0">No</option></select></label>
+      <label>Lana mineral<select id="wWool"><option value="1" selected>Sí · relleno de cámara</option><option value="0">No</option></select></label>
       <label>Tipo de placa<select id="wBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
       <label>Puertas (ud)<input id="wDoors" value="0" inputmode="numeric"></label>
       <label>Ventanas (ud)<input id="wWins" value="0" inputmode="numeric"></label>
-      <label>Mano de obra (€/m²)<input id="wLabor" value="0" inputmode="decimal"></label>
-    </div></div><button class="calc" type="submit">CALCULAR TABIQUE</button></form><div class="result" id="wallResult"></div>
+      <label>Mano de obra (€/m²)<input id="wLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
+    </div>
+    <div class="info" id="wWoolHint">Huecos: puerta 0,80 × 2,10 y ventana 1,20 × 1,20. Restan placa, pasta, cinta y lana. La perfilería va al paño completo.</div>
+    </div><button class="calc" type="submit">CALCULAR TABIQUE</button></form><div class="result" id="wallResult"></div>
   </section>
   <section class="screen" id="lining">
-    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
-    <div class="sectionTitle">Trasdosado</div>
-    <div class="famBanner" id="liningFamNow"><span class="famName">Trasdosado autoportante</span></div>
-    <div class="sysFamBar" id="liningFamBar">
-      <button type="button" class="sysFam" data-lining-type="direct">Directo</button>
-      <button type="button" class="sysFam" data-lining-type="semi">Semidirecto</button>
-      <button type="button" class="sysFam active" data-lining-type="auto">Autoportante</button>
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Trasdosado</div><p class="lead">Elige la familia. Luego medidas, huecos y tipo de placa.</p>
+    <div class="famBanner" id="liningFamNow"><span class="famName">Trasdosado autoportante</span><span class="famSub">Canal + montante · cámara para lana</span></div>
+    <div class="sysFamBar" id="liningFamBar" role="tablist">
+      <button type="button" class="sysFam" data-lining-type="direct" aria-pressed="false">Directo</button>
+      <button type="button" class="sysFam" data-lining-type="semi" aria-pressed="false">Semidirecto</button>
+      <button type="button" class="sysFam active" data-lining-type="auto" aria-pressed="true">Autoportante</button>
     </div>
     <form id="liningForm">
       <label class="hidden">Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label>
@@ -89,31 +97,34 @@
       <label>Placas<select id="lLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
       <label>Intereje<select id="lS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
       <label id="lProfileWrap">Perfil<select id="lP"><option value="48">48 mm</option><option value="70" selected>70 mm</option><option value="90">90 mm</option></select></label>
-      <label id="lWoolWrap">Lana mineral<select id="lWool"><option value="1" selected>Sí</option><option value="0">No</option></select></label>
+      <label id="lWoolWrap">Lana mineral<select id="lWool"><option value="1" selected>Sí · relleno de cámara</option><option value="0">No</option></select></label>
       <label>Tipo de placa<select id="lBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
       <label>Puertas (ud)<input id="lDoors" value="0" inputmode="numeric"></label>
       <label>Ventanas (ud)<input id="lWins" value="0" inputmode="numeric"></label>
-      <label>Mano de obra (€/m²)<input id="lLabor" value="0" inputmode="decimal"></label>
-    </div></div><button class="calc" type="submit">CALCULAR TRASDOSADO</button></form><div class="result" id="liningResult"></div>
+      <label>Mano de obra (€/m²)<input id="lLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
+    </div>
+    <div class="info" id="lWoolHint">Huecos restan placa y acabado, no la estructura.</div>
+    </div><button class="calc" type="submit">CALCULAR TRASDOSADO</button></form><div class="result" id="liningResult"></div>
   </section>
   <section class="screen" id="roof">
-    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
-    <div class="sectionTitle">Techo</div>
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Techo</div><p class="lead">Primero elige el sistema. Queda agrupado por familia.</p>
     <div class="sysPanel" id="roofSysPanel">
-      <div class="sysNow" id="roofSysNow"><span class="sysNowFam">Continuo PYL</span><strong>Doble TC47</strong></div>
+      <div class="sysPanelHead"><div class="sysStep">1</div><div><div class="sysPanelTitle">Sistema de techo</div><div class="sysPanelHint">Toca una tarjeta.</div></div></div>
+      <div class="sysNow" id="roofSysNow"><span class="sysNowFam">Continuo PYL</span><strong>Doble TC47</strong><span>Primaria + secundaria</span></div>
       <div class="sysFamBar" id="roofFamBar">
-        <button type="button" class="sysFam active" data-roof-fam="continuo">Continuo PYL</button>
-        <button type="button" class="sysFam" data-roof-fam="registrable">Registrable</button>
-        <button type="button" class="sysFam" data-roof-fam="tradicional">Tradicional</button>
+        <button type="button" class="sysFam active" data-roof-fam="continuo" aria-pressed="true">Continuo PYL</button>
+        <button type="button" class="sysFam" data-roof-fam="registrable" aria-pressed="false">Registrable</button>
+        <button type="button" class="sysFam" data-roof-fam="tradicional" aria-pressed="false">Tradicional</button>
       </div>
       <div class="sysgrid" id="roofSys">
-        <button type="button" class="sysBtn active" data-roof-sys="double" data-fam="continuo"><span class="sysTag">Continuo</span><strong>Doble TC47</strong></button>
-        <button type="button" class="sysBtn" data-roof-sys="simple" data-fam="continuo"><span class="sysTag">Continuo</span><strong>TC47 simple</strong></button>
-        <button type="button" class="sysBtn" data-roof-sys="sierra" data-fam="continuo"><span class="sysTag">Continuo</span><strong>Sierra + TC47</strong></button>
-        <button type="button" class="sysBtn" data-roof-sys="cm70" data-fam="continuo"><span class="sysTag">Continuo</span><strong>Canal + M70</strong></button>
-        <button type="button" class="sysBtn hidden" data-roof-sys="desmontable60" data-fam="registrable"><span class="sysTag">Registrable</span><strong>60 × 60</strong></button>
-        <button type="button" class="sysBtn hidden" data-roof-sys="desmontable120" data-fam="registrable"><span class="sysTag">Registrable</span><strong>60 × 120</strong></button>
-        <button type="button" class="sysBtn hidden" data-roof-sys="escayola" data-fam="tradicional"><span class="sysTag">Tradicional</span><strong>Escayola</strong></button>
+        <button type="button" class="sysBtn active" data-roof-sys="double" data-fam="continuo" aria-pressed="true"><span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria 1,00 m + secundaria 0,50 m</small></button>
+        <button type="button" class="sysBtn" data-roof-sys="simple" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>TC47 simple</strong><small>Una estructura 47/500</small></button>
+        <button type="button" class="sysBtn" data-roof-sys="sierra" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>Sierra + TC47</strong><small>Rastrel y secundario TC47</small></button>
+        <button type="button" class="sysBtn" data-roof-sys="cm70" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>Canal + M70</strong><small>Autoportante perimetral</small></button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="desmontable60" data-fam="registrable" aria-pressed="false"><span class="sysTag">Registrable</span><strong>60 × 60</strong><small>T24 vista</small></button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="desmontable120" data-fam="registrable" aria-pressed="false"><span class="sysTag">Registrable</span><strong>60 × 120</strong><small>T24 vista</small></button>
+        <button type="button" class="sysBtn hidden" data-roof-sys="escayola" data-fam="tradicional" aria-pressed="false"><span class="sysTag">Tradicional</span><strong>Escayola</strong><small>Estopa al forjado</small></button>
       </div>
     </div>
     <form id="roofForm"><div class="panel"><div class="grid">
@@ -124,75 +135,82 @@
       <label id="rLayersWrap">Capas PYL<select id="rLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
       <label id="rBoardTypeWrap">Tipo de placa PYL<select id="rBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
       <label>Huecos (m²)<input id="rHoles" value="0" inputmode="decimal"></label>
-      <label>Mano de obra (€/m²)<input id="rLabor" value="0" inputmode="decimal"></label>
+      <label>Mano de obra (€/m²)<input id="rLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
     </div></div><button class="calc" type="submit">CALCULAR TECHO</button></form><div class="result" id="roofResult"></div>
   </section>
   <section class="screen" id="wet">
-    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
-    <div class="sectionTitle">Obra húmeda</div>
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Obra húmeda</div><p class="lead">Selecciona categoría y producto.</p>
     <div class="catgrid" id="wetCats">
-      <button type="button" class="cat active" data-cat="ladrillos">Ladrillos</button>
-      <button type="button" class="cat" data-cat="bloques">Bloques</button>
-      <button type="button" class="cat" data-cat="revestimientos">Revestimientos</button>
-      <button type="button" class="cat" data-cat="puentes">Puentes</button>
+      <button type="button" class="cat active" data-cat="ladrillos">Ladrillos · 10</button>
+      <button type="button" class="cat" data-cat="bloques">Bloques · 6</button>
+      <button type="button" class="cat" data-cat="revestimientos">Revestimientos · 6</button>
+      <button type="button" class="cat" data-cat="puentes">Puentes · 7</button>
     </div>
     <form id="wetForm"><div class="panel">
       <label>Producto<select id="wetProduct"></select></label>
       <div class="productCard">
-        <div class="productImgWrap"><img class="productImg" id="productImg" alt="Producto" loading="lazy" width="300" height="300"><div class="sourceTag" id="productTag">OBRAMAT</div></div>
-        <div><div class="productName" id="productName"></div><div class="productSpec" id="productSpec"></div><div class="chips" id="productChips"></div><a class="sourceLink" id="productLink" target="_blank" rel="noopener">Ver ficha</a></div>
+        <div class="productImgWrap"><img class="productImg" id="productImg" alt="Producto" loading="lazy" decoding="async" width="300" height="300"><div class="sourceTag" id="productTag">OBRAMAT</div></div>
+        <div><div class="productName" id="productName"></div><div class="productSpec" id="productSpec"></div><div class="chips" id="productChips"></div><a class="sourceLink" id="productLink" target="_blank" rel="noopener">Ver ficha en Obramat ↗</a></div>
       </div>
       <div class="grid" style="margin-top:12px">
-        <label>Modo de medida<select id="wetMeasureMode"><option value="direct">m² totales</option><option value="dims">Largo × alto</option></select></label>
+        <label>Modo de medida<select id="wetMeasureMode"><option value="direct">Introducir m² totales</option><option value="dims">Largo × alto</option></select></label>
         <label id="wetAreaWrap">Superficie (m²)<input id="wetArea" value="10" inputmode="decimal"></label>
         <label class="hidden" id="wetLWrap">Largo (m)<input id="wetL" value="4" inputmode="decimal"></label>
         <label class="hidden" id="wetHWrap">Alto (m)<input id="wetH" value="2.5" inputmode="decimal"></label>
         <label id="wetThicknessWrap" class="hidden">Espesor (mm)<input id="wetThickness" value="10" inputmode="decimal"></label>
         <label id="wetSupportWrap" class="hidden">Soporte<select id="wetSupport"><option value="sin_absorcion">Sin absorción</option><option value="poco_poroso">Poco poroso</option><option value="poroso">Poroso</option></select></label>
-        <label id="wetMortarWrap">Mortero<select id="wetMortar"><option value="predosificado">Predosificado</option><option value="obra">Hecho en obra</option></select></label>
+        <label id="wetMortarWrap">Mortero<select id="wetMortar"><option value="predosificado">Predosificado · 25 kg</option><option value="obra">Hecho en obra</option></select></label>
         <label>Merma<select id="wetWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option></select></label>
       </div>
       <div class="info" id="wetInfo"></div>
     </div><button class="calc" type="submit">CALCULAR OBRA HÚMEDA</button></form><div class="result" id="wetResult"></div>
   </section>
   <section class="screen" id="ceramic">
-    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
-    <div class="sectionTitle">Cerámica</div>
-    <div class="catgrid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+    <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver a tipos de obra</span></button></div>
+    <div class="sectionTitle">Cerámica</div><p class="lead">Elige el tipo de baldosa. Luego calcula nivelación o cemento cola.</p>
+    <div class="apTitle" style="margin-top:8px">TIPO DE BALDOSA</div>
+    <div class="catgrid" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:10px">
       <button type="button" class="cat active" data-cer-body="porcelanico">Porcelánico</button>
       <button type="button" class="cat" data-cer-body="pasta_roja">Pasta roja</button>
       <button type="button" class="cat" data-cer-body="pasta_blanca">Pasta blanca</button>
     </div>
-    <div class="catgrid"><button type="button" class="cat active" data-cer-tab="level">Nivelación</button><button type="button" class="cat" data-cer-tab="adhesive">Cemento cola</button></div>
+    <div class="apTitle">CÁLCULO</div>
+    <div class="catgrid"><button type="button" class="cat active" data-cer-tab="level">Sistema de nivelación</button><button type="button" class="cat" data-cer-tab="adhesive">Cemento cola</button></div>
     <form id="levelForm"><div class="panel"><div class="grid">
       <label>Lado A (cm)<input id="cA" value="60" inputmode="decimal"></label>
       <label>Lado B (cm)<input id="cB" value="60" inputmode="decimal"></label>
       <label>Superficie (m²)<input id="cArea" value="10" inputmode="decimal"></label>
-      <label>Encolado<select id="cBond"><option value="simple">Simple</option><option value="doble" selected>Doble</option></select></label>
+      <label>Encolado<select id="cBond"><option value="simple">Simple</option><option value="doble" selected>Doble encolado</option></select></label>
       <label>Merma<select id="cWaste"><option value="0">0 %</option><option value="5" selected>5 %</option><option value="10">10 %</option></select></label>
     </div></div><button class="calc" type="submit">CALCULAR CERÁMICA</button></form><div class="result" id="levelResult"></div>
     <form id="adhForm" class="hidden"><div class="panel"><div class="grid">
-      <label>Aplicación<select id="aZone"><option value="floor">Pavimento</option><option value="wall">Pared</option></select></label>
+      <label>Aplicación<select id="aZone"><option value="floor">Pavimento</option><option value="wall">Pared / techo</option></select></label>
       <label>Ubicación<select id="aPlace"><option value="interior">Interior</option><option value="exterior">Exterior</option></select></label>
       <label>Lado mayor (cm)<input id="aSize" value="60" inputmode="decimal"></label>
       <label>Soporte<select id="aSupport"><option value="cement">Cementoso</option><option value="radiant">Radiante</option><option value="existing">Cerámica existente</option><option value="gypsum">PYL</option><option value="cementboard">Fibrocemento</option><option value="wood">Madera</option><option value="metal">Metal</option></select></label>
     </div></div><button class="calc" type="submit">VER CLASIFICACIÓN</button></form><div class="result hidden" id="adhResult"></div>
   </section>
   <section class="screen" id="work">
-    <div class="hero"><h2>Obra</h2></div>
-    <div class="panel"><div class="grid">
-      <label>Empresa<input id="coName"></label>
-      <label>NIF / CIF<input id="coNif"></label>
-      <label>Teléfono<input id="coPhone"></label>
-      <label>Email<input id="coMail"></label>
-      <label>Dirección fiscal<input id="coAddr"></label>
-      <label>N.º presupuesto<input id="jobNum"></label>
-      <label>Nombre de la obra<input id="jobName"></label>
-      <label>Cliente<input id="jobClient"></label>
-      <label>Dirección de la obra<input id="jobAddr"></label>
-      <label>Validez (días)<input id="jobValid" value="30"></label>
+    <div class="hero"><h2>Obra</h2><p>Datos del presupuesto y partidas guardadas en este dispositivo.</p></div>
+    <div class="panel">
+      <div class="groupHead" style="margin:-13px -13px 12px;border-radius:17px 17px 0 0">TU EMPRESA · sale en el PDF</div>
+      <div class="grid">
+        <label>Empresa / autónomo<input id="coName" placeholder="Nombre comercial"></label>
+        <label>NIF / CIF<input id="coNif" placeholder="Opcional"></label>
+        <label>Teléfono<input id="coPhone" placeholder="Opcional" inputmode="tel"></label>
+        <label>Email<input id="coMail" placeholder="Opcional" inputmode="email"></label>
+        <label>Dirección fiscal<input id="coAddr" placeholder="Opcional"></label>
+        <label>N.º presupuesto<input id="jobNum" placeholder="Se genera solo"></label>
+      </div>
     </div>
-    <label>Condiciones<textarea id="jobNotes" rows="3"></textarea></label>
+    <div class="panel"><div class="grid">
+      <label>Nombre de la obra<input id="jobName" placeholder="Ej. Reforma Calle Mayor"></label>
+      <label>Cliente<input id="jobClient" placeholder="Nombre o empresa"></label>
+      <label>Dirección de la obra<input id="jobAddr" placeholder="Calle, portal, municipio"></label>
+      <label>Validez (días)<input id="jobValid" value="30" inputmode="numeric"></label>
+    </div>
+    <label style="margin-top:9px">Condiciones / notas<textarea id="jobNotes" rows="3" placeholder="Forma de pago, exclusiones, plazos…"></textarea></label>
     <div class="actions" style="padding:10px 0 0">
       <button class="btn" id="jobNew" type="button">NUEVA OBRA</button>
       <button class="btn" id="jobSaveSnap" type="button">GUARDAR COPIA</button>
@@ -201,12 +219,12 @@
     <div class="panel" id="workContent"></div>
   </section>
   <section class="screen" id="list">
-    <div class="hero"><h2>Lista y presupuesto</h2></div>
+    <div class="hero"><h2>Lista y presupuesto</h2><p>El precio unitario lo pones tú. No es tarifa OBRAMAT ni stock de almacén.</p></div>
     <div class="panel"><div class="grid">
-      <label>IVA<select id="jobVat"><option value="10">10 %</option><option value="21" selected>21 %</option><option value="0">Sin IVA</option></select></label>
-      <label>Descuento (%)<input id="jobDisc" value="0"></label>
-      <label>Mano de obra extra (€)<input id="jobLaborExtra" value="0"></label>
-      <label>Varios (€)<input id="jobExtra" value="0"></label>
+      <label>IVA<select id="jobVat"><option value="10">10 % · vivienda</option><option value="21" selected>21 % · general</option><option value="0">Sin IVA</option></select></label>
+      <label>Descuento (%)<input id="jobDisc" value="0" inputmode="decimal"></label>
+      <label>Mano de obra extra (€)<input id="jobLaborExtra" value="0" inputmode="decimal"></label>
+      <label>Desplazamiento / varios (€)<input id="jobExtra" value="0" inputmode="decimal"></label>
     </div>
     <div class="actions" style="padding:10px 0 0">
       <button class="btn" id="exportPrint" type="button">PDF / IMPRIMIR</button>
@@ -214,8 +232,103 @@
       <button class="btn" id="exportWa" type="button">WHATSAPP</button>
     </div></div>
     <div class="panel" id="listContent"></div>
+    <div class="legalBox"><b>SIN RESPONSABILIDAD POR CANTIDADES</b>Esta herramienta da una estimación. No hay responsabilidad si el material falta o sobra. Hay que comprobar la medición en obra, las mermas reales y la ficha del sistema antes de pedir o ejecutar. No sustituye proyecto. Los precios los pone el usuario; no son tarifa OBRAMAT.</div>
+    <div class="disclaimer">Estimación según UNE 102043 y fichas de producto. Los euros los edita quien usa la herramienta.</div>
   </section>
-  <section class="screen" id="help"><div class="hero"><h2>Ayuda</h2></div><div class="panel"><div class="small">Huecos: puerta 0,80 × 2,10 y ventana 1,20 × 1,20. Restan placa, pasta, cinta y lana. La perfilería suma 2 montantes por hueco. Guardavivos: 2 cantos + 2 jambas por puerta. Los precios los escribe quien usa la herramienta. No hay tarifas OBRAMAT inventadas.</div></div></section>
+  <section class="screen" id="help">
+    <div class="hero"><h2>Ayuda</h2><p>Manual corto para presupuestar. Criterios 25-09-2026.</p></div>
+    <div class="legalBox"><b>SIN RESPONSABILIDAD POR CANTIDADES</b>Las cantidades son orientativas. Ni la calculadora ni quien la facilita responden si falta o sobra material, si hay un error de medición o si el despiece de obra no coincide con el cálculo. Quien pide el material y quien ejecuta tienen que verificar medidas, huecos reales, mermas, sistema y ficha técnica. Un presupuesto generado aquí no es medición de proyecto ni contrato de suministro.</div>
+    <div class="helpSteps">
+      <div class="helpStep"><span>1</span><div><b>Entra y pon el CP</b><small>La clave queda en este teléfono. El código postal asocia el almacén de zona. No descarga precios.</small></div></div>
+      <div class="helpStep"><span>2</span><div><b>Calcula un paño</b><small>Tabique, trasdosado, techo, obra húmeda o cerámica. Revisa huecos, tipo de placa y lana.</small></div></div>
+      <div class="helpStep"><span>3</span><div><b>Añade a Obra</b><small>Cada resultado se guarda como partida. Puedes calcular varios paños y juntarlos.</small></div></div>
+      <div class="helpStep"><span>4</span><div><b>Pon precios en Lista</b><small>Tú escribes €/ud, IVA, descuento y datos de empresa. Si el total sale 0 €, faltan precios.</small></div></div>
+      <div class="helpStep"><span>5</span><div><b>Exporta</b><small>PDF / Imprimir, CSV o WhatsApp. El pie avisa que es estimación, no medición de proyecto.</small></div></div>
+    </div>
+    <details class="helpAcc" open>
+      <summary>Tabique y trasdosado</summary>
+      <div class="helpBody">
+        <p>Familia de tabique PYL a dos caras, UNE 102043. El trasdosado puede ser directo (pasta de agarre, sin lana), semidirecto (omega + lana 40 mm) o autoportante (canal + montante + cámara).</p>
+        <ul>
+          <li>Los huecos restan placa, pasta, cinta y lana. La perfilería se calcula al paño.</li>
+          <li>Cada puerta o ventana suma 2 montantes de jamba.</li>
+          <li>Guardavivos: 2 cantos del paño + 2 jambas por puerta.</li>
+          <li>Tipo de placa: estándar BA, hidrófuga H, RF/F o alta dureza I. Cambia la etiqueta, no inventa un SKU.</li>
+          <li>Lana opcional. Espesor según perfil: M48 → 40 mm, M70 → 60 mm, M90 → 80 mm. En semidirecto, 40 mm.</li>
+        </ul>
+        <button class="btn" data-open="wall" type="button">Ir a tabique</button>
+        <button class="btn" data-open="lining" type="button">Ir a trasdosado</button>
+      </div>
+    </details>
+    <details class="helpAcc">
+      <summary>Techos</summary>
+      <div class="helpBody">
+        <p>Tres familias: continuo PYL (doble TC47, simple, sierra, canal+M70), registrable T24 (60×60 / 60×120) y escayola con estopa.</p>
+        <ul>
+          <li>Los empalmes TC47 salen del despiece (recorridos × juntas), no de un m² inventado.</li>
+          <li>Los huecos restan placa y acabado. La perfilería va a la superficie bruta.</li>
+          <li>Estopa solo si el plenum es ≤ 25 cm. Si es mayor, avisa de usar varilla.</li>
+        </ul>
+        <button class="btn" data-open="roof" type="button">Ir a techo</button>
+      </div>
+    </details>
+    <details class="helpAcc">
+      <summary>Obra húmeda y cerámica</summary>
+      <div class="helpBody">
+        <ul>
+          <li>Húmeda: ladrillos, bloques, revestimientos y puentes. La merma va aparte del rendimiento.</li>
+          <li>Bloques: mortero de tendel y llaga en rango de ficha, no el consumo de un ladrillo.</li>
+          <li>Cerámica: calzos, C2TE orientativo y clase de adhesivo según soporte y formato.</li>
+          <li>La referencia OBRAMAT, si la pones, es solo una anotación. Precio y stock no se consultan solos.</li>
+        </ul>
+        <button class="btn" data-open="wet" type="button">Ir a obra húmeda</button>
+        <button class="btn" data-open="ceramic" type="button">Ir a cerámica</button>
+      </div>
+    </details>
+    <details class="helpAcc">
+      <summary>Precios, IVA y exportación</summary>
+      <div class="helpBody">
+        <ul>
+          <li>Los €/ud se escriben en Lista y quedan en este dispositivo.</li>
+          <li>IVA 10 %, 21 % o sin IVA. Descuento sobre la base. Mano de obra extra y desplazamiento son importes sueltos.</li>
+          <li>PDF: elige «Guardar como PDF» en el diálogo del navegador. Lleva empresa, n.º, cliente e IVA.</li>
+          <li>CSV para Excel. WhatsApp manda el texto del presupuesto.</li>
+        </ul>
+        <button class="btn" data-nav="work" type="button">Ir a Obra</button>
+        <button class="btn" data-nav="list" type="button">Ir a Lista</button>
+      </div>
+    </details>
+    <details class="helpAcc">
+      <summary>Si ves esto, es normal</summary>
+      <div class="helpBody">
+        <p><b>¿Por qué salen más montantes si pongo una puerta?</b> Son las jambas: +2 por hueco.</p>
+        <p><b>¿Por qué el total sale 0 €?</b> Faltan precios unitarios en Lista. La app no trae tarifa de almacén.</p>
+        <p><b>¿Por qué no aparecen precios de OBRAMAT?</b> No se inventan ni se leen de la web. Tú los escribes.</p>
+        <p><b>¿Se pierde el presupuesto si cierro?</b> No. Obra, precios, empresa y copias quedan en este teléfono.</p>
+        <p><b>¿La lana baja con los huecos?</b> Sí, la lana y la placa van al neto. Canales y ejes de paño van al bruto.</p>
+        <p><b>¿El PDF vale como medición de proyecto?</b> No. Es una estimación para presupuestar y pedir material con criterio.</p>
+      </div>
+    </details>
+    <details class="helpAcc">
+      <summary>Chuleta de supuestos</summary>
+      <div class="helpBody">
+        <div class="helpTable">
+          <div><span>Puerta tipo</span><span>0,80 × 2,10 m</span></div>
+          <div><span>Ventana tipo</span><span>1,20 × 1,20 m</span></div>
+          <div><span>Ancho placa PYL</span><span>1,20 m</span></div>
+          <div><span>Largos placa</span><span>2,00 a 3,00 m</span></div>
+          <div><span>Merma corte PYL</span><span>8 %</span></div>
+          <div><span>Tornillos cara vista</span><span>15 ud/m² + 10 %</span></div>
+          <div><span>Metal-metal tabique</span><span>3 ud/m² + 10 %, caja 500</span></div>
+          <div><span>Metal-metal techo</span><span>5 ud/m² + 10 %, caja 500</span></div>
+          <div><span>Tacos canal / omega</span><span>paso máx. 600 mm</span></div>
+          <div><span>Panel lana</span><span>1200 × 600 mm</span></div>
+        </div>
+        <p class="helpFoot">Si el proyecto dice otra cosa, manda el proyecto.</p>
+      </div>
+    </details>
+    <div class="panel"><div class="small">Normas de referencia en seca: UNE 102043 y UNE-EN 520, 14195, 14566, 13963, 13162. En cerámica, UNE-EN 14411 y UNE-EN 12004. Datos solo en este dispositivo. Sin servidor. Criterios 25-09-2026.</div></div>
+  </section>
   <nav class="nav"><button class="active" data-nav="home">Calcular</button><button data-nav="work">Obra</button><button data-nav="list">Lista</button><button data-nav="help">Ayuda</button></nav>
 </div></div>
 <script src="data.js" defer></script>
