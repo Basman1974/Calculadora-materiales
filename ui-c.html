@@ -37,7 +37,8 @@
       <button class="btn" id="exportPrint" type="button">PDF / IMPRIMIR</button>
       <button class="btn" id="exportCsv" type="button">EXCEL / CSV</button>
       <button class="btn" id="exportWa" type="button">WHATSAPP</button>
-    </div></div>
+    </div>
+    <div class="priceImport"><label>Importar tarifa CSV<input id="priceCsv" type="file" accept=".csv,text/csv"></label><div class="small" id="priceCsvStatus">Formato: concepto;precio</div></div></div>
     <div class="panel" id="listContent"></div>
     <div class="legalBox"><b>SIN RESPONSABILIDAD POR CANTIDADES</b>Esta herramienta da una estimación. No hay responsabilidad si el material falta o sobra. Hay que comprobar la medición en obra, las mermas reales y la ficha del sistema antes de pedir o ejecutar. No sustituye proyecto. Los precios los pone el usuario; no son tarifa OBRAMAT.</div>
     <div class="disclaimer">Estimación según UNE 102043 y fichas de producto. Los euros los edita quien usa la herramienta.</div>
@@ -91,7 +92,7 @@
         <ul>
           <li>Húmeda: ladrillos, bloques, revestimientos y puentes. La merma va aparte del rendimiento.</li>
           <li>Bloques: mortero de tendel y llaga en rango de ficha, no el consumo de un ladrillo.</li>
-          <li>Cerámica: calzos, C2TE orientativo y clase de adhesivo según soporte y formato.</li>
+          <li>Cerámica: piezas, merma por patrón, nivelación, adhesivo según llana y junta por geometría (formato, espesor y ancho de junta).</li>
           <li>La integración automática por referencia OBRAMAT se ha retirado: la app no consulta precios ni stock de almacén.</li>
         </ul>
         <button class="btn" data-open="wet" type="button">Ir a obra húmeda</button>
@@ -103,7 +104,7 @@
       <summary>Precios, IVA y exportación</summary>
       <div class="helpBody">
         <ul>
-          <li>Los €/ud se escriben en Lista y quedan en este dispositivo.</li>
+          <li>Los €/ud se escriben en Lista y quedan en este dispositivo. También puedes importar un CSV con columnas concepto;precio.</li>
           <li>IVA 10 %, 21 % o sin IVA. Descuento sobre la base. Mano de obra extra y desplazamiento son importes sueltos.</li>
           <li>PDF: elige «Guardar como PDF» en el diálogo del navegador. Lleva empresa, n.º, cliente e IVA.</li>
           <li>CSV para Excel. WhatsApp manda el texto del presupuesto.</li>
@@ -119,7 +120,7 @@
         <p><b>¿Por qué salen más montantes si pongo una puerta?</b> Son las jambas: +2 por hueco.</p>
         <p><b>¿Por qué el total sale 0 €?</b> Faltan precios unitarios en Lista. La app no trae tarifa de almacén.</p>
         <p><b>¿Por qué no aparecen precios de OBRAMAT?</b> No se inventan ni se leen de la web. Tú los escribes.</p>
-        <p><b>¿Se pierde el presupuesto si cierro?</b> No. Obra, precios, empresa y copias quedan en este teléfono.</p>
+        <p><b>¿Se pierde el presupuesto si cierro?</b> No. Obra, precios, empresa y copias quedan en este teléfono.</p><p><b>¿Funciona sin cobertura?</b> Una vez instalada/cargada, la PWA conserva los archivos principales para uso offline.</p>
         <p><b>¿La lana baja con los huecos?</b> Sí, la lana y la placa van al neto. Canales y ejes de paño van al bruto.</p>
         <p><b>¿El PDF vale como medición de proyecto?</b> No. Es una estimación para presupuestar y pedir material con criterio.</p>
       </div>
