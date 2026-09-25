@@ -31,7 +31,15 @@ jobs:
           test -f style.css
           test -f data.js
           test -f app.js
-          test "$(wc -c < app.js)" -gt 10000
+          test -f app-a1.js
+          test -f app-a2.js
+          test -f app-b.js
+          test -f ui-a.html
+          test -f ui-b.html
+          test -f ui-c.html
+          test "$(wc -c < app-a1.js)" -gt 10000
+          test "$(wc -c < app-a2.js)" -gt 10000
+          test "$(wc -c < app-b.js)" -gt 10000
 
       - name: Configurar Pages
         uses: actions/configure-pages@v5
