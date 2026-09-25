@@ -1,6 +1,6 @@
 (() => {
-  const v = '20260925-budget';
-  const parts = ['app-a.js?v=' + v, 'app-b.js?v=' + v];
+  const v = '20260925-budget2';
+  const parts = ['app-a1.js?v=' + v, 'app-a2.js?v=' + v, 'app-b.js?v=' + v];
   function fail(err){
     console.error(err);
     const s = document.createElement('script');
