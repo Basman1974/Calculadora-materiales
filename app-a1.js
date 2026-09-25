@@ -288,11 +288,18 @@
     return ['Tacos de golpeo', n + ' uds · ' + Math.ceil(n / 100) + ' caja(s) de 100', detail];
   }
   function screwBoxes(n){ return Math.ceil(Math.max(0, n) / 1000); }
-  function pylFaceWork(area, layers){
+  function pylScrewLength(totalBoardMm){
+    const need = Math.max(0, Number(totalBoardMm)||0) + 10;
+    const commercial = [25,35,45,55,70,90];
+    return commercial.find(x => x >= need) || Math.ceil(need/10)*10;
+  }
+  function pylFaceWork(area, layers, thick){
     const A = Math.max(0, area), n = Math.max(0, Math.round(Number(layers) || 0)), waste = 1.10;
+    const t = Math.max(12.5, Number(thick)||15);
     const inner = Math.max(0, n - 1), visible = n > 0 ? 1 : 0;
     const firstRate = n >= 2 ? 8 : (n === 1 ? 15 : 0), secondRate = n >= 2 ? 15 : 0;
-    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'3,5 × 25', secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?'3,5 × 35':'', tapeInner:Math.ceil(inner*A*1.6*waste), tapeVisible:Math.ceil(visible*A*1.6*waste), pasteInner:Math.ceil(inner*A*0.20*waste), pasteVisible:Math.ceil(visible*A*0.40*waste)};
+    const firstLen = pylScrewLength(t), secondLen = n >= 2 ? pylScrewLength(t*n) : 0;
+    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'3,5 × '+firstLen, secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?('3,5 × '+secondLen):'', tapeInner:Math.ceil(inner*A*1.6*waste), tapeVisible:Math.ceil(visible*A*1.6*waste), pasteInner:Math.ceil(inner*A*0.20*waste), pasteVisible:Math.ceil(visible*A*0.40*waste)};
   }
   function mergeFaceWork(list){
     return list.reduce((acc, x) => {
@@ -316,30 +323,6 @@
     if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'UNE 102043 · acabado Q2 · juntas + cabezas · ≈0,40 kg/m² · +10% merma']);
     return rows;
   }
-  on(el('loadObramatCeramic'), 'click', () => {
-    const raw = (el('cerProductCode') && el('cerProductCode').value.trim()) || '';
-    const code = raw.replace(/\D/g,'');
-    const status = el('cerProductStatus'), card = el('cerProductCard');
-    const cp = postalState.code || '', store = postalState.store || resolveStore(cp);
-    const a = num('cA'), b = num('cB');
-    if(raw && !/^\d{6,12}$/.test(code)){ if(status) status.textContent = 'La referencia, si la pones, tiene que ser numérica de 6 a 12 dígitos.'; return; }
-    if(a < 5 || b < 5){ if(status) status.textContent = 'Introduce el largo y el ancho de la baldosa en cm.'; return; }
-    if(el('aSize')) el('aSize').value = Math.max(a,b);
-    if(card){
-      card.classList.remove('hidden');
-      card.innerHTML = '<div style="font-weight:950">' + (code ? ('Ref. anotada ' + code) : 'Sin referencia') + '</div><div class="small">' + store + (cp ? ' · CP ' + cp : '') + '</div><div class="small" style="margin-top:6px">Formato usado: ' + a + ' × ' + b + ' cm. Precio y stock no disponibles desde esta página.</div>';
-    }
-    calcLevel(); adhesiveClass();
-    if(status) status.textContent = 'Cálculo hecho con las medidas introducidas. OBRAMAT no se ha consultado sola.';
-  });
-  on(el('chooseObramatCeramic'), 'click', () => {
-    const cp = postalState.code || '';
-    const store = postalState.store || resolveStore(cp);
-    const q = ((el('cerProductCode') && el('cerProductCode').value.trim()) || '').replace(/\D/g,'') || 'suelo ceramico';
-    const cerTxt = el('cerStoreText');
-    if(cerTxt) cerTxt.textContent = (cp ? 'CP ' + cp + ' · ' : '') + store + ' · consulta manual en OBRAMAT.';
-    window.open('https://www.obramat.es/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
-  });
   on(el('gateForm'), 'submit', async e => {
     e.preventDefault();
     const raw = (el('gateKey') && el('gateKey').value) || '';
