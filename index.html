@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 </head>
-<body data-mode="normal">
+<body data-mode="normal" data-locked="1">
 <div class="shell"><div class="app">
   <div class="top">
     <div><div class="brand">Calculadora Construcción</div><div class="small">Cálculo de materiales para obra seca y obra húmeda</div></div>
@@ -35,7 +35,15 @@
       <button class="color" data-ac="#b98b53|#faf2e8|#2b2117"><span class="sw" style="background:#efd0a9"></span>Arena</button>
     </div>
   </div>
-  <section class="screen active" id="postal">
+  <section class="screen active" id="gate">
+    <div class="postalGate"><div class="postalCard">
+      <div class="postalIcon">⌥</div><h2>Acceso a la calculadora</h2>
+      <p>Introduce la clave de acceso. Queda guardada en este dispositivo para no pedirla en cada visita.</p>
+      <form id="gateForm"><label>Clave de acceso<input id="gateKey" type="password" autocomplete="current-password" placeholder="Clave" required></label><div class="postalError" id="gateError" aria-live="polite"></div><button class="calc" type="submit">ENTRAR</button></form>
+      <div class="postalNote">La clave la facilita quien administra la herramienta. No se envía a ningún servidor: se comprueba en este dispositivo.</div>
+    </div></div>
+  </section>
+  <section class="screen" id="postal">
     <div class="postalGate"><div class="postalCard">
       <div class="postalIcon">⌇</div><h2>¿Dónde vas a realizar la obra?</h2>
       <p>Introduce el código postal. Es obligatorio para asociar la calculadora al almacén OBRAMAT correspondiente y preparar referencias y fichas de producto por zona.</p>
