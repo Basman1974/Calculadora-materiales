@@ -172,6 +172,11 @@
     if(banner) banner.innerHTML = '<span class="famName">' + meta.name + '</span><span class="famSub">' + meta.sub + '</span>';
     calcLining();
   }
+  $all('[data-lining-type]').forEach(btn => on(btn, 'click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLiningType(btn.dataset.liningType);
+  }));
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
   ['lType','lLayers','lS','lP','lBoardThick','lWool','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
   ['lL','lH'].forEach(id => on(el(id), 'input', calcLining));
