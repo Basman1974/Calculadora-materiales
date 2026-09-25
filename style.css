@@ -134,3 +134,28 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 
 /* Techo: controles táctiles nativos y tarjetas siempre clicables */
 .sysFam,.sysBtn{pointer-events:auto;touch-action:manipulation;position:relative;z-index:2}
+
+/* Mejoras UX: plantillas, resultado rápido, confianza y zonas */
+.topActions{display:flex;gap:7px;align-items:center}
+.presetBar{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 10px}
+.preset{min-height:40px;border:1.5px solid var(--line);border-radius:999px;background:var(--soft);color:var(--text);padding:7px 11px;font-weight:900;font-size:.72rem}
+.preset:active{transform:translateY(1px)}
+.quickResult{padding:8px 12px;background:var(--card)}
+.quickLine{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.82rem}
+.quickLine:last-child{border-bottom:0}
+.quickLine span{min-width:0;font-weight:800}
+.quickLine strong{text-align:right;color:var(--accent);font-weight:950}
+.techDetails{border-top:1px solid var(--line)}
+.techDetails summary{cursor:pointer;list-style:none;padding:11px 12px;background:var(--soft);color:var(--accent);font-size:.76rem;font-weight:950}
+.techDetails summary::-webkit-details-marker{display:none}
+.techDetails summary::after{content:' +';float:right}
+.techDetails[open] summary::after{content:' –'}
+.trust{display:inline-block;margin-left:5px;padding:2px 6px;border-radius:999px;font-size:.52rem;letter-spacing:.04em;vertical-align:1px}
+.trust.verified{background:#e8f5ec;color:#23623a}
+.trust.estimate{background:#fff5d8;color:#7a5900}
+.trust.review{background:#fde8e7;color:#9d241e}
+.workZoneWrap{padding:10px 12px 0;border-top:1px solid var(--line)}
+.workZoneWrap input{min-height:42px}
+.priceImport{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.priceImport input[type=file]{min-height:44px;padding:8px;background:var(--card)}
+@media(max-width:520px){.quickLine{font-size:.78rem}.topActions{gap:5px}.preset{flex:1 1 auto}}
