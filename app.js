@@ -19,9 +19,33 @@
   ];
   let postalState = {code:'',store:''};
   try { postalState = JSON.parse(localStorage.getItem('calculadora-postal-v1') || '{"code":"","store":""}'); } catch(e){}
+  const ACCESS_STORE = 'calculadora-access-v1';
+  const ACCESS_HASH = 'ecb565830c0e28693d2e04e6360c7c07a6738ef62b7fc332f53e7daeb13a4737';
+  let hasAccess = false;
+  try { hasAccess = localStorage.getItem(ACCESS_STORE) === ACCESS_HASH; } catch(e){}
   const nav = $all('[data-nav]');
   const data = window.CALC_DATA || {};
+  function setLocked(on){ document.body.dataset.locked = on ? '1' : '0'; }
+  async function sha256hex(text){
+    if(window.crypto && crypto.subtle){
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    return '';
+  }
+  function enterApp(){
+    setLocked(false);
+    if(postalState.code && /^[0-9]{5}$/.test(postalState.code)){
+      if(el('storeTitle')) el('storeTitle').textContent = postalState.store || resolveStore(postalState.code);
+      if(el('storeSub')) el('storeSub').textContent = 'CP ' + postalState.code + ' · referencias vinculadas a zona';
+      if(el('storebar')) el('storebar').classList.add('show');
+      const cerTxt = el('cerStoreText');
+      if(cerTxt) cerTxt.textContent = 'CP ' + postalState.code + ' · ' + (postalState.store || resolveStore(postalState.code));
+      show('home');
+    } else show('postal');
+  }
   function show(id){
+    if(!hasAccess && id !== 'gate'){ id = 'gate'; }
     screens.forEach(x => x.classList.toggle('active', x.id === id));
     nav.forEach(b => b.classList.toggle('active', b.dataset.nav === (['wall','lining','roof','wet','ceramic'].includes(id) ? 'home' : id)));
     if(id === 'work') renderWork();
@@ -183,14 +207,23 @@
     if(cerTxt) cerTxt.textContent = (cp ? 'CP ' + cp + ' · ' : '') + store + ' · consulta manual en OBRAMAT.';
     window.open('https://www.obramat.es/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
   });
-  if(postalState.code && /^[0-9]{5}$/.test(postalState.code)){
-    if(el('storeTitle')) el('storeTitle').textContent = postalState.store || resolveStore(postalState.code);
-    if(el('storeSub')) el('storeSub').textContent = 'CP ' + postalState.code + ' · referencias vinculadas a zona';
-    if(el('storebar')) el('storebar').classList.add('show');
-    const cerTxt = el('cerStoreText');
-    if(cerTxt) cerTxt.textContent = 'CP ' + postalState.code + ' · ' + (postalState.store || resolveStore(postalState.code));
-    show('home');
-  }
+  on(el('gateForm'), 'submit', async e => {
+    e.preventDefault();
+    const raw = (el('gateKey') && el('gateKey').value) || '';
+    const err = el('gateError');
+    const hash = await sha256hex(raw.trim());
+    if(hash !== ACCESS_HASH){
+      if(err) err.textContent = 'Clave incorrecta.';
+      return;
+    }
+    try { localStorage.setItem(ACCESS_STORE, ACCESS_HASH); } catch(err2){}
+    hasAccess = true;
+    if(err) err.textContent = '';
+    enterApp();
+  });
+  setLocked(!hasAccess);
+  if(hasAccess) enterApp();
+  else show('gate');
   document.addEventListener('click', e => {
     const open = e.target.closest('[data-open]');
     if(open){ show(open.dataset.open); return; }
