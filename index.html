@@ -11,7 +11,7 @@
 <script>
 (async function () {
   try {
-    var files = ['ui-a.html?v=20260925-navfix2', 'ui-b.html?v=20260925-navfix2', 'ui-c.html?v=20260925-navfix2'];
+    var files = ['ui-a.html?v=20260926-wedges1', 'ui-b.html?v=20260926-wedges1', 'ui-c.html?v=20260926-wedges1'];
     var parts = await Promise.all(files.map(function (f) { return fetch(f).then(function (r) { if (!r.ok) throw new Error(f); return r.text(); }); }));
     document.open();
     document.write(parts.join(''));
