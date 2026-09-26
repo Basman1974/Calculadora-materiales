@@ -69,106 +69,41 @@
   function sketchShell(title,sub,svg){
     return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">DETALLE</span></div><div class="sketchCanvas techDrawing">'+svg+'</div><div class="sketchNote">Esquema técnico simplificado basado en detalles constructivos de fabricante. Verificar siempre el sistema concreto.</div>';
   }
+  function mountingSheet(path,title,sub,detail){
+    return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">MONTAJE</span></div>'+
+      '<div class="mountingSheetWrap"><img class="mountingSheetImg" src="'+path+'?v=20260926-placo1" alt="'+title+'" loading="lazy" decoding="async"></div>'+
+      '<div class="mountingCurrent">'+detail+'</div>'+
+      '<div class="sketchNote">Ejemplo constructivo visual inspirado en documentación técnica de fabricante. El cálculo y la comprobación estructural dependen de los parámetros seleccionados.</div>';
+  }
   function renderWallSketch(a,b,p,sp,wool){
     const box=el('wallSketch'); if(!box) return;
-    const b2a=a>1?'<line class="tdBoard" x1="49" y1="39" x2="49" y2="143"/>':'';
-    const b2b=b>1?'<line class="tdBoard" x1="271" y1="39" x2="271" y2="143"/>':'';
-    const ins=wool?'<path class="tdIns" d="M108 51l11 9-11 9 11 9-11 9 11 9-11 9 11 9M145 51l11 9-11 9 11 9-11 9 11 9-11 9M182 51l11 9-11 9 11 9-11 9 11 9-11 9"/>':'';
-    const svg='<svg viewBox="0 0 320 184" role="img" aria-label="Sección de tabique PYL">'+
-      '<defs><pattern id="hatchWall" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" class="tdHatch"/></pattern></defs>'+
-      '<rect class="tdSupport" x="24" y="149" width="272" height="14"/>'+
-      '<path class="tdMetal" d="M89 39h142v9H89zM89 135h142v9H89z"/>'+
-      '<path class="tdMetal" d="M103 47h10v89h-10zM155 47h10v89h-10zM207 47h10v89h-10z"/>'+ins+
-      '<line class="tdBoard" x1="61" y1="39" x2="61" y2="143"/>'+b2a+
-      '<line class="tdBoard" x1="259" y1="39" x2="259" y2="143"/>'+b2b+
-      '<path class="tdLeader" d="M108 47L77 19M160 83L160 19M259 54L286 19"/>'+
-      '<text class="tdText" x="40" y="16">Canal</text><text class="tdText" x="133" y="16">Montante M'+p+'</text><text class="tdText" x="247" y="16">Placa</text>'+
-      '<path class="tdDim" d="M103 171h104M103 167v8M207 167v8"/><text class="tdTextSm" x="155" y="181" text-anchor="middle">'+Math.round(sp*1000)+' mm</text>'+
-    '</svg>';
-    box.innerHTML=sketchShell('Tabique '+a+'+'+b,'Sección técnica · estructura simple',svg);
+    box.innerHTML=mountingSheet('assets/montaje-tabique.svg','Tabique PYL '+a+'+'+b,'Ejemplo de montaje','Configuración actual · M'+p+' · '+Math.round(sp*1000)+' mm · '+(wool?'con lana mineral':'sin lana mineral'));
   }
-
   function renderLiningSketch(t,l,p,sp,wool){
     const box=el('liningSketch'); if(!box) return;
-    const wall='<rect class="tdMasonry" x="24" y="27" width="62" height="125"/><path class="tdMasonryLines" d="M24 52h62M24 77h62M24 102h62M24 127h62M45 27v25M66 52v25M42 77v25M67 102v25M48 127v25"/>';
-    let title='',sub='',core='';
+    let path='assets/montaje-autoportante.svg',title='Trasdosado autoportante',sub='Canal + montante independiente del muro',detail='M'+p+' · '+Math.round(sp*1000)+' mm · '+l+' placa'+(l>1?'s':'');
     if(t==='direct'){
-      title='Trasdosado directo'; sub='Placa adherida · sin perfilería';
-      core=wall+
-        '<circle class="tdDot" cx="106" cy="50" r="5"/><circle class="tdDot" cx="106" cy="88" r="5"/><circle class="tdDot" cx="106" cy="126" r="5"/>'+
-        '<line class="tdBoard" x1="132" y1="27" x2="132" y2="152"/>'+
-        '<path class="tdLeader" d="M106 50L159 18M132 67L247 18"/>'+
-        '<text class="tdText" x="151" y="15">Pasta de agarre</text><text class="tdText" x="242" y="15">Placa PYL</text>';
+      path='assets/montaje-directo.svg'; title='Trasdosado directo'; sub='Placa adherida al soporte · sin perfilería'; detail='1 placa · pasta de agarre · sin modulación';
     }else if(t==='semi'){
-      title='Trasdosado semidirecto'; sub='Maestra fijada al soporte';
-      core=wall+
-        '<path class="tdFix" d="M90 45h18M90 88h18M90 131h18"/>'+
-        '<path class="tdOmegaLine" d="M108 36h11v108h-11"/>'+
-        (wool?'<path class="tdIns" d="M127 49l10 9-10 9 10 9-10 9 10 9-10 9 10 9M148 49l10 9-10 9 10 9-10 9 10 9-10 9"/>':'')+
-        '<line class="tdBoard" x1="184" y1="27" x2="184" y2="152"/>'+(l>1?'<line class="tdBoard" x1="195" y1="27" x2="195" y2="152"/>':'')+
-        '<path class="tdLeader" d="M113 45L159 18M184 62L263 18"/>'+
-        '<text class="tdText" x="141" y="15">Maestra</text><text class="tdText" x="246" y="15">Placa PYL</text>'+
-        '<text class="tdTextSm" x="160" y="176" text-anchor="middle">Intereje '+Math.round(sp*1000)+' mm</text>';
+      path='assets/montaje-semidirecto.svg'; title='Trasdosado semidirecto'; sub='Maestra / omega fijada al soporte'; detail=Math.round(sp*1000)+' mm · '+l+' placa'+(l>1?'s':'')+' · '+(wool?'con lana mineral':'sin lana mineral');
     }else{
-      title='Trasdosado autoportante'; sub='Estructura independiente del muro';
-      core=wall+
-        '<path class="tdMetal" d="M110 36h125v8H110zM110 135h125v8H110z"/>'+
-        '<path class="tdMetal" d="M121 43h10v93h-10zM167 43h10v93h-10zM213 43h10v93h-10z"/>'+
-        (wool?'<path class="tdIns" d="M135 52l10 9-10 9 10 9-10 9 10 9-10 9M181 52l10 9-10 9 10 9-10 9 10 9-10 9"/>':'')+
-        '<line class="tdBoard" x1="246" y1="28" x2="246" y2="151"/>'+(l>1?'<line class="tdBoard" x1="257" y1="28" x2="257" y2="151"/>':'')+
-        '<path class="tdLeader" d="M114 36L131 17M172 79L172 17M246 58L282 17"/>'+
-        '<text class="tdText" x="104" y="14">Canal</text><text class="tdText" x="148" y="14">Montante M'+p+'</text><text class="tdText" x="255" y="14">Placa</text>'+
-        '<path class="tdDim" d="M121 166h92M121 162v8M213 162v8"/><text class="tdTextSm" x="167" y="179" text-anchor="middle">'+Math.round(sp*1000)+' mm</text>';
+      detail+=' · '+(wool?'con lana mineral':'sin lana mineral');
     }
-    const svg='<svg viewBox="0 0 320 184" role="img" aria-label="'+title+'">'+core+'</svg>';
-    box.innerHTML=sketchShell(title,sub,svg);
+    box.innerHTML=mountingSheet(path,title,sub,detail);
   }
-
   function renderRoofSketch(sys){
     const box=el('roofSketch'); if(!box) return;
     const m=roofMeta[sys]||roofMeta.double;
-    let core='';
-    const slab='<rect class="tdSlab" x="24" y="20" width="272" height="16"/><path class="tdSlabHatch" d="M28 34l12-12M45 36l14-14M64 36l14-14M83 36l14-14M102 36l14-14M121 36l14-14M140 36l14-14M159 36l14-14M178 36l14-14M197 36l14-14M216 36l14-14M235 36l14-14M254 36l14-14M273 36l14-14"/>';
-    if(sys==='double'){
-      core=slab+
-        '<path class="tdHang" d="M80 36v45M160 36v45M240 36v45"/>'+
-        '<path class="tdProfile" d="M50 78h220M50 90h220"/>'+
-        '<path class="tdProfileThin" d="M72 68v42M118 68v42M164 68v42M210 68v42M256 68v42"/>'+
-        '<line class="tdBoardH" x1="42" y1="122" x2="278" y2="122"/>'+
-        '<text class="tdText" x="24" y="155">Cuelgue</text><text class="tdText" x="124" y="155">Primario</text><text class="tdText" x="221" y="155">Secundario</text>';
-    }else if(sys==='simple'){
-      core=slab+
-        '<path class="tdHang" d="M80 36v58M160 36v58M240 36v58"/>'+
-        '<path class="tdProfile" d="M50 94h220"/>'+
-        '<line class="tdBoardH" x1="42" y1="122" x2="278" y2="122"/>'+
-        '<text class="tdText" x="27" y="155">Cuelgue</text><text class="tdText" x="126" y="155">TC47</text><text class="tdText" x="231" y="155">Placa</text>';
-    }else if(sys==='sierra'){
-      core=slab+
-        '<path class="tdHang" d="M80 36v40M160 36v40M240 36v40"/>'+
-        '<path class="tdSawLine" d="M48 79l14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10"/>'+
-        '<path class="tdProfile" d="M50 101h220"/><line class="tdBoardH" x1="42" y1="126" x2="278" y2="126"/>'+
-        '<text class="tdText" x="53" y="157">Perfil sierra</text><text class="tdText" x="207" y="157">TC47</text>';
-    }else if(sys==='cm70'){
-      core='<rect class="tdWallEdge" x="23" y="22" width="14" height="120"/><rect class="tdWallEdge" x="283" y="22" width="14" height="120"/>'+
-        '<path class="tdMetal" d="M37 78h18v30H37zM265 78h18v30h-18z"/>'+
-        '<path class="tdProfile" d="M55 93h210"/><line class="tdBoardH" x1="45" y1="124" x2="275" y2="124"/>'+
-        '<path class="tdLeader" d="M50 82L84 41M160 93L160 41M271 82L238 41"/>'+
-        '<text class="tdText" x="68" y="38">Canal</text><text class="tdText" x="123" y="38">M70 biapoyado</text><text class="tdText" x="226" y="38">Canal</text>'+
-        '<text class="tdTextSm" x="160" y="158" text-anchor="middle">Sin cuelgues · verificar luz admisible</text>';
-    }else if(sys==='desmontable60'||sys==='desmontable120'){
-      const wide=sys==='desmontable120';
-      core=slab+'<path class="tdHang" d="M80 36v48M160 36v48M240 36v48"/>'+
-        '<path class="tdTGrid" d="M48 86h224M74 80v47M128 80v47M182 80v47M236 80v47"/>'+
-        (wide?'<rect class="tdTile" x="54" y="93" width="68" height="25"/><rect class="tdTile" x="134" y="93" width="68" height="25"/>':'<rect class="tdTile" x="54" y="93" width="42" height="25"/><rect class="tdTile" x="104" y="93" width="42" height="25"/><rect class="tdTile" x="154" y="93" width="42" height="25"/><rect class="tdTile" x="204" y="93" width="42" height="25"/>')+
-        '<text class="tdText" x="40" y="154">Suspensión</text><text class="tdText" x="141" y="154">T24</text><text class="tdText" x="220" y="154">'+(wide?'600×1200':'600×600')+'</text>';
-    }else{
-      core=slab+'<path class="tdRope" d="M80 36q10 20 0 45M160 36q10 20 0 45M240 36q10 20 0 45"/>'+
-        '<line class="tdBoardH" x1="48" y1="107" x2="272" y2="107"/>'+
-        '<path class="tdJoint" d="M106 101v12M181 101v12"/>'+
-        '<text class="tdText" x="57" y="150">Estopa</text><text class="tdText" x="190" y="150">Placa escayola</text>';
-    }
-    const svg='<svg viewBox="0 0 320 170" role="img" aria-label="'+m.name+'">'+core+'</svg>';
-    box.innerHTML=sketchShell(m.name,m.hint,svg);
+    const paths={
+      double:'assets/montaje-techo-doble.svg',
+      simple:'assets/montaje-techo-simple.svg',
+      sierra:'assets/montaje-techo-sierra.svg',
+      cm70:'assets/montaje-techo-biapoyado.svg',
+      desmontable60:'assets/montaje-registrable-60.svg',
+      desmontable120:'assets/montaje-registrable-120.svg',
+      escayola:'assets/montaje-escayola.svg'
+    };
+    box.innerHTML=mountingSheet(paths[sys]||'assets/montaje-techo.svg',m.name,m.famName,m.hint);
   }
 
   function calcWall(){
