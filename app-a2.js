@@ -71,11 +71,12 @@
   }
   function renderWallSketch(a,b,p,sp,wool){
     const box=el('wallSketch'); if(!box) return;
-    const left=a>1?'<rect class="skBoard2" x="38" y="32" width="12" height="106" rx="2"/>':'';
-    const right=b>1?'<rect class="skBoard2" x="270" y="32" width="12" height="106" rx="2"/>':'';
-    const woolSvg=wool?'<rect class="skWool" x="105" y="43" width="110" height="84" rx="7"/><path class="skWoolLine" d="M112 56l18 14-18 14 18 14-18 14M145 56l18 14-18 14 18 14-18 14M178 56l18 14-18 14 18 14-18 14"/>':'';
-    const svg='<svg viewBox="0 0 320 170" role="img" aria-label="Sección simplificada de tabique PYL"><rect class="skBoard" x="52" y="28" width="15" height="114" rx="2"/>'+left+'<rect class="skMetal" x="148" y="35" width="24" height="100" rx="3"/>'+woolSvg+'<rect class="skBoard" x="253" y="28" width="15" height="114" rx="2"/>'+right+'<text x="58" y="158">Placa</text><text x="160" y="158" text-anchor="middle">M'+p+' · '+Math.round(sp*1000)+' mm</text><text x="260" y="158" text-anchor="middle">Placa</text></svg>';
-    box.innerHTML=sketchShell('Tabique '+a+'+'+b,(wool?'Con lana mineral · ':'Sin lana · ')+'montante M'+p+' @'+Math.round(sp*1000),svg,['board','metal'].concat(wool?['wool']:[]));
+    const left=a>1?'<rect class="skBoard2" x="38" y="26" width="10" height="118" rx="2"/>':'';
+    const right=b>1?'<rect class="skBoard2" x="272" y="26" width="10" height="118" rx="2"/>':'';
+    const woolSvg=wool?'<rect class="skWool" x="104" y="48" width="112" height="74" rx="7"/><path class="skWoolLine" d="M112 58l16 12-16 12 16 12-16 12M146 58l16 12-16 12 16 12-16 12M180 58l16 12-16 12 16 12-16 12"/>':'';
+    const metal='<path class="skChannel" d="M92 30h136v12h-10v-5H102v5H92z"/><path class="skChannel" d="M92 128h136v12h-10v-5H102v5H92z"/><path class="skStud" d="M150 42h24v10h-14v66h14v10h-24z"/>';
+    const svg='<svg viewBox="0 0 320 185" role="img" aria-label="Sección simplificada de tabique PYL con canal y montante"><rect class="skBoard" x="50" y="26" width="14" height="118" rx="2"/>'+left+metal+woolSvg+'<rect class="skBoard" x="256" y="26" width="14" height="118" rx="2"/>'+right+'<path class="skGuide" d="M57 146v9M160 140v15M263 146v9"/><text x="57" y="172" text-anchor="middle">Placa</text><text x="160" y="172" text-anchor="middle">Canal U + montante C M'+p+'</text><text x="263" y="172" text-anchor="middle">Placa</text></svg>';
+    box.innerHTML=sketchShell('Tabique '+a+'+'+b,(wool?'Con lana mineral · ':'Sin lana · ')+'M'+p+' @'+Math.round(sp*1000),svg,['board','metal'].concat(wool?['wool']:[]));
   }
   function renderLiningSketch(t,l,p,sp,wool){
     const box=el('liningSketch'); if(!box) return;
@@ -88,7 +89,7 @@
       core='<rect class="skSupport" x="24" y="24" width="68" height="118" rx="3"/><path class="skMetalLine" d="M112 30v106M124 30v106"/>'+(wool?'<rect class="skWool" x="132" y="34" width="66" height="98" rx="6"/>':'')+'<rect class="skBoard" x="214" y="24" width="16" height="118" rx="2"/>'+(l>1?'<rect class="skBoard2" x="234" y="24" width="12" height="118" rx="2"/>':'')+'<text x="58" y="158" text-anchor="middle">Soporte</text><text x="118" y="158" text-anchor="middle">Omega</text><text x="224" y="158" text-anchor="middle">'+l+' placa'+(l>1?'s':'')+'</text>';
     }else{
       title='Trasdosado autoportante'; sub='Canal + montante independiente del soporte';
-      core='<rect class="skSupport" x="18" y="24" width="58" height="118" rx="3"/><rect class="skMetal" x="126" y="30" width="24" height="106" rx="3"/>'+(wool?'<rect class="skWool" x="158" y="36" width="62" height="94" rx="6"/>':'')+'<rect class="skBoard" x="238" y="24" width="16" height="118" rx="2"/>'+(l>1?'<rect class="skBoard2" x="258" y="24" width="12" height="118" rx="2"/>':'')+'<text x="47" y="158" text-anchor="middle">Muro</text><text x="138" y="158" text-anchor="middle">M'+p+'</text><text x="248" y="158" text-anchor="middle">'+l+' placa'+(l>1?'s':'')+'</text>';
+      core='<rect class="skSupport" x="16" y="24" width="56" height="120" rx="3"/><path class="skChannel" d="M104 30h66v12h-10v-5h-46v5h-10z"/><path class="skChannel" d="M104 130h66v12h-10v-5h-46v5h-10z"/><path class="skStud" d="M128 42h24v10h-14v68h14v10h-24z"/>'+(wool?'<rect class="skWool" x="174" y="44" width="48" height="80" rx="6"/><path class="skWoolLine" d="M180 54l12 12-12 12 12 12-12 12M198 54l12 12-12 12 12 12-12 12"/>':'')+'<rect class="skBoard" x="238" y="24" width="16" height="120" rx="2"/>'+(l>1?'<rect class="skBoard2" x="258" y="24" width="12" height="120" rx="2"/>':'')+'<path class="skGuide" d="M44 146v9M138 142v13M248 146v9"/><text x="44" y="172" text-anchor="middle">Muro</text><text x="138" y="172" text-anchor="middle">Canal U + montante C M'+p+'</text><text x="248" y="172" text-anchor="middle">'+l+' placa'+(l>1?'s':'')+'</text>';
     }
     const svg='<svg viewBox="0 0 320 170" role="img" aria-label="'+title+'">'+core+'</svg>';
     const legend=t==='direct'?['support','adhesive','board']:['support','metal'].concat(wool?['wool']:[]).concat(['board']);
