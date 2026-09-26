@@ -255,3 +255,34 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 .sketchCanvas{padding:10px 10px 5px}
 .sketchCanvas svg{max-height:220px}
 @media(max-width:520px){.sketchCanvas svg{max-height:205px}.cadLabel{font-size:9px!important}.cadDim{font-size:8.5px!important}}
+
+/* Detalles técnicos monocromos, sustituyen el lenguaje gráfico anterior */
+.techDrawing{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.techDrawing svg{width:100%;height:auto;max-height:210px}
+.tdSupport,.tdSlab,.tdWallEdge{fill:var(--soft);stroke:var(--text);stroke-width:1.5}
+.tdSlabHatch,.tdHatch{stroke:var(--muted);stroke-width:1}
+.tdMasonry{fill:transparent;stroke:var(--text);stroke-width:1.5}
+.tdMasonryLines{fill:none;stroke:var(--muted);stroke-width:1}
+.tdMetal{fill:none;stroke:var(--text);stroke-width:1.6}
+.tdBoard,.tdBoardH{stroke:var(--text);stroke-width:3;stroke-linecap:square}
+.tdIns{fill:none;stroke:var(--muted);stroke-width:1.15}
+.tdDot{fill:var(--text)}
+.tdFix,.tdOmegaLine,.tdProfile,.tdProfileThin,.tdTGrid{fill:none;stroke:var(--text);stroke-width:1.7}
+.tdProfile{stroke-width:2.8}.tdProfileThin{stroke-width:1.4}.tdTGrid{stroke-width:1.5}
+.tdHang{fill:none;stroke:var(--text);stroke-width:1.5}
+.tdSawLine{fill:none;stroke:var(--text);stroke-width:1.7}
+.tdTile{fill:transparent;stroke:var(--text);stroke-width:1.2}
+.tdRope{fill:none;stroke:var(--text);stroke-width:1.4;stroke-dasharray:4 3}
+.tdJoint{stroke:var(--text);stroke-width:1.1}
+.tdLeader,.tdDim{fill:none;stroke:var(--muted);stroke-width:1}
+.tdText,.tdTextSm{fill:var(--text)!important;stroke:none!important;paint-order:normal!important;font-weight:700!important}
+.tdText{font-size:9.2px!important}
+.tdTextSm{font-size:8.5px!important;fill:var(--muted)!important}
+.sketchLegend{display:none!important}
+.sketchBadge{letter-spacing:.08em}
+.sketchNote{font-size:.67rem;color:var(--muted);line-height:1.35}
+@media(max-width:520px){
+  .techDrawing svg{max-height:195px}
+  .tdText{font-size:8.8px!important}
+  .tdTextSm{font-size:8.1px!important}
+}
