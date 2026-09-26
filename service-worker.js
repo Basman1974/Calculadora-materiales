@@ -1,4 +1,4 @@
-const CACHE='calculadora-construccion-20260926-cad1';
+const CACHE='calculadora-construccion-20260926-tech2';
 const CORE=[
   './','index.html','style.css','data.js','app.js','app-a1.js','app-a2.js','app-b.js',
   'ui-a.html','ui-b.html','ui-c.html','manifest.json','logo.png'
