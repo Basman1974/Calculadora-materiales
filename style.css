@@ -212,3 +212,7 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 .skKey-rope{background:#ead7b4;border-color:#9a6b22}
 .sketchNote{padding-top:6px}
 @media(max-width:520px){.sketchCanvas svg{max-height:185px}.sketchLegend{gap:6px 10px}.sketchLegend span{font-size:.61rem}}
+
+/* Perfiles más legibles: canal U y montante C */
+.skChannel,.skStud{fill:#d9e8ef;stroke:#285a70;stroke-width:2.7;stroke-linejoin:round}
+.skGuide{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:3 3}
