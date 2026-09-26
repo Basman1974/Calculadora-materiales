@@ -67,6 +67,7 @@
     const side=Math.max(A,B);
     const edgesPerTile=(A>=60||B>=60)?4:2;
     const clipsM2=Math.max(4,Math.ceil(tilesM2*edgesPerTile)),total=Math.ceil(clipsM2*area*(1+w/100));
+    const requestedBatch=Math.max(.5,num('cBatchArea')||5),workingArea=Math.min(area,requestedBatch),wedges=Math.min(total,Math.ceil(clipsM2*workingArea));
     const bond=(el('cBond')&&el('cBond').value)||'doble',bondLabel=bond==='doble'?'Doble encolado':'Encolado simple';
     const glueKgM2=ceramicGlueKgM2(side,body,bond,trowel),glueKg=glueKgM2*area*(1+w/100);
     const groutRate=groutKgM2(A,B,thick,joint,1.6),groutKg=groutRate*area*1.10;
@@ -74,7 +75,7 @@
       ['Tipo de baldosa',ceramicBodyLabel(body),body==='porcelanico'?'UNE-EN 14411 · baja absorción · verificar adhesivo compatible':'UNE-EN 14411 · verificar grupo y absorción de la baldosa'],
       ['Baldosas / piezas',tiles+' uds',tilesM2.toFixed(2)+' ud/m² · formato '+A+' × '+B+' cm · patrón '+pattern+' · merma aplicada '+w+' %'],
       ['Calzos de nivelación',total+' uds',clipsM2+' calzos/m² · estimación geométrica según formato; verificar sistema de nivelación elegido'],
-      ['Cuñas de nivelación necesarias',total+' uds','1 cuña por cada calzo de nivelación · cantidad necesaria para la superficie calculada'],
+      ['Cuñas reutilizables',wedges+' uds','Dotación operativa para '+workingArea.toFixed(1)+' m² simultáneos · '+clipsM2+' cuñas/m² · se recuperan tras el fraguado y se reutilizan en la siguiente tanda'],
       ['Encolado',bondLabel,'Llana '+trowel+' mm · consumo estimado '+glueKgM2.toFixed(1)+' kg/m² · verificar ficha del adhesivo'],
       ['Cemento cola',Math.ceil(glueKg/25)+' saco(s) de 25 kg',glueKg.toFixed(1)+' kg · llana '+trowel+' mm · '+bondLabel+' · UNE-EN 12004'],
       ['Mortero de juntas',Math.ceil(groutKg/5)+' saco(s) de 5 kg',groutKg.toFixed(1)+' kg · '+groutRate.toFixed(3)+' kg/m² × 1,10 · fórmula geométrica: formato '+A+'×'+B+' cm · espesor '+thick+' mm · junta '+joint+' mm · densidad 1,6']
@@ -85,7 +86,7 @@
   }
   on(el('levelForm'),'submit',e=>{e.preventDefault();calcLevel();});
   ['cBond','cPattern','cWaste','cTrowel'].forEach(id=>on(el(id),'change',()=>{calcLevel();if(el('adhForm')&&!el('adhForm').classList.contains('hidden'))adhesiveClass();}));
-  ['cA','cB','cArea','cThickness','cJoint'].forEach(id=>on(el(id),'input',calcLevel));
+  ['cA','cB','cArea','cBatchArea','cThickness','cJoint'].forEach(id=>on(el(id),'input',calcLevel));
     function adhesiveClass(){
     const zone = el('aZone') ? el('aZone').value : 'floor';
     const place = el('aPlace') ? el('aPlace').value : 'interior';
