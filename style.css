@@ -228,3 +228,30 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 .skBoardReveal2{fill:#c5d8e9;stroke:#4f6f8f;stroke-width:2;opacity:.95}
 .skCallout{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:3 3}
 .skLabel{fill:var(--text)!important;font-size:10px!important;font-weight:900!important;stroke:none!important;paint-order:normal!important}
+
+/* Rediseño global de esquemas técnicos tipo CAD */
+.cadFloor,.cadSlab,.cadWallSide{fill:#d8d8d4;stroke:#616161;stroke-width:2}
+.cadMasonry{fill:#eadfd2;stroke:#725941;stroke-width:2.2}
+.cadBrick{fill:none;stroke:#b79b80;stroke-width:1}
+.cadCavity{fill:rgba(255,255,255,.18);stroke:#aeb8bd;stroke-width:1.1;stroke-dasharray:4 4}
+.cadChannel,.cadStud,.cadPrimary,.cadSecondary,.cadOmega,.cadTMain,.cadTCross,.cadSideChannel,.cadSpanStud{fill:#d9e8ef;stroke:#285a70;stroke-width:2;stroke-linejoin:round}
+.cadPrimary,.cadSecondary,.cadTMain,.cadTCross{fill:none;stroke-linecap:round}
+.cadPrimary{stroke-width:6}.cadSecondary{stroke-width:4}.cadTMain{stroke-width:5}.cadTCross{stroke-width:3.5}
+.cadBoard,.cadBoardH,.cadBoardCut,.cadEscayola{fill:#fff7d6;stroke:#8b6f00;stroke-width:2}
+.cadBoard2,.cadBoardCut2{fill:#ffeaa0;stroke:#8b6f00;stroke-width:2}
+.cadBoardCut,.cadBoardCut2{opacity:.92}
+.cadWool,.cadWoolPanel{fill:#dff4df;stroke:#2f7a3d;stroke-width:1.6}
+.cadWoolWave{fill:none;stroke:#2f7a3d;stroke-width:1.8;opacity:.75}
+.cadAdhesive{fill:#d7b38a;stroke:#7a4f24;stroke-width:1.8}
+.cadDirectFix{fill:none;stroke:#7a4f24;stroke-width:2.2}
+.cadHanger{fill:none;stroke:#a24d00;stroke-width:2.7}
+.cadSawProfile{fill:none;stroke:#285a70;stroke-width:4;stroke-linejoin:round}
+.cadTile{fill:#f4ecff;stroke:#6b4c8f;stroke-width:1.8}
+.cadRope{fill:none;stroke:#9a6b22;stroke-width:3;stroke-dasharray:4 3}
+.cadJoint{stroke:#9b8349;stroke-width:1.3}
+.cadCallout{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:3 3}
+.cadLabel{fill:var(--text)!important;font-size:9.5px!important;font-weight:900!important;stroke:none!important;paint-order:normal!important}
+.cadDim{fill:var(--muted)!important;font-size:9px!important;font-weight:800!important;stroke:none!important;paint-order:normal!important}
+.sketchCanvas{padding:10px 10px 5px}
+.sketchCanvas svg{max-height:220px}
+@media(max-width:520px){.sketchCanvas svg{max-height:205px}.cadLabel{font-size:9px!important}.cadDim{font-size:8.5px!important}}
