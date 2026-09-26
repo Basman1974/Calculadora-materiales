@@ -10,7 +10,7 @@
 <rect class="b" x="320" y="34" width="88" height="232"/>
 <text class="t s" x="0" y="130">Muro soporte</text><text class="t s" x="145" y="27">Canal superior</text><text class="t s" x="182" y="276">Canal inferior</text>
 <text class="t s" x="198" y="130">Montantes</text><text class="t s" x="408" y="130">Placa PYL</text>
-<path class="l" d="M160 316h124m-124-6v12m124-12v12"/><text class="t s" x="202" y="337">600 mm</text>
+<path class="l" d="M160 316h124m-124-6v12m124-12v12"/><text class="t s" x="202" y="337">Modulación</text>
 </g>
 <g transform="translate(60 475)">
 <rect class="br" x="0" y="0" width="88" height="150"/><path class="m" d="M120 0h218v9H120zM120 141h218v9H120z"/><rect class="m" x="132" y="9" width="11" height="132"/><rect class="m" x="194" y="9" width="11" height="132"/><rect class="m" x="256" y="9" width="11" height="132"/>
