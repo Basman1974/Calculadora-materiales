@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Calculadora Construcción">
-  <link rel="stylesheet" href="style.css?v=20260925-navfix1">
+  <link rel="stylesheet" href="style.css?v=20260926-sketch1">
   <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
@@ -80,6 +80,7 @@
       <div class="panel easyBlock">
         <div class="easyTitle">Sistema</div>
         <div class="presetBar" aria-label="Plantillas de tabique"><button type="button" class="preset" data-wall-preset="vivienda">Vivienda 1+1</button><button type="button" class="preset" data-wall-preset="bano">Baño 1+1 @400</button><button type="button" class="preset" data-wall-preset="doble">Doble 2+2</button></div>
+        <div class="systemSketch" id="wallSketch" aria-live="polite"></div>
         <div class="grid">
           <label>Placas cara 1<select id="wA"><option value="1" selected>1 placa</option><option value="2">2 placas</option></select></label>
           <label>Placas cara 2<select id="wB"><option value="1">1 placa</option><option value="2">2 placas</option></select></label>
@@ -111,6 +112,7 @@
       <button type="button" class="sysFam" data-lining-type="semi" aria-pressed="false">Semidirecto</button>
       <button type="button" class="sysFam active" data-lining-type="auto" aria-pressed="true">Autoportante</button>
     </div>
+    <div class="systemSketch" id="liningSketch" aria-live="polite"></div>
     <form id="liningForm">
       <label class="hidden">Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label>
       <div class="panel easyBlock">
