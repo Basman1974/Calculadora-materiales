@@ -1,7 +1,8 @@
-const CACHE='calculadora-construccion-20260926-tech2';
+const CACHE='calculadora-construccion-20260926-placo1';
 const CORE=[
   './','index.html','style.css','data.js','app.js','app-a1.js','app-a2.js','app-b.js',
-  'ui-a.html','ui-b.html','ui-c.html','manifest.json','logo.png'
+  'ui-a.html','ui-b.html','ui-c.html','manifest.json','logo.png',
+  'assets/montaje-tabique.svg','assets/montaje-directo.svg','assets/montaje-semidirecto.svg','assets/montaje-autoportante.svg','assets/montaje-techo.svg','assets/montaje-techo-simple.svg','assets/montaje-techo-doble.svg','assets/montaje-techo-sierra.svg','assets/montaje-techo-biapoyado.svg','assets/montaje-registrable-60.svg','assets/montaje-registrable-120.svg','assets/montaje-escayola.svg'
 ];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).catch(()=>{}));
