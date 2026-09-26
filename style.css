@@ -179,3 +179,36 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 .skTile{fill:#f2f2ed;stroke:#7b8488;stroke-width:1.5}.skRope{fill:none;stroke:#a4885e;stroke-width:3;stroke-dasharray:4 3}
 .sketchNote{padding:0 12px 10px;color:var(--muted);font-size:.62rem;font-weight:650;line-height:1.35}
 @media(max-width:520px){.sketchCanvas{padding:2px 6px 0}.sketchCanvas svg{max-height:155px}.sketchHead{padding:9px 10px}}
+
+/* Mayor claridad visual en esquemas de sistemas */
+.systemSketch{box-shadow:0 5px 16px rgba(0,0,0,.06)}
+.sketchCanvas{background:linear-gradient(180deg,color-mix(in srgb,var(--soft) 55%,transparent),transparent);padding:10px 12px 4px}
+.sketchCanvas svg{max-height:205px}
+.sketchCanvas text{font-size:11px;font-weight:850;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round}
+.skBoard,.skBoardH{fill:#fff7d6;stroke:#8b6f00;stroke-width:2.5}
+.skBoard2{fill:#ffeaa0;stroke:#8b6f00;stroke-width:2.5}
+.skMetal{fill:#d9e8ef;stroke:#285a70;stroke-width:2.7}
+.skMetalLine,.skMetalCross,.skTGrid{stroke:#285a70;stroke-width:7}
+.skMetalCross{stroke-width:4.5}
+.skWool{fill:#dff4df;stroke:#2f7a3d;stroke-width:2}
+.skWoolLine{stroke:#2f7a3d;stroke-width:2.3}
+.skSupport{fill:#e6d4c2;stroke:#7a5a3b;stroke-width:2.7}
+.skAdhesive{fill:#d7b38a;stroke:#7a4f24;stroke-width:2}
+.skSlab{stroke:#696969;stroke-width:10}
+.skHang{stroke:#a24d00;stroke-width:3}
+.skTile{fill:#f4ecff;stroke:#6b4c8f;stroke-width:2}
+.skRope{stroke:#9a6b22;stroke-width:3.5}
+.skSaw{stroke:#285a70;stroke-width:4.5}
+.sketchLegend{display:flex;flex-wrap:wrap;gap:7px 12px;padding:8px 12px 6px;border-top:1px solid var(--line);background:var(--card)}
+.sketchLegend span{display:inline-flex;align-items:center;gap:6px;font-size:.64rem;font-weight:850;color:var(--text)}
+.skKey{display:inline-block;width:13px;height:13px;border-radius:4px;border:2px solid transparent;flex:none}
+.skKey-board{background:#fff7d6;border-color:#8b6f00}
+.skKey-metal{background:#d9e8ef;border-color:#285a70}
+.skKey-wool{background:#dff4df;border-color:#2f7a3d}
+.skKey-support{background:#e6d4c2;border-color:#7a5a3b}
+.skKey-adhesive{background:#d7b38a;border-color:#7a4f24}
+.skKey-hang{background:#ffd8b8;border-color:#a24d00}
+.skKey-tile{background:#f4ecff;border-color:#6b4c8f}
+.skKey-rope{background:#ead7b4;border-color:#9a6b22}
+.sketchNote{padding-top:6px}
+@media(max-width:520px){.sketchCanvas svg{max-height:185px}.sketchLegend{gap:6px 10px}.sketchLegend span{font-size:.61rem}}
