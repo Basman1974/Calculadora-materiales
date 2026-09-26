@@ -1,5 +1,5 @@
 (() => {
-  const v = '20260926-sketch2';
+  const v = '20260926-sketch3';
   const base = ['app-a1.js', 'app-a2.js', 'app-b.js'];
 
   async function getPart(name){
