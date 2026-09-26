@@ -12,7 +12,7 @@
 <text class="t s" x="7" y="120">Montantes</text><line class="l" x1="76" y1="116" x2="166" y2="116"/>
 <text class="t s" x="394" y="135">Placa PYL</text><line class="l" x1="390" y1="131" x2="354" y2="131"/>
 <text class="t s" x="200" y="22">Canal superior</text><line class="l" x1="270" y1="26" x2="270" y2="43"/>
-<path class="l" d="M166 30h73m-73-6v12m73-12v12"/><text class="t s" x="184" y="20">600 mm</text>
+<path class="l" d="M166 30h73m-73-6v12m73-12v12"/><text class="t s" x="184" y="20">Modulación</text>
 </g>
 <g transform="translate(28 430)">
 <rect class="c" x="20" y="0" width="440" height="22"/><rect class="m" x="56" y="44" width="354" height="10"/>
