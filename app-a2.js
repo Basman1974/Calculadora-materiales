@@ -62,8 +62,12 @@
       setTimeout(()=>e.target.textContent='Añadir a Obra',700);
     };
   }
-  function sketchShell(title,sub,svg){
-    return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">ESQUEMA</span></div><div class="sketchCanvas">'+svg+'</div><div class="sketchNote">Representación simplificada para identificar el sistema. No es un detalle de ejecución.</div>';
+  function sketchLegend(items){
+    const names={board:'Placa PYL',metal:'Perfilería',wool:'Lana mineral',support:'Soporte / muro',adhesive:'Pasta / adhesivo',hang:'Suspensión',tile:'Placa registrable',rope:'Estopa'};
+    return '<div class="sketchLegend">'+items.map(k=>'<span><i class="skKey skKey-'+k+'"></i>'+names[k]+'</span>').join('')+'</div>';
+  }
+  function sketchShell(title,sub,svg,legend){
+    return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">ESQUEMA</span></div><div class="sketchCanvas">'+svg+'</div>'+sketchLegend(legend||[])+'<div class="sketchNote">Representación simplificada para identificar materiales y disposición. No es un detalle de ejecución.</div>';
   }
   function renderWallSketch(a,b,p,sp,wool){
     const box=el('wallSketch'); if(!box) return;
@@ -71,7 +75,7 @@
     const right=b>1?'<rect class="skBoard2" x="270" y="32" width="12" height="106" rx="2"/>':'';
     const woolSvg=wool?'<rect class="skWool" x="105" y="43" width="110" height="84" rx="7"/><path class="skWoolLine" d="M112 56l18 14-18 14 18 14-18 14M145 56l18 14-18 14 18 14-18 14M178 56l18 14-18 14 18 14-18 14"/>':'';
     const svg='<svg viewBox="0 0 320 170" role="img" aria-label="Sección simplificada de tabique PYL"><rect class="skBoard" x="52" y="28" width="15" height="114" rx="2"/>'+left+'<rect class="skMetal" x="148" y="35" width="24" height="100" rx="3"/>'+woolSvg+'<rect class="skBoard" x="253" y="28" width="15" height="114" rx="2"/>'+right+'<text x="58" y="158">Placa</text><text x="160" y="158" text-anchor="middle">M'+p+' · '+Math.round(sp*1000)+' mm</text><text x="260" y="158" text-anchor="middle">Placa</text></svg>';
-    box.innerHTML=sketchShell('Tabique '+a+'+'+b,(wool?'Con lana mineral · ':'Sin lana · ')+'montante M'+p+' @'+Math.round(sp*1000),svg);
+    box.innerHTML=sketchShell('Tabique '+a+'+'+b,(wool?'Con lana mineral · ':'Sin lana · ')+'montante M'+p+' @'+Math.round(sp*1000),svg,['board','metal'].concat(wool?['wool']:[]));
   }
   function renderLiningSketch(t,l,p,sp,wool){
     const box=el('liningSketch'); if(!box) return;
@@ -87,7 +91,8 @@
       core='<rect class="skSupport" x="18" y="24" width="58" height="118" rx="3"/><rect class="skMetal" x="126" y="30" width="24" height="106" rx="3"/>'+(wool?'<rect class="skWool" x="158" y="36" width="62" height="94" rx="6"/>':'')+'<rect class="skBoard" x="238" y="24" width="16" height="118" rx="2"/>'+(l>1?'<rect class="skBoard2" x="258" y="24" width="12" height="118" rx="2"/>':'')+'<text x="47" y="158" text-anchor="middle">Muro</text><text x="138" y="158" text-anchor="middle">M'+p+'</text><text x="248" y="158" text-anchor="middle">'+l+' placa'+(l>1?'s':'')+'</text>';
     }
     const svg='<svg viewBox="0 0 320 170" role="img" aria-label="'+title+'">'+core+'</svg>';
-    box.innerHTML=sketchShell(title,sub+(t!=='direct'?' · '+Math.round(sp*1000)+' mm':''),svg);
+    const legend=t==='direct'?['support','adhesive','board']:['support','metal'].concat(wool?['wool']:[]).concat(['board']);
+    box.innerHTML=sketchShell(title,sub+(t!=='direct'?' · '+Math.round(sp*1000)+' mm':''),svg,legend);
   }
   function renderRoofSketch(sys){
     const box=el('roofSketch'); if(!box) return;
@@ -100,7 +105,8 @@
     else if(sys==='desmontable60'||sys==='desmontable120') core='<path class="skSlab" d="M25 30h270"/><path class="skHang" d="M70 30v48M160 30v48M250 30v48"/><path class="skTGrid" d="M35 82h250M80 70v54M140 70v54M200 70v54M260 70v54"/><rect class="skTile" x="39" y="88" width="37" height="30"/><rect class="skTile" x="84" y="88" width="52" height="30"/><rect class="skTile" x="144" y="88" width="52" height="30"/>';
     else core='<path class="skSlab" d="M25 30h270"/><path class="skRope" d="M70 30q10 28 0 58M160 30q10 28 0 58M250 30q10 28 0 58"/><rect class="skBoardH" x="36" y="104" width="248" height="24" rx="4"/>';
     const svg='<svg viewBox="0 0 320 155" role="img" aria-label="'+m.name+'">'+core+'<text x="160" y="148" text-anchor="middle">'+m.hint+'</text></svg>';
-    box.innerHTML=sketchShell(m.name,m.famName,svg);
+    const legend=(sys==='desmontable60'||sys==='desmontable120')?['support','hang','metal','tile']:sys==='escayola'?['support','rope','board']:['support','hang','metal','board'];
+    box.innerHTML=sketchShell(m.name,m.famName,svg,legend);
   }
 
   function calcWall(){
