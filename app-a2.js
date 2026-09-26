@@ -66,127 +66,109 @@
     const names={board:'Placa PYL',metal:'Perfilería',wool:'Lana mineral',support:'Soporte / muro',adhesive:'Pasta / adhesivo',hang:'Suspensión',tile:'Placa registrable',rope:'Estopa'};
     return '<div class="sketchLegend">'+items.map(k=>'<span><i class="skKey skKey-'+k+'"></i>'+names[k]+'</span>').join('')+'</div>';
   }
-  function sketchShell(title,sub,svg,legend){
-    return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">ESQUEMA</span></div><div class="sketchCanvas">'+svg+'</div>'+sketchLegend(legend||[])+'<div class="sketchNote">Representación simplificada para identificar materiales y disposición. No es un detalle de ejecución.</div>';
+  function sketchShell(title,sub,svg){
+    return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">DETALLE</span></div><div class="sketchCanvas techDrawing">'+svg+'</div><div class="sketchNote">Esquema técnico simplificado basado en detalles constructivos de fabricante. Verificar siempre el sistema concreto.</div>';
   }
   function renderWallSketch(a,b,p,sp,wool){
     const box=el('wallSketch'); if(!box) return;
-    const board2a=a>1?'<rect class="cadBoard2" x="40" y="38" width="10" height="108" rx="1"/>':'';
-    const board2b=b>1?'<rect class="cadBoard2" x="270" y="38" width="10" height="108" rx="1"/>':'';
-    const insulation=wool?'<rect class="cadWool" x="103" y="50" width="114" height="78" rx="3"/><path class="cadWoolWave" d="M110 59l14 10-14 10 14 10-14 10 14 10M145 59l14 10-14 10 14 10-14 10 14 10M180 59l14 10-14 10 14 10-14 10 14 10"/>':'';
-    const svg='<svg viewBox="0 0 320 190" role="img" aria-label="Detalle técnico de tabique PYL">'+
-      '<rect class="cadFloor" x="22" y="151" width="276" height="12"/>'+
-      '<path class="cadChannel" d="M86 39h148v10H86zM86 137h148v10H86z"/>'+
-      '<path class="cadStud" d="M102 48h12v90h-12zM154 48h12v90h-12zM206 48h12v90h-12z"/>'+
-      insulation+
-      '<rect class="cadBoard" x="52" y="38" width="14" height="108" rx="1"/>'+board2a+
-      '<rect class="cadBoard" x="254" y="38" width="14" height="108" rx="1"/>'+board2b+
-      '<path class="cadCallout" d="M92 40L56 17M160 80L160 18M258 55L286 18"/>'+
-      '<text class="cadLabel" x="17" y="15">Canal U</text><text class="cadLabel" x="138" y="15">Montante M'+p+'</text><text class="cadLabel" x="245" y="15">Placa PYL</text>'+
-      '<text class="cadDim" x="160" y="181" text-anchor="middle">Modulación '+Math.round(sp*1000)+' mm · '+a+'+'+b+' placa(s)</text>'+
+    const b2a=a>1?'<line class="tdBoard" x1="49" y1="39" x2="49" y2="143"/>':'';
+    const b2b=b>1?'<line class="tdBoard" x1="271" y1="39" x2="271" y2="143"/>':'';
+    const ins=wool?'<path class="tdIns" d="M108 51l11 9-11 9 11 9-11 9 11 9-11 9 11 9M145 51l11 9-11 9 11 9-11 9 11 9-11 9M182 51l11 9-11 9 11 9-11 9 11 9-11 9"/>':'';
+    const svg='<svg viewBox="0 0 320 184" role="img" aria-label="Sección de tabique PYL">'+
+      '<defs><pattern id="hatchWall" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" class="tdHatch"/></pattern></defs>'+
+      '<rect class="tdSupport" x="24" y="149" width="272" height="14"/>'+
+      '<path class="tdMetal" d="M89 39h142v9H89zM89 135h142v9H89z"/>'+
+      '<path class="tdMetal" d="M103 47h10v89h-10zM155 47h10v89h-10zM207 47h10v89h-10z"/>'+ins+
+      '<line class="tdBoard" x1="61" y1="39" x2="61" y2="143"/>'+b2a+
+      '<line class="tdBoard" x1="259" y1="39" x2="259" y2="143"/>'+b2b+
+      '<path class="tdLeader" d="M108 47L77 19M160 83L160 19M259 54L286 19"/>'+
+      '<text class="tdText" x="40" y="16">Canal</text><text class="tdText" x="133" y="16">Montante M'+p+'</text><text class="tdText" x="247" y="16">Placa</text>'+
+      '<path class="tdDim" d="M103 171h104M103 167v8M207 167v8"/><text class="tdTextSm" x="155" y="181" text-anchor="middle">'+Math.round(sp*1000)+' mm</text>'+
     '</svg>';
-    box.innerHTML=sketchShell('Tabique PYL '+a+'+'+b,'Estructura simple · canal U + montantes M'+p,svg,['board','metal'].concat(wool?['wool']:[]));
+    box.innerHTML=sketchShell('Tabique '+a+'+'+b,'Sección técnica · estructura simple',svg);
   }
 
   function renderLiningSketch(t,l,p,sp,wool){
     const box=el('liningSketch'); if(!box) return;
-    let title='',sub='',core='',legend=[];
-    const wall='<rect class="cadMasonry" x="18" y="28" width="74" height="122" rx="2"/><path class="cadBrick" d="M18 53h74M18 78h74M18 103h74M18 128h74M44 28v25M65 53v25M40 78v25M68 103v25M48 128v22"/>';
+    const wall='<rect class="tdMasonry" x="24" y="27" width="62" height="125"/><path class="tdMasonryLines" d="M24 52h62M24 77h62M24 102h62M24 127h62M45 27v25M66 52v25M42 77v25M67 102v25M48 127v25"/>';
+    let title='',sub='',core='';
     if(t==='direct'){
-      title='Trasdosado directo'; sub='W61 · placa adherida con pasta de agarre';
+      title='Trasdosado directo'; sub='Placa adherida · sin perfilería';
       core=wall+
-        '<circle class="cadAdhesive" cx="113" cy="48" r="8"/><circle class="cadAdhesive" cx="113" cy="83" r="8"/><circle class="cadAdhesive" cx="113" cy="118" r="8"/>'+
-        '<rect class="cadBoard" x="136" y="28" width="18" height="122" rx="1"/>'+
-        '<path class="cadCallout" d="M112 48L164 18M145 55L246 18"/>'+
-        '<text class="cadLabel" x="157" y="15">Pasta de agarre</text><text class="cadLabel" x="242" y="15">Placa PYL</text>'+
-        '<text class="cadDim" x="160" y="176" text-anchor="middle">Sin perfilería · pelladas sobre soporte adherente</text>';
-      legend=['support','adhesive','board'];
+        '<circle class="tdDot" cx="106" cy="50" r="5"/><circle class="tdDot" cx="106" cy="88" r="5"/><circle class="tdDot" cx="106" cy="126" r="5"/>'+
+        '<line class="tdBoard" x1="132" y1="27" x2="132" y2="152"/>'+
+        '<path class="tdLeader" d="M106 50L159 18M132 67L247 18"/>'+
+        '<text class="tdText" x="151" y="15">Pasta de agarre</text><text class="tdText" x="242" y="15">Placa PYL</text>';
     }else if(t==='semi'){
-      title='Trasdosado semidirecto'; sub='Maestra / omega fijada al soporte';
+      title='Trasdosado semidirecto'; sub='Maestra fijada al soporte';
       core=wall+
-        '<path class="cadDirectFix" d="M98 42h20M98 82h20M98 122h20"/>'+
-        '<path class="cadOmega" d="M118 35h14v108h-14z"/>'+
-        (wool?'<rect class="cadWool" x="136" y="43" width="48" height="92" rx="3"/><path class="cadWoolWave" d="M142 54l12 10-12 10 12 10-12 10 12 10M162 54l12 10-12 10 12 10-12 10 12 10"/>':'')+
-        '<rect class="cadBoard" x="202" y="28" width="16" height="122" rx="1"/>'+(l>1?'<rect class="cadBoard2" x="222" y="28" width="12" height="122" rx="1"/>':'')+
-        '<path class="cadCallout" d="M124 43L160 17M209 50L264 17"/>'+
-        '<text class="cadLabel" x="142" y="15">Maestra / omega</text><text class="cadLabel" x="252" y="15">Placa PYL</text>'+
-        '<text class="cadDim" x="160" y="176" text-anchor="middle">Fijación directa al muro · modulación '+Math.round(sp*1000)+' mm</text>';
-      legend=['support','metal'].concat(wool?['wool']:[]).concat(['board']);
+        '<path class="tdFix" d="M90 45h18M90 88h18M90 131h18"/>'+
+        '<path class="tdOmegaLine" d="M108 36h11v108h-11"/>'+
+        (wool?'<path class="tdIns" d="M127 49l10 9-10 9 10 9-10 9 10 9-10 9 10 9M148 49l10 9-10 9 10 9-10 9 10 9-10 9"/>':'')+
+        '<line class="tdBoard" x1="184" y1="27" x2="184" y2="152"/>'+(l>1?'<line class="tdBoard" x1="195" y1="27" x2="195" y2="152"/>':'')+
+        '<path class="tdLeader" d="M113 45L159 18M184 62L263 18"/>'+
+        '<text class="tdText" x="141" y="15">Maestra</text><text class="tdText" x="246" y="15">Placa PYL</text>'+
+        '<text class="tdTextSm" x="160" y="176" text-anchor="middle">Intereje '+Math.round(sp*1000)+' mm</text>';
     }else{
-      title='Trasdosado autoportante'; sub='W625/W626 · estructura independiente';
+      title='Trasdosado autoportante'; sub='Estructura independiente del muro';
       core=wall+
-        '<rect class="cadCavity" x="104" y="30" width="150" height="118" rx="2"/>'+
-        '<path class="cadChannel" d="M112 36h134v9H112zM112 133h134v9H112z"/>'+
-        '<path class="cadStud" d="M122 44h11v90h-11zM171 44h11v90h-11zM220 44h11v90h-11z"/>'+
-        (wool?'<rect class="cadWool" x="134" y="49" width="36" height="79" rx="3"/><rect class="cadWool" x="183" y="49" width="36" height="79" rx="3"/><path class="cadWoolWave" d="M140 58l10 9-10 9 10 9-10 9 10 9M189 58l10 9-10 9 10 9-10 9 10 9"/>':'')+
-        '<path class="cadBoardCut" d="M196 49h70v96h-70z"/>'+(l>1?'<path class="cadBoardCut2" d="M210 59h56v86h-56z"/>':'')+
-        '<path class="cadCallout" d="M118 36L125 16M176 76L176 16M248 64L276 16"/>'+
-        '<text class="cadLabel" x="102" y="14">Canal U</text><text class="cadLabel" x="151" y="14">Montante M'+p+'</text><text class="cadLabel" x="248" y="14">Placa PYL</text>'+
-        '<text class="cadDim" x="160" y="176" text-anchor="middle">Estructura separada del muro · modulación '+Math.round(sp*1000)+' mm</text>';
-      legend=['support','metal'].concat(wool?['wool']:[]).concat(['board']);
+        '<path class="tdMetal" d="M110 36h125v8H110zM110 135h125v8H110z"/>'+
+        '<path class="tdMetal" d="M121 43h10v93h-10zM167 43h10v93h-10zM213 43h10v93h-10z"/>'+
+        (wool?'<path class="tdIns" d="M135 52l10 9-10 9 10 9-10 9 10 9-10 9M181 52l10 9-10 9 10 9-10 9 10 9-10 9"/>':'')+
+        '<line class="tdBoard" x1="246" y1="28" x2="246" y2="151"/>'+(l>1?'<line class="tdBoard" x1="257" y1="28" x2="257" y2="151"/>':'')+
+        '<path class="tdLeader" d="M114 36L131 17M172 79L172 17M246 58L282 17"/>'+
+        '<text class="tdText" x="104" y="14">Canal</text><text class="tdText" x="148" y="14">Montante M'+p+'</text><text class="tdText" x="255" y="14">Placa</text>'+
+        '<path class="tdDim" d="M121 166h92M121 162v8M213 162v8"/><text class="tdTextSm" x="167" y="179" text-anchor="middle">'+Math.round(sp*1000)+' mm</text>';
     }
-    const svg='<svg viewBox="0 0 320 185" role="img" aria-label="'+title+'">'+core+'</svg>';
-    box.innerHTML=sketchShell(title,sub,svg,legend);
+    const svg='<svg viewBox="0 0 320 184" role="img" aria-label="'+title+'">'+core+'</svg>';
+    box.innerHTML=sketchShell(title,sub,svg);
   }
 
   function renderRoofSketch(sys){
     const box=el('roofSketch'); if(!box) return;
     const m=roofMeta[sys]||roofMeta.double;
-    let core='',legend=['support','metal','board'];
-    const slab='<rect class="cadSlab" x="20" y="18" width="280" height="18" rx="2"/>';
+    let core='';
+    const slab='<rect class="tdSlab" x="24" y="20" width="272" height="16"/><path class="tdSlabHatch" d="M28 34l12-12M45 36l14-14M64 36l14-14M83 36l14-14M102 36l14-14M121 36l14-14M140 36l14-14M159 36l14-14M178 36l14-14M197 36l14-14M216 36l14-14M235 36l14-14M254 36l14-14M273 36l14-14"/>';
     if(sys==='double'){
       core=slab+
-        '<path class="cadHanger" d="M72 36v49M160 36v49M248 36v49"/>'+
-        '<path class="cadPrimary" d="M45 78h230M45 90h230"/>'+
-        '<path class="cadSecondary" d="M70 69v42M120 69v42M170 69v42M220 69v42M270 69v42"/>'+
-        '<rect class="cadBoardH" x="36" y="119" width="248" height="15" rx="1"/>'+
-        '<path class="cadCallout" d="M72 50L42 152M158 83L158 152M222 100L270 152"/>'+
-        '<text class="cadLabel" x="8" y="165">Suspensión</text><text class="cadLabel" x="131" y="165">TC47 primaria</text><text class="cadLabel" x="238" y="165">TC47 secundaria</text>';
-      legend=['support','hang','metal','board'];
+        '<path class="tdHang" d="M80 36v45M160 36v45M240 36v45"/>'+
+        '<path class="tdProfile" d="M50 78h220M50 90h220"/>'+
+        '<path class="tdProfileThin" d="M72 68v42M118 68v42M164 68v42M210 68v42M256 68v42"/>'+
+        '<line class="tdBoardH" x1="42" y1="122" x2="278" y2="122"/>'+
+        '<text class="tdText" x="24" y="155">Cuelgue</text><text class="tdText" x="124" y="155">Primario</text><text class="tdText" x="221" y="155">Secundario</text>';
     }else if(sys==='simple'){
       core=slab+
-        '<path class="cadHanger" d="M72 36v60M160 36v60M248 36v60"/>'+
-        '<path class="cadPrimary" d="M44 94h232"/>'+
-        '<rect class="cadBoardH" x="36" y="119" width="248" height="15" rx="1"/>'+
-        '<path class="cadCallout" d="M72 55L45 154M158 94L160 154M240 126L276 154"/>'+
-        '<text class="cadLabel" x="8" y="166">Suspensión</text><text class="cadLabel" x="133" y="166">TC47 portante</text><text class="cadLabel" x="245" y="166">Placa PYL</text>';
-      legend=['support','hang','metal','board'];
+        '<path class="tdHang" d="M80 36v58M160 36v58M240 36v58"/>'+
+        '<path class="tdProfile" d="M50 94h220"/>'+
+        '<line class="tdBoardH" x1="42" y1="122" x2="278" y2="122"/>'+
+        '<text class="tdText" x="27" y="155">Cuelgue</text><text class="tdText" x="126" y="155">TC47</text><text class="tdText" x="231" y="155">Placa</text>';
     }else if(sys==='sierra'){
       core=slab+
-        '<path class="cadHanger" d="M72 36v38M160 36v38M248 36v38"/>'+
-        '<path class="cadSawProfile" d="M42 78l16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11"/>'+
-        '<path class="cadPrimary" d="M45 101h230"/>'+
-        '<rect class="cadBoardH" x="36" y="121" width="248" height="15" rx="1"/>'+
-        '<text class="cadLabel" x="36" y="160">Perfil sierra</text><text class="cadLabel" x="205" y="160">TC47 secundario</text>';
-      legend=['support','hang','metal','board'];
+        '<path class="tdHang" d="M80 36v40M160 36v40M240 36v40"/>'+
+        '<path class="tdSawLine" d="M48 79l14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10 14-10 14 10"/>'+
+        '<path class="tdProfile" d="M50 101h220"/><line class="tdBoardH" x1="42" y1="126" x2="278" y2="126"/>'+
+        '<text class="tdText" x="53" y="157">Perfil sierra</text><text class="tdText" x="207" y="157">TC47</text>';
     }else if(sys==='cm70'){
-      core='<rect class="cadWallSide" x="18" y="18" width="18" height="126"/><rect class="cadWallSide" x="284" y="18" width="18" height="126"/>'+
-        '<path class="cadSideChannel" d="M36 72h18v42H36zM266 72h18v42h-18z"/>'+
-        '<path class="cadSpanStud" d="M54 83h212v20H54z"/>'+
-        '<rect class="cadBoardH" x="42" y="119" width="236" height="15" rx="1"/>'+
-        '<path class="cadCallout" d="M42 84L70 30M160 94L160 30M270 84L248 30"/>'+
-        '<text class="cadLabel" x="53" y="27">Canal perimetral</text><text class="cadLabel" x="126" y="27">Montante M70 biapoyado</text><text class="cadLabel" x="233" y="27">Canal</text>'+
-        '<text class="cadDim" x="160" y="164" text-anchor="middle">Sin cuelgues · comprobar luz máxima según sistema D13/fabricante</text>';
-      legend=['support','metal','board'];
+      core='<rect class="tdWallEdge" x="23" y="22" width="14" height="120"/><rect class="tdWallEdge" x="283" y="22" width="14" height="120"/>'+
+        '<path class="tdMetal" d="M37 78h18v30H37zM265 78h18v30h-18z"/>'+
+        '<path class="tdProfile" d="M55 93h210"/><line class="tdBoardH" x1="45" y1="124" x2="275" y2="124"/>'+
+        '<path class="tdLeader" d="M50 82L84 41M160 93L160 41M271 82L238 41"/>'+
+        '<text class="tdText" x="68" y="38">Canal</text><text class="tdText" x="123" y="38">M70 biapoyado</text><text class="tdText" x="226" y="38">Canal</text>'+
+        '<text class="tdTextSm" x="160" y="158" text-anchor="middle">Sin cuelgues · verificar luz admisible</text>';
     }else if(sys==='desmontable60'||sys==='desmontable120'){
       const wide=sys==='desmontable120';
-      core=slab+
-        '<path class="cadHanger" d="M72 36v48M160 36v48M248 36v48"/>'+
-        '<path class="cadTMain" d="M42 86h236"/>'+
-        '<path class="cadTCross" d="M68 78v54M128 78v54M188 78v54M248 78v54"/>'+
-        (wide?'<rect class="cadTile" x="48" y="93" width="74" height="29"/><rect class="cadTile" x="134" y="93" width="74" height="29"/>':'<rect class="cadTile" x="48" y="93" width="46" height="29"/><rect class="cadTile" x="104" y="93" width="46" height="29"/><rect class="cadTile" x="160" y="93" width="46" height="29"/><rect class="cadTile" x="216" y="93" width="46" height="29"/>')+
-        '<text class="cadLabel" x="28" y="158">Cuelgue</text><text class="cadLabel" x="132" y="158">Perfil T24</text><text class="cadLabel" x="230" y="158">Placa '+(wide?'600×1200':'600×600')+'</text>';
-      legend=['support','hang','metal','tile'];
+      core=slab+'<path class="tdHang" d="M80 36v48M160 36v48M240 36v48"/>'+
+        '<path class="tdTGrid" d="M48 86h224M74 80v47M128 80v47M182 80v47M236 80v47"/>'+
+        (wide?'<rect class="tdTile" x="54" y="93" width="68" height="25"/><rect class="tdTile" x="134" y="93" width="68" height="25"/>':'<rect class="tdTile" x="54" y="93" width="42" height="25"/><rect class="tdTile" x="104" y="93" width="42" height="25"/><rect class="tdTile" x="154" y="93" width="42" height="25"/><rect class="tdTile" x="204" y="93" width="42" height="25"/>')+
+        '<text class="tdText" x="40" y="154">Suspensión</text><text class="tdText" x="141" y="154">T24</text><text class="tdText" x="220" y="154">'+(wide?'600×1200':'600×600')+'</text>';
     }else{
-      core=slab+
-        '<path class="cadRope" d="M72 36q12 22 0 47M160 36q12 22 0 47M248 36q12 22 0 47"/>'+
-        '<rect class="cadEscayola" x="40" y="92" width="70" height="28" rx="2"/><rect class="cadEscayola" x="112" y="92" width="92" height="28" rx="2"/><rect class="cadEscayola" x="206" y="92" width="74" height="28" rx="2"/>'+
-        '<path class="cadJoint" d="M110 92v28M204 92v28"/>'+
-        '<text class="cadLabel" x="42" y="153">Estopa</text><text class="cadLabel" x="198" y="153">Placa de escayola</text>';
-      legend=['support','rope','board'];
+      core=slab+'<path class="tdRope" d="M80 36q10 20 0 45M160 36q10 20 0 45M240 36q10 20 0 45"/>'+
+        '<line class="tdBoardH" x1="48" y1="107" x2="272" y2="107"/>'+
+        '<path class="tdJoint" d="M106 101v12M181 101v12"/>'+
+        '<text class="tdText" x="57" y="150">Estopa</text><text class="tdText" x="190" y="150">Placa escayola</text>';
     }
-    const svg='<svg viewBox="0 0 320 175" role="img" aria-label="'+m.name+'">'+core+'</svg>';
-    box.innerHTML=sketchShell(m.name,m.hint,svg,legend);
+    const svg='<svg viewBox="0 0 320 170" role="img" aria-label="'+m.name+'">'+core+'</svg>';
+    box.innerHTML=sketchShell(m.name,m.hint,svg);
   }
 
   function calcWall(){
