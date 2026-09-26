@@ -216,3 +216,15 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 /* Perfiles más legibles: canal U y montante C */
 .skChannel,.skStud{fill:#d9e8ef;stroke:#285a70;stroke-width:2.7;stroke-linejoin:round}
 .skGuide{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:3 3}
+
+/* Trasdosado autoportante basado en detalle técnico tipo W625/W626 */
+.skMasonry{fill:#eadfD2;stroke:#725941;stroke-width:2.4}
+.skBrick{fill:none;stroke:#b79b80;stroke-width:1.1;opacity:.85}
+.skCavity{fill:color-mix(in srgb,var(--card) 92%,transparent);stroke:#b8c0c4;stroke-width:1.2;stroke-dasharray:4 4}
+.skChannelBar{fill:#cfe0e8;stroke:#285a70;stroke-width:2}
+.skStudBar{fill:#d9e8ef;stroke:#285a70;stroke-width:2}
+.skWoolPanel{fill:#dff4df;stroke:#2f7a3d;stroke-width:1.8}
+.skBoardReveal{fill:#dbe8f4;stroke:#4f6f8f;stroke-width:2.2}
+.skBoardReveal2{fill:#c5d8e9;stroke:#4f6f8f;stroke-width:2;opacity:.95}
+.skCallout{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:3 3}
+.skLabel{fill:var(--text)!important;font-size:10px!important;font-weight:900!important;stroke:none!important;paint-order:normal!important}
