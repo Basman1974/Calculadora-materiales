@@ -11,7 +11,7 @@
 <text class="t s" x="0" y="130">Muro soporte</text><line class="l" x1="82" y1="126" x2="100" y2="126"/>
 <text class="t s" x="135" y="27">Maestra / omega</text><line class="l" x1="188" y1="31" x2="155" y2="44"/>
 <text class="t s" x="180" y="272">Lana mineral</text><text class="t s" x="402" y="130">Placa PYL</text>
-<path class="l" d="M148 316h124m-124-6v12m124-12v12"/><text class="t s" x="190" y="337">600 mm</text>
+<path class="l" d="M148 316h124m-124-6v12m124-12v12"/><text class="t s" x="190" y="337">Modulación</text>
 </g>
 <g transform="translate(70 470)">
 <rect class="br" x="0" y="0" width="92" height="150"/><rect class="m" x="116" y="8" width="12" height="134"/><rect class="m" x="176" y="8" width="12" height="134"/><rect class="m" x="236" y="8" width="12" height="134"/>
