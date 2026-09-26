@@ -159,3 +159,23 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 .priceImport{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .priceImport input[type=file]{min-height:44px;padding:8px;background:var(--card)}
 @media(max-width:520px){.quickLine{font-size:.78rem}.topActions{gap:5px}.preset{flex:1 1 auto}}
+
+/* Ejemplos gráficos dinámicos de sistemas */
+.systemSketch{margin:10px 0 12px;border:1.5px solid var(--line);border-radius:15px;background:linear-gradient(145deg,var(--card),var(--soft));overflow:hidden}
+.sketchHead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.sketchHead strong{display:block;font-size:.84rem;font-weight:950}
+.sketchHead span:not(.sketchBadge){display:block;margin-top:2px;color:var(--muted);font-size:.68rem;font-weight:700}
+.sketchBadge{flex:none;padding:4px 7px;border-radius:999px;background:var(--accentSoft);color:var(--accent);font-size:.56rem;font-weight:950;letter-spacing:.06em}
+.sketchCanvas{padding:5px 10px 1px}
+.sketchCanvas svg{display:block;width:100%;height:auto;max-height:180px;color:var(--text)}
+.sketchCanvas text{fill:var(--muted);font:700 10px system-ui,sans-serif}
+.skBoard{fill:#f4f1e8;stroke:#8f897b;stroke-width:2}.skBoard2{fill:#e8e1d4;stroke:#8f897b;stroke-width:2}
+.skSupport{fill:#c9b29a;stroke:#846b52;stroke-width:2}.skMetal{fill:#d9e0e4;stroke:#62727b;stroke-width:2}
+.skWool{fill:var(--accentSoft);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 4}.skWoolLine{fill:none;stroke:var(--accent);stroke-width:2;opacity:.65}
+.skAdhesive{fill:#b8a690;stroke:#746554;stroke-width:1.5}.skArrow{stroke:var(--accent);stroke-width:2.5}
+.skMetalLine,.skMetalCross,.skTGrid{fill:none;stroke:#657780;stroke-width:6;stroke-linecap:round}.skMetalCross{stroke-width:4}
+.skSlab{fill:none;stroke:#8e8e8e;stroke-width:9}.skHang{fill:none;stroke:#6d7579;stroke-width:2.5}
+.skBoardH{fill:#f4f1e8;stroke:#8f897b;stroke-width:2}.skSaw{fill:none;stroke:#657780;stroke-width:4;stroke-linejoin:round}
+.skTile{fill:#f2f2ed;stroke:#7b8488;stroke-width:1.5}.skRope{fill:none;stroke:#a4885e;stroke-width:3;stroke-dasharray:4 3}
+.sketchNote{padding:0 12px 10px;color:var(--muted);font-size:.62rem;font-weight:650;line-height:1.35}
+@media(max-width:520px){.sketchCanvas{padding:2px 6px 0}.sketchCanvas svg{max-height:155px}.sketchHead{padding:9px 10px}}
