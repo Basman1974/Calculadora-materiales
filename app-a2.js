@@ -457,6 +457,15 @@
     else s.selectedIndex = 0;
     syncWet();
   }
+  on(el('productLink'),'click',e=>{
+    const link=el('productLink');
+    const url=link && link.dataset ? link.dataset.productUrl : '';
+    if(!url) { e.preventDefault(); return; }
+    // Navegación directa: más fiable que target=_blank dentro de PWA/WebView Android.
+    e.preventDefault();
+    window.location.assign(url);
+  });
+
   function wetArea(){ return (el('wetMeasureMode') && el('wetMeasureMode').value === 'direct') ? num('wetArea') : num('wetL') * num('wetH'); }
   function syncWet(){
     const name = el('wetProduct') ? el('wetProduct').value : '';
@@ -475,7 +484,21 @@
       }
       if(el('productName')) el('productName').textContent = name;
       if(el('productSpec')) el('productSpec').textContent = it.spec || '';
-      if(el('productLink')) el('productLink').href = it.url;
+      if(el('productLink')){
+        const link=el('productLink');
+        const url=(it.url||'').trim();
+        if(/^https:\/\//i.test(url)){
+          link.href=url;
+          link.dataset.productUrl=url;
+          link.classList.remove('hidden');
+          link.setAttribute('aria-disabled','false');
+        }else{
+          link.href='#';
+          link.dataset.productUrl='';
+          link.classList.add('hidden');
+          link.setAttribute('aria-disabled','true');
+        }
+      }
       const chips = [];
       if(it.u) chips.push(it.u + ' ud/m²');
       if(it.kg) chips.push(it.kg + ' kg/m²·mm');
