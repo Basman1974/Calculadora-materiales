@@ -286,3 +286,14 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
   .tdText{font-size:8.8px!important}
   .tdTextSm{font-size:8.1px!important}
 }
+
+/* Láminas de montaje estilo manual técnico */
+.mountingSheetWrap{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;display:flex;justify-content:center}
+.mountingSheetImg{display:block;width:100%;max-width:540px;height:auto;max-height:540px;object-fit:contain;background:#fff;border-radius:10px}
+.mountingCurrent{padding:9px 12px;font-size:.72rem;font-weight:850;color:var(--text);background:color-mix(in srgb,var(--soft) 70%,transparent);border-bottom:1px solid var(--line)}
+.systemSketch .sketchHead{padding-bottom:9px}
+@media(max-width:520px){
+  .mountingSheetWrap{padding:5px}
+  .mountingSheetImg{max-height:460px;border-radius:8px}
+  .mountingCurrent{font-size:.68rem;line-height:1.35}
+}
