@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720">
+<style>.t{font-family:Arial,sans-serif;fill:#202124}.h{font-size:24px;font-weight:700;fill:#d64a2c}.s{font-size:13px}.l{stroke:#292929;stroke-width:1.4;fill:none}.br{fill:#c98b62;stroke:#7e593f;stroke-width:1}.b{fill:#efe5c8;stroke:#7b6c4e;stroke-width:1.3}.p{fill:#bfc1c2;stroke:#6e6e6e;stroke-width:1}.c{fill:#e8e8e8;stroke:#777;stroke-width:1.2}.a{stroke:#d64a2c;stroke-width:4}</style>
+<rect width="540" height="720" fill="#fff"/><rect x="523" width="17" height="720" fill="#d64a2c"/>
+<text class="h" x="28" y="42">Ejemplo de montaje · Trasdosado directo</text><text class="t s" x="28" y="66">Detalle técnico simplificado</text><line class="a" x1="28" y1="78" x2="500" y2="78"/>
+<g transform="translate(40 108)">
+<rect class="c" x="45" y="0" width="350" height="20"/><rect class="c" x="45" y="270" width="350" height="20"/>
+<g class="br"><rect x="55" y="35" width="105" height="220"/><path class="l" d="M55 70h105M55 105h105M55 140h105M55 175h105M55 210h105M90 35v35M125 70v35M85 105v35M125 140v35M90 175v35M125 210v45"/></g>
+<circle class="p" cx="190" cy="65" r="10"/><circle class="p" cx="190" cy="112" r="10"/><circle class="p" cx="190" cy="159" r="10"/><circle class="p" cx="190" cy="206" r="10"/>
+<rect class="b" x="220" y="35" width="128" height="220"/><line class="l" x1="284" y1="35" x2="284" y2="255"/>
+<text class="t s" x="0" y="120">Muro soporte</text><line class="l" x1="82" y1="116" x2="105" y2="116"/>
+<text class="t s" x="163" y="27">Pasta de agarre</text><line class="l" x1="205" y1="31" x2="193" y2="55"/>
+<text class="t s" x="350" y="130">Placa PYL</text><line class="l" x1="348" y1="126" x2="330" y2="126"/>
+<text class="t s" x="398" y="17">Techo</text><text class="t s" x="398" y="285">Suelo</text>
+<path class="l" d="M355 235v20m-5-20h10m-10 20h10"/><text class="t s" x="368" y="248">10 mm</text>
+</g>
+<g transform="translate(65 455)">
+<rect class="c" x="0" y="0" width="395" height="18"/><rect class="br" x="15" y="36" width="120" height="170"/>
+<circle class="p" cx="160" cy="60" r="8"/><circle class="p" cx="160" cy="103" r="8"/><circle class="p" cx="160" cy="146" r="8"/><circle class="p" cx="160" cy="189" r="8"/>
+<rect class="b" x="188" y="36" width="142" height="170"/><rect class="c" x="0" y="218" width="395" height="18"/>
+<text class="t s" x="18" y="251">Sección: soporte · pasta · placa</text>
+</g></svg>
