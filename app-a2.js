@@ -89,7 +89,21 @@
       core='<rect class="skSupport" x="24" y="24" width="68" height="118" rx="3"/><path class="skMetalLine" d="M112 30v106M124 30v106"/>'+(wool?'<rect class="skWool" x="132" y="34" width="66" height="98" rx="6"/>':'')+'<rect class="skBoard" x="214" y="24" width="16" height="118" rx="2"/>'+(l>1?'<rect class="skBoard2" x="234" y="24" width="12" height="118" rx="2"/>':'')+'<text x="58" y="158" text-anchor="middle">Soporte</text><text x="118" y="158" text-anchor="middle">Omega</text><text x="224" y="158" text-anchor="middle">'+l+' placa'+(l>1?'s':'')+'</text>';
     }else{
       title='Trasdosado autoportante'; sub='Canal + montante independiente del soporte';
-      core='<rect class="skSupport" x="16" y="24" width="56" height="120" rx="3"/><path class="skChannel" d="M104 30h66v12h-10v-5h-46v5h-10z"/><path class="skChannel" d="M104 130h66v12h-10v-5h-46v5h-10z"/><path class="skStud" d="M128 42h24v10h-14v68h14v10h-24z"/>'+(wool?'<rect class="skWool" x="174" y="44" width="48" height="80" rx="6"/><path class="skWoolLine" d="M180 54l12 12-12 12 12 12-12 12M198 54l12 12-12 12 12 12-12 12"/>':'')+'<rect class="skBoard" x="238" y="24" width="16" height="120" rx="2"/>'+(l>1?'<rect class="skBoard2" x="258" y="24" width="12" height="120" rx="2"/>':'')+'<path class="skGuide" d="M44 146v9M138 142v13M248 146v9"/><text x="44" y="172" text-anchor="middle">Muro</text><text x="138" y="172" text-anchor="middle">Canal U + montante C M'+p+'</text><text x="248" y="172" text-anchor="middle">'+l+' placa'+(l>1?'s':'')+'</text>';
+      core='<g class="skAutoFrame">'+
+        '<rect class="skSupport skMasonry" x="18" y="18" width="284" height="132" rx="3"/>'+
+        '<path class="skBrick" d="M18 43h284M18 68h284M18 93h284M18 118h284M65 18v25M115 43v25M170 18v25M225 43v25M270 18v25M52 68v25M105 93v25M160 68v25M215 93v25M265 68v25M75 118v32M135 118v32M200 118v32M255 118v32"/>'+
+        '<rect class="skCavity" x="45" y="29" width="230" height="110" rx="2"/>'+
+        '<path class="skChannelBar" d="M55 34h210v9H55zM55 125h210v9H55z"/>'+
+        '<path class="skStudBar" d="M68 41h11v86H68zM125 41h11v86h-11zM182 41h11v86h-11zM239 41h11v86h-11z"/>'+
+        (wool?'<rect class="skWoolPanel" x="80" y="44" width="44" height="78" rx="4"/><rect class="skWoolPanel" x="137" y="44" width="44" height="78" rx="4"/><rect class="skWoolPanel" x="194" y="44" width="44" height="78" rx="4"/><path class="skWoolLine" d="M86 52l12 10-12 10 12 10-12 10 12 10M143 52l12 10-12 10 12 10-12 10 12 10M200 52l12 10-12 10 12 10-12 10 12 10"/>':'')+
+        '<path class="skBoardReveal" d="M150 48h124v92H150zM150 48l22 18v74h-22z"/>'+
+        (l>1?'<path class="skBoardReveal2" d="M168 58h106v82H168z"/>':'')+
+        '<path class="skCallout" d="M60 31L42 12M72 82L42 82M104 123L42 154M225 140L280 160"/>'+
+        '<text class="skLabel" x="20" y="11">Canal superior</text>'+
+        '<text class="skLabel" x="4" y="86">Montantes M'+p+'</text>'+
+        '<text class="skLabel" x="18" y="166">Canal inferior</text>'+
+        '<text class="skLabel" x="220" y="174">Placa'+(l>1?'s':'')+' PYL</text>'+
+      '</g>';
     }
     const svg='<svg viewBox="0 0 320 170" role="img" aria-label="'+title+'">'+core+'</svg>';
     const legend=t==='direct'?['support','adhesive','board']:['support','metal'].concat(wool?['wool']:[]).concat(['board']);
