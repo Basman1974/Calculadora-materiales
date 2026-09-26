@@ -1,21 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720">
-<style>.t{font-family:Arial,sans-serif;fill:#202124}.h{font-size:24px;font-weight:700;fill:#d64a2c}.s{font-size:13px}.l{stroke:#292929;stroke-width:1.4;fill:none}.br{fill:#c98b62;stroke:#7e593f;stroke-width:1}.b{fill:#efe5c8;stroke:#7b6c4e;stroke-width:1.3}.p{fill:#bfc1c2;stroke:#6e6e6e;stroke-width:1}.c{fill:#e8e8e8;stroke:#777;stroke-width:1.2}.a{stroke:#d64a2c;stroke-width:4}</style>
-<rect width="540" height="720" fill="#fff"/><rect x="523" width="17" height="720" fill="#d64a2c"/>
-<text class="h" x="28" y="42">Ejemplo de montaje · Trasdosado directo</text><text class="t s" x="28" y="66">Detalle técnico simplificado</text><line class="a" x1="28" y1="78" x2="500" y2="78"/>
-<g transform="translate(40 108)">
-<rect class="c" x="45" y="0" width="350" height="20"/><rect class="c" x="45" y="270" width="350" height="20"/>
-<g class="br"><rect x="55" y="35" width="105" height="220"/><path class="l" d="M55 70h105M55 105h105M55 140h105M55 175h105M55 210h105M90 35v35M125 70v35M85 105v35M125 140v35M90 175v35M125 210v45"/></g>
-<circle class="p" cx="190" cy="65" r="10"/><circle class="p" cx="190" cy="112" r="10"/><circle class="p" cx="190" cy="159" r="10"/><circle class="p" cx="190" cy="206" r="10"/>
-<rect class="b" x="220" y="35" width="128" height="220"/><line class="l" x1="284" y1="35" x2="284" y2="255"/>
-<text class="t s" x="0" y="120">Muro soporte</text><line class="l" x1="82" y1="116" x2="105" y2="116"/>
-<text class="t s" x="163" y="27">Pasta de agarre</text><line class="l" x1="205" y1="31" x2="193" y2="55"/>
-<text class="t s" x="350" y="130">Placa PYL</text><line class="l" x1="348" y1="126" x2="330" y2="126"/>
-<text class="t s" x="398" y="17">Techo</text><text class="t s" x="398" y="285">Suelo</text>
-<path class="l" d="M355 235v20m-5-20h10m-10 20h10"/><text class="t s" x="368" y="248">10 mm</text>
-</g>
-<g transform="translate(65 455)">
-<rect class="c" x="0" y="0" width="395" height="18"/><rect class="br" x="15" y="36" width="120" height="170"/>
-<circle class="p" cx="160" cy="60" r="8"/><circle class="p" cx="160" cy="103" r="8"/><circle class="p" cx="160" cy="146" r="8"/><circle class="p" cx="160" cy="189" r="8"/>
-<rect class="b" x="188" y="36" width="142" height="170"/><rect class="c" x="0" y="218" width="395" height="18"/>
-<text class="t s" x="18" y="251">Sección: soporte · pasta · placa</text>
-</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720"><style>
+text{font-family:Arial,Helvetica,sans-serif;fill:#202124}.title{font-size:27px;font-weight:800;fill:#fff}.sub{font-size:14px;font-weight:700}.lab{font-size:13px;font-weight:700}.dim{font-size:12px}.call{stroke:#222;stroke-width:1.4;fill:none}.metal{fill:#d9e1e5;stroke:#44515a;stroke-width:1.5}.metal2{fill:#bfcbd1;stroke:#44515a;stroke-width:1.3}.board{fill:#efe5c7;stroke:#756b55;stroke-width:1.4}.wool{fill:#d9bf7a;stroke:#957338;stroke-width:1.1}.slab{fill:#d7d7d7;stroke:#666;stroke-width:1.4}.brick{fill:#c8895e;stroke:#7c563d;stroke-width:1}.adh{fill:#bababa;stroke:#777;stroke-width:1}.edge{stroke:#d84b24;stroke-width:3}.screw{fill:#333}.diml{stroke:#333;stroke-width:1.1;fill:none}</style><defs><pattern id="bp" width="42" height="24" patternUnits="userSpaceOnUse"><rect width="42" height="24" fill="#c8895e"/><path d="M0 0h42M0 24h42M0 12h42M21 0v12M10 12v12M32 12v12" stroke="#8a5b3d" stroke-width=".8"/></pattern></defs><rect width="540" height="720" fill="#fff"/><rect x="0" y="0" width="540" height="62" fill="#e64b1a"/><rect x="528" y="0" width="12" height="720" fill="#e64b1a"/>
+<text class="title" x="24" y="40">TRASDOSADO DIRECTO</text><text class="sub" x="24" y="86">Placa adherida al muro soporte</text>
+<g transform="translate(48 115)"><path class="slab" d="M0 0h360l35 17H35z"/><path class="slab" d="M0 315h360l35 17H35z"/><path fill="url(#bp)" stroke="#7c563d" d="M24 44h145v245H24z"/>
+<path class="adh" d="M168 67q22-12 34 4t-8 28q-22 7-30-7t4-25zM168 135q22-12 34 4t-8 28q-22 7-30-7t4-25zM168 203q22-12 34 4t-8 28q-22 7-30-7t4-25z"/>
+<path class="board" d="M205 44h150l22 9v225l-22 11H205z"/>
+<g class="screw"><circle cx="224" cy="70" r="2"/><circle cx="224" cy="120" r="2"/><circle cx="224" cy="170" r="2"/><circle cx="224" cy="220" r="2"/><circle cx="224" cy="270" r="2"/></g>
+<path class="call" d="M88 150L5 150"/><text class="lab" x="-18" y="145">Muro existente</text><path class="call" d="M183 203L90 255"/><text class="lab" x="0" y="270">Pasta de agarre</text><path class="call" d="M320 160h100"/><text class="lab" x="425" y="164">Placa PYL</text>
+<path class="diml" d="M382 270v18M376 270h12M376 288h12"/><text class="dim" x="392" y="283">10 mm</text></g>
+<g transform="translate(70 495)"><rect fill="url(#bp)" x="0" y="0" width="145" height="150"/><path class="adh" d="M146 20q20-10 29 4t-10 23q-20 6-24-8t5-19zM146 70q20-10 29 4t-10 23q-20 6-24-8t5-19zM146 120q20-10 29 4t-10 23q-20 6-24-8t5-19z"/><rect class="board" x="180" y="0" width="120" height="150"/><text class="lab" x="18" y="178">Sección: muro · pasta · placa</text></g></svg>
