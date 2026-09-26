@@ -74,7 +74,7 @@
       ['Tipo de baldosa',ceramicBodyLabel(body),body==='porcelanico'?'UNE-EN 14411 · baja absorción · verificar adhesivo compatible':'UNE-EN 14411 · verificar grupo y absorción de la baldosa'],
       ['Baldosas / piezas',tiles+' uds',tilesM2.toFixed(2)+' ud/m² · formato '+A+' × '+B+' cm · patrón '+pattern+' · merma aplicada '+w+' %'],
       ['Calzos de nivelación',total+' uds',clipsM2+' calzos/m² · estimación geométrica según formato; verificar sistema de nivelación elegido'],
-      ['Cuñas reutilizables',total+' uds','1 cuña por calzo en uso · '+total+' usos previstos en la superficie calculada · las cuñas pueden reutilizarse por tandas'],
+      ['Cuñas de nivelación necesarias',total+' uds','1 cuña por cada calzo de nivelación · cantidad necesaria para la superficie calculada'],
       ['Encolado',bondLabel,'Llana '+trowel+' mm · consumo estimado '+glueKgM2.toFixed(1)+' kg/m² · verificar ficha del adhesivo'],
       ['Cemento cola',Math.ceil(glueKg/25)+' saco(s) de 25 kg',glueKg.toFixed(1)+' kg · llana '+trowel+' mm · '+bondLabel+' · UNE-EN 12004'],
       ['Mortero de juntas',Math.ceil(groutKg/5)+' saco(s) de 5 kg',groutKg.toFixed(1)+' kg · '+groutRate.toFixed(3)+' kg/m² × 1,10 · fórmula geométrica: formato '+A+'×'+B+' cm · espesor '+thick+' mm · junta '+joint+' mm · densidad 1,6']
