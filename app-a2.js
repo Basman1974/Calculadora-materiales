@@ -62,6 +62,47 @@
       setTimeout(()=>e.target.textContent='Añadir a Obra',700);
     };
   }
+  function sketchShell(title,sub,svg){
+    return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">ESQUEMA</span></div><div class="sketchCanvas">'+svg+'</div><div class="sketchNote">Representación simplificada para identificar el sistema. No es un detalle de ejecución.</div>';
+  }
+  function renderWallSketch(a,b,p,sp,wool){
+    const box=el('wallSketch'); if(!box) return;
+    const left=a>1?'<rect class="skBoard2" x="38" y="32" width="12" height="106" rx="2"/>':'';
+    const right=b>1?'<rect class="skBoard2" x="270" y="32" width="12" height="106" rx="2"/>':'';
+    const woolSvg=wool?'<rect class="skWool" x="105" y="43" width="110" height="84" rx="7"/><path class="skWoolLine" d="M112 56l18 14-18 14 18 14-18 14M145 56l18 14-18 14 18 14-18 14M178 56l18 14-18 14 18 14-18 14"/>':'';
+    const svg='<svg viewBox="0 0 320 170" role="img" aria-label="Sección simplificada de tabique PYL"><rect class="skBoard" x="52" y="28" width="15" height="114" rx="2"/>'+left+'<rect class="skMetal" x="148" y="35" width="24" height="100" rx="3"/>'+woolSvg+'<rect class="skBoard" x="253" y="28" width="15" height="114" rx="2"/>'+right+'<text x="58" y="158">Placa</text><text x="160" y="158" text-anchor="middle">M'+p+' · '+Math.round(sp*1000)+' mm</text><text x="260" y="158" text-anchor="middle">Placa</text></svg>';
+    box.innerHTML=sketchShell('Tabique '+a+'+'+b,(wool?'Con lana mineral · ':'Sin lana · ')+'montante M'+p+' @'+Math.round(sp*1000),svg);
+  }
+  function renderLiningSketch(t,l,p,sp,wool){
+    const box=el('liningSketch'); if(!box) return;
+    let title='',sub='',core='';
+    if(t==='direct'){
+      title='Trasdosado directo'; sub='Placa adherida al soporte · sin perfilería';
+      core='<rect class="skSupport" x="24" y="24" width="72" height="118" rx="3"/><circle class="skAdhesive" cx="118" cy="48" r="10"/><circle class="skAdhesive" cx="118" cy="82" r="10"/><circle class="skAdhesive" cx="118" cy="116" r="10"/><rect class="skBoard" x="142" y="24" width="18" height="118" rx="2"/><path class="skArrow" d="M102 82h30"/><text x="60" y="158" text-anchor="middle">Soporte</text><text x="151" y="158" text-anchor="middle">1 placa</text>';
+    }else if(t==='semi'){
+      title='Trasdosado semidirecto'; sub='Omega / auxiliar fijado al soporte';
+      core='<rect class="skSupport" x="24" y="24" width="68" height="118" rx="3"/><path class="skMetalLine" d="M112 30v106M124 30v106"/>'+(wool?'<rect class="skWool" x="132" y="34" width="66" height="98" rx="6"/>':'')+'<rect class="skBoard" x="214" y="24" width="16" height="118" rx="2"/>'+(l>1?'<rect class="skBoard2" x="234" y="24" width="12" height="118" rx="2"/>':'')+'<text x="58" y="158" text-anchor="middle">Soporte</text><text x="118" y="158" text-anchor="middle">Omega</text><text x="224" y="158" text-anchor="middle">'+l+' placa'+(l>1?'s':'')+'</text>';
+    }else{
+      title='Trasdosado autoportante'; sub='Canal + montante independiente del soporte';
+      core='<rect class="skSupport" x="18" y="24" width="58" height="118" rx="3"/><rect class="skMetal" x="126" y="30" width="24" height="106" rx="3"/>'+(wool?'<rect class="skWool" x="158" y="36" width="62" height="94" rx="6"/>':'')+'<rect class="skBoard" x="238" y="24" width="16" height="118" rx="2"/>'+(l>1?'<rect class="skBoard2" x="258" y="24" width="12" height="118" rx="2"/>':'')+'<text x="47" y="158" text-anchor="middle">Muro</text><text x="138" y="158" text-anchor="middle">M'+p+'</text><text x="248" y="158" text-anchor="middle">'+l+' placa'+(l>1?'s':'')+'</text>';
+    }
+    const svg='<svg viewBox="0 0 320 170" role="img" aria-label="'+title+'">'+core+'</svg>';
+    box.innerHTML=sketchShell(title,sub+(t!=='direct'?' · '+Math.round(sp*1000)+' mm':''),svg);
+  }
+  function renderRoofSketch(sys){
+    const box=el('roofSketch'); if(!box) return;
+    const m=roofMeta[sys]||roofMeta.double;
+    let core='';
+    if(sys==='double') core='<path class="skSlab" d="M25 30h270"/><path class="skHang" d="M75 30v38M160 30v38M245 30v38"/><path class="skMetalLine" d="M42 72h236M42 96h236"/><path class="skMetalCross" d="M70 62v48M125 62v48M180 62v48M235 62v48"/><rect class="skBoardH" x="36" y="122" width="248" height="15" rx="2"/>';
+    else if(sys==='simple') core='<path class="skSlab" d="M25 30h270"/><path class="skHang" d="M75 30v55M160 30v55M245 30v55"/><path class="skMetalLine" d="M42 90h236"/><rect class="skBoardH" x="36" y="122" width="248" height="15" rx="2"/>';
+    else if(sys==='sierra') core='<path class="skSlab" d="M25 30h270"/><path class="skSaw" d="M40 66l18-16 18 16 18-16 18 16 18-16 18 16 18-16 18 16 18-16 18 16 18-16 18 16"/><path class="skMetalLine" d="M45 98h230"/><rect class="skBoardH" x="36" y="122" width="248" height="15" rx="2"/>';
+    else if(sys==='cm70') core='<path class="skSlab" d="M25 30h270"/><path class="skMetalLine" d="M32 76h256"/><path class="skMetalCross" d="M55 76v42M110 76v42M165 76v42M220 76v42M275 76v42"/><rect class="skBoardH" x="36" y="122" width="248" height="15" rx="2"/>';
+    else if(sys==='desmontable60'||sys==='desmontable120') core='<path class="skSlab" d="M25 30h270"/><path class="skHang" d="M70 30v48M160 30v48M250 30v48"/><path class="skTGrid" d="M35 82h250M80 70v54M140 70v54M200 70v54M260 70v54"/><rect class="skTile" x="39" y="88" width="37" height="30"/><rect class="skTile" x="84" y="88" width="52" height="30"/><rect class="skTile" x="144" y="88" width="52" height="30"/>';
+    else core='<path class="skSlab" d="M25 30h270"/><path class="skRope" d="M70 30q10 28 0 58M160 30q10 28 0 58M250 30q10 28 0 58"/><rect class="skBoardH" x="36" y="104" width="248" height="24" rx="4"/>';
+    const svg='<svg viewBox="0 0 320 155" role="img" aria-label="'+m.name+'">'+core+'<text x="160" y="148" text-anchor="middle">'+m.hint+'</text></svg>';
+    box.innerHTML=sketchShell(m.name,m.famName,svg);
+  }
+
   function calcWall(){
     const L=num('wL'),H=num('wH'),A=L*H,a=num('wA'),b=num('wB'),sp=num('wS')||.6,p=num('wP'),thick=num('wBoardThick')||15;
     const jambs=jambStuds(num('wDoors'),num('wWins')), holes=openingsM2(num('wDoors'),num('wWins')), net=netArea(A,holes);
@@ -93,6 +134,7 @@
     rows.push(cornerBeadRow(H,num('wDoors')));
     const lab=laborRow(net,num('wLabor'),'tabique');if(lab)rows.push(lab);
     const obj={title:'Tabique PYL · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
+    renderWallSketch(a,b,useP,useSp,useWool);
     const box=el('wallResult');
     const metaStruct=structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA';
     if(box){box.innerHTML=resultHTML(obj.title,'Familia Tabique PYL · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,'wall')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows);bindAdd(box,obj);}
@@ -153,6 +195,7 @@
     const lab=laborRow(net,num('lLabor'),'trasdosado');if(lab)rows.push(lab);
     const famNote=t==='direct'?'Familia Trasdosado directo':t==='semi'?'Familia Trasdosado semidirecto':'Familia Trasdosado autoportante';
     const obj={title:title+' · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
+    renderLiningSketch(t,l,useP,useSp,useWool);
     const box=el('liningResult');
     const metaStruct=t==='auto'?(structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA'):t==='semi'?(' · intereje '+Math.round(sp*1000)+' mm'):' · fijación directa sin perfilería';
     if(box){box.innerHTML=resultHTML(obj.title,famNote+' · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,t==='semi'?'semi':'auto')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows);bindAdd(box,obj);}
@@ -248,6 +291,7 @@
     const fmt = (el('rBoard') ? el('rBoard').value : '2,1.2').split(',').map(Number);
     const sys = el('rSys') ? el('rSys').value : 'double', d = num('rDrop');
     const modular = sys === 'desmontable60' || sys === 'desmontable120' || sys === 'escayola';
+    renderRoofSketch(sys);
     if(el('rBoardWrap')) el('rBoardWrap').classList.toggle('hidden', modular);
     if(el('rLayersWrap')) el('rLayersWrap').classList.toggle('hidden', modular);
     let rows = [], title = 'Techo', meta = 'plenum ' + d + ' cm';
