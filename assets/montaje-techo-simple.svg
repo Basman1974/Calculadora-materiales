@@ -1,9 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720"><style>
-text{font-family:Arial,Helvetica,sans-serif;fill:#202124}.title{font-size:27px;font-weight:800;fill:#fff}.sub{font-size:14px;font-weight:700}.lab{font-size:13px;font-weight:700}.dim{font-size:12px}.call{stroke:#222;stroke-width:1.4;fill:none}.metal{fill:#d9e1e5;stroke:#44515a;stroke-width:1.5}.metal2{fill:#bfcbd1;stroke:#44515a;stroke-width:1.3}.board{fill:#efe5c7;stroke:#756b55;stroke-width:1.4}.wool{fill:#d9bf7a;stroke:#957338;stroke-width:1.1}.slab{fill:#d7d7d7;stroke:#666;stroke-width:1.4}.brick{fill:#c8895e;stroke:#7c563d;stroke-width:1}.adh{fill:#bababa;stroke:#777;stroke-width:1}.edge{stroke:#d84b24;stroke-width:3}.screw{fill:#333}.diml{stroke:#333;stroke-width:1.1;fill:none}</style><defs><pattern id="bp" width="42" height="24" patternUnits="userSpaceOnUse"><rect width="42" height="24" fill="#c8895e"/><path d="M0 0h42M0 24h42M0 12h42M21 0v12M10 12v12M32 12v12" stroke="#8a5b3d" stroke-width=".8"/></pattern></defs><rect width="540" height="720" fill="#fff"/><rect x="0" y="0" width="540" height="62" fill="#e64b1a"/><rect x="528" y="0" width="12" height="720" fill="#e64b1a"/>
-<text class="title" x="24" y="40">TECHO CONTINUO TC47</text><text class="sub" x="24" y="86">Simple estructura</text>
-<g transform="translate(34 112)"><path class="slab" d="M18 0h380l46 24H64z"/><path fill="url(#bp)" d="M18 38h45v240H18z"/>
-<path class="metal2" d="M73 50h15v218H73z"/><path class="metal" d="M82 180h300l25 12H105z"/><path class="metal2" d="M90 208h285l22 10H110z"/>
-<path class="board" d="M72 245h302l25 12H97z"/>
-<path class="call" d="M150 115L85 55"/><text class="lab" x="18" y="48">Varilla roscada</text><path class="call" d="M245 183L245 115"/><text class="lab" x="210" y="105">Horquilla</text><path class="call" d="M320 188h115"/><text class="lab" x="380" y="177">Perfil TC47</text><text class="lab" x="385" y="192">(primario)</text><path class="call" d="M300 214h125"/><text class="lab" x="382" y="222">TC47 secundario</text><path class="call" d="M305 251h120"/><text class="lab" x="390" y="266">Placa PYL</text>
-<path class="diml" d="M150 90h120M150 84v12M270 84v12"/><text class="dim" x="190" y="80">1.200 mm</text></g>
-<g transform="translate(50 485)"><rect class="slab" x="0" y="0" width="420" height="24"/><path class="call" d="M85 24v110M210 24v110M335 24v110"/><rect class="metal" x="40" y="126" width="340" height="11"/><rect class="metal2" x="62" y="150" width="295" height="9"/><rect class="board" x="35" y="180" width="350" height="16"/><text class="lab" x="80" y="225">Sección suspendida de simple estructura</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720">
+<defs>
+ <linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#8d969c"/><stop offset=".18" stop-color="#edf2f4"/><stop offset=".48" stop-color="#aeb8be"/><stop offset=".75" stop-color="#f5f7f8"/><stop offset="1" stop-color="#7d888e"/></linearGradient>
+ <linearGradient id="board" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7f0de"/><stop offset="1" stop-color="#ddd1b7"/></linearGradient>
+ <linearGradient id="wool" x1="0" x2="1"><stop stop-color="#e8cf78"/><stop offset=".5" stop-color="#cda94c"/><stop offset="1" stop-color="#f0d886"/></linearGradient>
+ <pattern id="brick" width="48" height="28" patternUnits="userSpaceOnUse"><rect width="48" height="28" fill="#c97c42"/><path d="M0 0H48M0 14H48M0 28H48M24 0V14M12 14V28M36 14V28" stroke="#754323" stroke-width="1"/></pattern>
+ <pattern id="conc" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="#b9b9b6"/><circle cx="7" cy="8" r="1.4" fill="#858581"/><circle cx="25" cy="15" r="1" fill="#8f8f8b"/><circle cx="13" cy="27" r=".9" fill="#777"/></pattern>
+ <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".2"/></filter>
+</defs>
+<style>
+.t{font-family:Arial,Helvetica,sans-serif;fill:#181818}.ttl{font:800 30px Arial,Helvetica,sans-serif;fill:#fff}.sub{font:700 13px Arial,Helvetica,sans-serif}.lab{font:700 14px Arial,Helvetica,sans-serif}.small{font:12px Arial,Helvetica,sans-serif}.lead{stroke:#151515;stroke-width:1.6;fill:none}.dim{stroke:#111;stroke-width:1.4;fill:none}.steel{fill:url(#metal);stroke:#485158;stroke-width:1.4}.pyl{fill:url(#board);stroke:#6f685b;stroke-width:1.5}.ins{fill:url(#wool);stroke:#9a762d;stroke-width:1.2}.screw{fill:#222}.orange{fill:#e84912}.outline{stroke:#333;stroke-width:1.3;fill:none}
+</style><rect width="540" height="720" fill="#fffdfa"/><rect class="orange" width="540" height="64"/><rect x="536" y="64" width="4" height="656" fill="#e84912"/><rect x="0" y="64" width="4" height="656" fill="#e84912"/><text class="ttl" x="24" y="43">TECHO CONTINUO TC47</text>
+<text class="sub" x="24" y="88">Simple estructura · suspensión mediante varilla y horquilla</text>
+<g transform="translate(20 125)" filter="url(#shadow)">
+ <path d="M20 55L342 0l157 55-324 65z" fill="url(#conc)" stroke="#666" stroke-width="1.4"/>
+ <path d="M20 55v78l155 51v-64zM175 120l324-65v62l-324 67z" fill="#999" opacity=".55" stroke="#666"/>
+ <g stroke="#555" stroke-width="3"><path d="M126 70v177M252 48v172M378 29v163"/></g>
+ <g class="steel"><path d="M116 128h22v61h-22zM242 107h22v61h-22zM368 84h22v61h-22z"/></g>
+ <path class="steel" d="M58 231l324-60 55 18-325 65z"/><path class="steel" d="M89 272l326-61 53 18-327 65z"/>
+ <path class="pyl" d="M62 315l326-61 80 27-327 68z"/>
+ <circle class="screw" cx="101" cy="310" r="2"/><circle class="screw" cx="184" cy="310" r="2"/><circle class="screw" cx="267" cy="310" r="2"/><circle class="screw" cx="350" cy="310" r="2"/>
+ <path class="lead" d="M126 70L87 8"/><text class="lab" x="34" y="0">Varilla roscada</text><text class="lab" x="66" y="17">(1 m)</text>
+ <path class="lead" d="M252 112L223 12"/><text class="lab" x="196" y="0">Horquilla</text><text class="lab" x="194" y="17">de cuelgue</text>
+ <path class="lead" d="M310 190L325 12"/><text class="lab" x="300" y="0">Perfil TC47</text><text class="lab" x="307" y="17">(primario)</text>
+ <path class="lead" d="M404 216L435 15"/><text class="lab" x="405" y="0">Perfil TC47</text><text class="lab" x="402" y="17">(secundario)</text>
+ <path class="lead" d="M75 281L33 397"/><text class="lab" x="10" y="420">Perfil perimetral</text><text class="lab" x="13" y="438">con banda acústica</text>
+ <path class="dim" d="M425 310v61m-6-61h12m-12 61h12"/><text class="lab" x="437" y="345">250 mm</text>
+</g></svg>
