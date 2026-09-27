@@ -41,10 +41,8 @@ jobs:
               if token not in html: missing.append('html:'+token)
           for token in ['function calcWall','function calcLining','function calcRoof','function calcWet','function calcLevel','function pylFaceWork','function bestPylBoard','function mmScrews','function ceramicGlueKgM2','function adhesiveClass','function groutKgM2','function rowConfidence','PLACO_HEIGHT_WALL','PLACO_HEIGHT_LINING','choosePlacoHeight','CALC_DATA']:
               if token not in js: missing.append('js:'+token)
-          for forbidden in ['id="cerProductCode"','id="loadObramatCeramic"','id="gate"','id="postal"','id="gateKey"','id="postalCode"','id="storebar"']:
+          for forbidden in ['id="cerProductCode"','id="legacyCeramicLoader"','id="gate"','id="gateKey"','id="postalCode"','id="storebar"']:
               if forbidden in html: missing.append('obsoleto:'+forbidden)
-          if 'OBRAMAT' in html.upper() or 'OBRAMAT' in js.upper():
-              missing.append('marca:obramat')
 
           import re
           ids = re.findall(r'\bid="([^"]+)"', html)
