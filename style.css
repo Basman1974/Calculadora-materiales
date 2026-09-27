@@ -290,3 +290,8 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
   .mountingSheetImg{max-height:620px;border-radius:8px}
   .mountingCurrent{font-size:.68rem;line-height:1.35}
 }
+
+/* Lámina exacta de referencia: recortes del sprite aprobado */
+.mountingSprite{display:block;width:100%;height:auto;max-height:none!important;background:#fff;border-radius:8px}
+.mountingSheetWrap:has(.mountingSprite){padding:4px;background:#fff;overflow:hidden}
+@media(max-width:520px){.mountingSprite{max-height:none!important}}
