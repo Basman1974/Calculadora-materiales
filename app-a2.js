@@ -71,7 +71,7 @@
   }
   function mountingSheet(path,title,sub,detail){
     return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">MONTAJE</span></div>'+
-      '<div class="mountingSheetWrap"><img class="mountingSheetImg" src="'+path+'?v=20260927-clean1" alt="'+title+'" loading="lazy" decoding="async"></div>'+
+      '<div class="mountingSheetWrap"><img class="mountingSheetImg" src="'+path+'?v=20260927-tech3" alt="'+title+'" loading="lazy" decoding="async"></div>'+
       '<div class="mountingCurrent">'+detail+'</div>'+
       '<div class="sketchNote">Ejemplo constructivo visual inspirado en documentación técnica de fabricante. El cálculo y la comprobación estructural dependen de los parámetros seleccionados.</div>';
   }
