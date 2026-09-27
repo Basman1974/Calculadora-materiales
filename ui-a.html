@@ -15,13 +15,12 @@
   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 </head>
-<body data-mode="normal" data-locked="1">
+<body data-mode="normal">
 <div class="shell"><div class="app">
   <div class="top">
     <div><div class="brand">Calculadora Construcción</div><div class="small">Materiales de obra, en este teléfono</div></div>
     <div class="topActions"><button class="btn lookBtn hidden" id="installApp" type="button">Instalar</button><button class="btn lookBtn" id="look" type="button">Tema</button></div>
   </div>
-  <div class="storebar" id="storebar"><div class="storemeta"><div class="storetitle" id="storeTitle">Almacén OBRAMAT</div><div class="storesub" id="storeSub"></div></div><button class="storechange" id="changePostal" type="button">Cambiar CP</button></div>
   <div class="appearance" id="appearance">
     <div class="apTitle">MODO</div>
     <div class="modes">
@@ -39,23 +38,7 @@
       <button class="color" data-ac="#b98b53|#faf2e8|#2b2117"><span class="sw" style="background:#efd0a9"></span>Arena</button>
     </div>
   </div>
-  <section class="screen active" id="gate">
-    <div class="postalGate"><div class="postalCard">
-      <div class="postalIcon">⌥</div><h2>Acceso a la calculadora</h2>
-      <p>Una sola vez. La clave se guarda en este teléfono.</p>
-      <form id="gateForm"><label>Clave de acceso<div class="passWrap"><input id="gateKey" type="password" autocomplete="current-password" placeholder="Clave" required><button class="passToggle" id="gateToggle" type="button" aria-pressed="false" aria-label="Mostrar clave">Ver</button></div></label><div class="postalError" id="gateError" aria-live="polite"></div><button class="calc" type="submit">Entrar</button></form>
-      <div class="postalNote">La clave la facilita quien administra la herramienta. No se envía a ningún servidor: se comprueba en este dispositivo.</div>
-    </div></div>
-  </section>
-  <section class="screen" id="postal">
-    <div class="postalGate"><div class="postalCard">
-      <div class="postalIcon">⌇</div><h2>¿Dónde vas a realizar la obra?</h2>
-      <p>Con el código postal se elige el almacén de zona. No descarga precios.</p>
-      <form id="postalForm"><label>Código postal<input id="postalCode" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}" placeholder="Ej. 04738" required></label><div class="postalError" id="postalError" aria-live="polite"></div><button class="calc" type="submit">Continuar</button><button class="btn" id="useLocation" type="button" style="width:100%;margin-top:10px">Usar ubicación</button></form>
-      <div class="locationStatus" id="locationStatus"></div><div class="postalNote">El código postal se guarda únicamente en este dispositivo.</div>
-    </div></div>
-  </section>
-  <section class="screen" id="home">
+  <section class="screen active" id="home">
     <div class="hero"><h2>¿Qué vas a calcular?</h2><p>Toca un trabajo. Luego solo pides las medidas del paño.</p></div>
     <div class="tiles">
       <button class="tile" data-open="wall" type="button"><img class="tilePhoto" width="800" height="537" sizes="(max-width:520px) 100vw, 50vw" fetchpriority="high" decoding="async" src="https://static.wixstatic.com/media/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png/v1/fill/w_800,h_537,al_c,q_75/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png" alt="Tabique PYL"><span class="tileShade"></span><span class="tileTop">OBRA SECA</span><span class="tileText"><strong>Tabique</strong><small>Estructura metálica y placas de yeso laminado.</small><span class="arrow">Empezar →</span></span></button>
