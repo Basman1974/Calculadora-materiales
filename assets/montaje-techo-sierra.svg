@@ -1,6 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720"><style>
-text{font-family:Arial,Helvetica,sans-serif;fill:#202124}.title{font-size:27px;font-weight:800;fill:#fff}.sub{font-size:14px;font-weight:700}.lab{font-size:13px;font-weight:700}.dim{font-size:12px}.call{stroke:#222;stroke-width:1.4;fill:none}.metal{fill:#d9e1e5;stroke:#44515a;stroke-width:1.5}.metal2{fill:#bfcbd1;stroke:#44515a;stroke-width:1.3}.board{fill:#efe5c7;stroke:#756b55;stroke-width:1.4}.wool{fill:#d9bf7a;stroke:#957338;stroke-width:1.1}.slab{fill:#d7d7d7;stroke:#666;stroke-width:1.4}.brick{fill:#c8895e;stroke:#7c563d;stroke-width:1}.adh{fill:#bababa;stroke:#777;stroke-width:1}.edge{stroke:#d84b24;stroke-width:3}.screw{fill:#333}.diml{stroke:#333;stroke-width:1.1;fill:none}</style><rect width="540" height="720" fill="#fff"/><rect x="0" y="0" width="540" height="62" fill="#e64b1a"/><rect x="528" y="0" width="12" height="720" fill="#e64b1a"/>
-<text class="title" x="24" y="40">TECHO SIERRA + TC47</text><text class="sub" x="24" y="86">Perfil Sierra primario + TC47 secundario</text>
-<g transform="translate(34 112)"><path class="slab" d="M18 0h380l46 24H64z"/><path class="call" d="M105 24v105M220 24v105M335 24v105"/><path class="metal" d="M72 132l18-13 18 13 18-13 18 13 18-13 18 13 18-13 18 13 18-13 18 13 18-13 18 13 18-13 18 13"/><path class="metal2" d="M88 174h290l22 10H110z"/><path class="board" d="M70 222h305l26 12H96z"/>
-<path class="call" d="M102 95L32 52"/><text class="lab" x="4" y="45">Varilla roscada</text><path class="call" d="M270 132L270 92"/><text class="lab" x="232" y="82">Horquilla</text><path class="call" d="M305 136h120"/><text class="lab" x="365" y="132">Perfil Sierra</text><path class="call" d="M300 179h125"/><text class="lab" x="365" y="175">TC47 secundario</text><path class="call" d="M300 227h125"/><text class="lab" x="390" y="242">Placa PYL</text></g>
-<g transform="translate(50 485)"><rect class="slab" x="0" y="0" width="420" height="24"/><path class="call" d="M90 24v90M210 24v90M330 24v90"/><path class="metal" d="M45 120l16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11 16-11 16 11"/><rect class="metal2" x="58" y="149" width="302" height="10"/><rect class="board" x="34" y="180" width="350" height="16"/><text class="lab" x="92" y="225">Primario Sierra + secundario TC47</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720">
+<defs>
+ <linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#8d969c"/><stop offset=".18" stop-color="#edf2f4"/><stop offset=".48" stop-color="#aeb8be"/><stop offset=".75" stop-color="#f5f7f8"/><stop offset="1" stop-color="#7d888e"/></linearGradient>
+ <linearGradient id="board" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7f0de"/><stop offset="1" stop-color="#ddd1b7"/></linearGradient>
+ <linearGradient id="wool" x1="0" x2="1"><stop stop-color="#e8cf78"/><stop offset=".5" stop-color="#cda94c"/><stop offset="1" stop-color="#f0d886"/></linearGradient>
+ <pattern id="brick" width="48" height="28" patternUnits="userSpaceOnUse"><rect width="48" height="28" fill="#c97c42"/><path d="M0 0H48M0 14H48M0 28H48M24 0V14M12 14V28M36 14V28" stroke="#754323" stroke-width="1"/></pattern>
+ <pattern id="conc" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="#b9b9b6"/><circle cx="7" cy="8" r="1.4" fill="#858581"/><circle cx="25" cy="15" r="1" fill="#8f8f8b"/><circle cx="13" cy="27" r=".9" fill="#777"/></pattern>
+ <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".2"/></filter>
+</defs>
+<style>
+.t{font-family:Arial,Helvetica,sans-serif;fill:#181818}.ttl{font:800 30px Arial,Helvetica,sans-serif;fill:#fff}.sub{font:700 13px Arial,Helvetica,sans-serif}.lab{font:700 14px Arial,Helvetica,sans-serif}.small{font:12px Arial,Helvetica,sans-serif}.lead{stroke:#151515;stroke-width:1.6;fill:none}.dim{stroke:#111;stroke-width:1.4;fill:none}.steel{fill:url(#metal);stroke:#485158;stroke-width:1.4}.pyl{fill:url(#board);stroke:#6f685b;stroke-width:1.5}.ins{fill:url(#wool);stroke:#9a762d;stroke-width:1.2}.screw{fill:#222}.orange{fill:#e84912}.outline{stroke:#333;stroke-width:1.3;fill:none}
+</style><rect width="540" height="720" fill="#fffdfa"/><rect class="orange" width="540" height="64"/><rect x="536" y="64" width="4" height="656" fill="#e84912"/><rect x="0" y="64" width="4" height="656" fill="#e84912"/><text class="ttl" x="24" y="43">TECHO SIERRA + TC47</text>
+<text class="sub" x="24" y="88">Perfil Sierra primario + TC47 secundario</text>
+<g transform="translate(16 126)" filter="url(#shadow)">
+ <path d="M22 54L345 0l160 55-326 64z" fill="url(#conc)" stroke="#666"/>
+ <path d="M22 54v82l157 51v-68zM179 119l326-64v64l-326 68z" fill="#999" opacity=".55" stroke="#666"/>
+ <g stroke="#555" stroke-width="3"><path d="M112 67v176M250 44v166M389 23v157"/></g>
+ <g class="steel"><path d="M100 124h25v67h-25zM238 103h25v67h-25zM377 80h25v67h-25z"/></g>
+ <path class="steel" d="M52 232l330-60 58 20-330 65z"/><path class="steel" d="M78 221l20-7 18 9 20-7 18 9 20-7 18 9 20-7 18 9 20-7 18 9 20-7 18 9 20-7 18 9 20-7 18 9 20-7 18 9 20-7 18 9"/>
+ <path class="steel" d="M82 276l330-61 58 20-330 65z"/><path class="steel" d="M153 299l328-62 50 17-328 65z"/>
+ <path class="pyl" d="M57 334l331-63 86 29-331 68z"/>
+ <circle class="screw" cx="105" cy="330" r="2"/><circle class="screw" cx="194" cy="330" r="2"/><circle class="screw" cx="283" cy="330" r="2"/><circle class="screw" cx="372" cy="330" r="2"/>
+ <path class="lead" d="M112 67L78 8"/><text class="lab" x="30" y="0">Varilla roscada</text><text class="lab" x="61" y="17">(1 m)</text>
+ <path class="lead" d="M250 108L224 12"/><text class="lab" x="199" y="0">Horquilla</text><text class="lab" x="196" y="17">de cuelgue</text>
+ <path class="lead" d="M302 203L318 12"/><text class="lab" x="285" y="0">Perfil Sierra</text><text class="lab" x="292" y="17">(primario)</text>
+ <path class="lead" d="M418 239L431 12"/><text class="lab" x="397" y="0">Perfil TC47</text><text class="lab" x="394" y="17">(secundario)</text>
+ <path class="lead" d="M73 284L31 410"/><text class="lab" x="9" y="432">Perfil perimetral</text><text class="lab" x="11" y="450">con banda acústica</text>
+ <path class="dim" d="M431 332v62m-6-62h12m-12 62h12"/><text class="lab" x="443" y="368">250 mm</text>
+</g></svg>
