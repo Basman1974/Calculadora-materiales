@@ -37,12 +37,14 @@ jobs:
           html = ''.join(Path(p).read_text(encoding='utf-8', errors='replace') for p in ['ui-a.html','ui-b.html','ui-c.html'])
           js = ''.join(Path(p).read_text(encoding='utf-8', errors='replace') for p in ['app-a1.js','app-a2.js','app-b.js']) + Path('data.js').read_text(encoding='utf-8', errors='replace')
           missing = []
-          for token in ['id="postal"','id="wall"','id="lining"','id="roof"','id="wet"','id="ceramic"','id="wBoardThick"','id="lBoardThick"','id="cBond"','id="cPattern"','id="cThickness"','id="cJoint"','id="cTrowel"','id="priceCsv"','id="installApp"','data-cer-body','src="app.js?v=','src="data.js?v=','href="style.css']:
+          for token in ['id="wall"','id="lining"','id="roof"','id="wet"','id="ceramic"','id="wBoardThick"','id="lBoardThick"','id="cBond"','id="cPattern"','id="cThickness"','id="cJoint"','id="cTrowel"','id="priceCsv"','id="installApp"','data-cer-body','src="app.js?v=','src="data.js?v=','href="style.css']:
               if token not in html: missing.append('html:'+token)
           for token in ['function calcWall','function calcLining','function calcRoof','function calcWet','function calcLevel','function pylFaceWork','function bestPylBoard','function mmScrews','function ceramicGlueKgM2','function adhesiveClass','function groutKgM2','function rowConfidence','PLACO_HEIGHT_WALL','PLACO_HEIGHT_LINING','choosePlacoHeight','CALC_DATA']:
               if token not in js: missing.append('js:'+token)
-          for forbidden in ['id="cerProductCode"','id="loadObramatCeramic"']:
+          for forbidden in ['id="cerProductCode"','id="loadObramatCeramic"','id="gate"','id="postal"','id="gateKey"','id="postalCode"','id="storebar"']:
               if forbidden in html: missing.append('obsoleto:'+forbidden)
+          if 'OBRAMAT' in html.upper() or 'OBRAMAT' in js.upper():
+              missing.append('marca:obramat')
 
           import re
           ids = re.findall(r'\bid="([^"]+)"', html)
@@ -59,7 +61,7 @@ jobs:
               if ("el('" + form_id + "')") not in js:
                   missing.append('form-sin-handler:'+form_id)
 
-          critical = ['installApp','look','changePostal','useLocation','gateToggle','jobNew','jobSaveSnap','exportPrint','exportCsv','exportWa']
+          critical = ['installApp','look','jobNew','jobSaveSnap','exportPrint','exportCsv','exportWa']
           for bid in critical:
               if ('id="' + bid + '"') not in html:
                   missing.append('boton-falta:'+bid)
