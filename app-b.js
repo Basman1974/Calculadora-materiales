@@ -150,7 +150,7 @@
     if(!work.length){ c.innerHTML = '<div class="empty">Añade partidas para generar el presupuesto.</div>'; return; }
     const tot = budgetTotals();
     const co = company.name || 'Tu empresa';
-    const head = '<div class="quoteHead"><div><div class="quoteBrand">' + esc(co) + '</div><div class="small">' + esc([company.nif, company.phone, company.mail].filter(Boolean).join(' · ')) + '</div><div class="small">' + esc(company.addr||'') + '</div></div><div class="quoteMeta"><div><b>' + esc(jobMeta.num || 'Presupuesto') + '</b></div><div>' + esc(jobMeta.name || 'Obra sin nombre') + '</div><div>' + esc(jobMeta.client ? ('Cliente: ' + jobMeta.client) : '') + '</div><div>' + esc(jobMeta.addr||'') + '</div><div>CP ' + esc(postalState.code||'') + (postalState.store ? ' · ' + esc(postalState.store) : '') + '</div></div></div>';
+    const head = '<div class="quoteHead"><div><div class="quoteBrand">' + esc(co) + '</div><div class="small">' + esc([company.nif, company.phone, company.mail].filter(Boolean).join(' · ')) + '</div><div class="small">' + esc(company.addr||'') + '</div></div><div class="quoteMeta"><div><b>' + esc(jobMeta.num || 'Presupuesto') + '</b></div><div>' + esc(jobMeta.name || 'Obra sin nombre') + '</div><div>' + esc(jobMeta.client ? ('Cliente: ' + jobMeta.client) : '') + '</div><div>' + esc(jobMeta.addr||'') + '</div></div></div>';
     const parts = '<div class="groupHead">PARTIDAS POR ESTANCIA</div>' + work.map((x,i) => '<div class="listLine"><span><b>' + esc(x.zone||'General') + '</b> · ' + (i+1) + '. ' + esc(x.title) + '</span><strong>' + (x.items||[]).length + '</strong></div>').join('');
     const table = '<div class="groupHead">MATERIALES Y PRECIOS</div><div class="budgetHead"><span>Concepto</span><span>Ud</span><span>€/ud</span><span>Importe</span></div>' +
       tot.rows.map(r => '<div class="budgetLine"><div>' + esc(r.name) + '<div class="rowDetail">' + esc((r.qty ? (String(r.qty).replace('.',',') + ' ' + r.unit) : '') + (r.detail ? ' · ' + r.detail : '')) + '</div></div><div class="money">' + esc(r.labor ? '—' : (String(r.qty).replace('.',',') + ' ' + r.unit)) + '</div><div>' + (r.labor ? '<span class="money">' + money(r.total) + '</span>' : '<input class="price" data-price-key="' + esc(r.name) + '" inputmode="decimal" value="' + (r.unitPrice||'') + '">') + '</div><div class="budgetAmt">' + money(r.total) + ' €</div></div>').join('');
@@ -195,7 +195,7 @@
     lines.push('TOTAL: ' + money(tot.grand) + ' €');
     if(jobMeta.notes){ lines.push(''); lines.push(jobMeta.notes); }
     lines.push('');
-    lines.push('Estimación UNE 102043. Precios introducidos por el usuario. No es tarifa OBRAMAT.');
+    lines.push('Estimación UNE 102043. Precios introducidos por el usuario.');
     return lines.join('\n');
   }
   function exportPrint(){
@@ -210,7 +210,7 @@
     w.document.write('<table><thead><tr><th>Concepto</th><th style="text-align:right">Cant.</th><th style="text-align:right">€/ud</th><th style="text-align:right">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>');
     w.document.write('<div class="tot"><div><span>Materiales</span><span>' + money(tot.mat) + ' €</span></div><div><span>Mano de obra</span><span>' + money(tot.labor) + ' €</span></div>' + (tot.extra?('<div><span>Varios</span><span>' + money(tot.extra) + ' €</span></div>'):'') + (tot.disc?('<div><span>Descuento</span><span>− ' + money(tot.disc) + ' €</span></div>'):'') + '<div><span>Base imponible</span><span>' + money(tot.taxable) + ' €</span></div><div><span>IVA ' + tot.vatPct + ' %</span><span>' + money(tot.vat) + ' €</span></div><div class="grand"><span>TOTAL</span><span>' + money(tot.grand) + ' €</span></div></div>');
     if(jobMeta.notes) w.document.write('<p>' + esc(jobMeta.notes).replace(/\n/g,'<br>') + '</p>');
-    w.document.write('<p class="muted">Validez ' + esc(jobMeta.valid||'30') + ' días. Estimación de cantidades UNE 102043. Los precios los introduce el usuario. No es tarifa OBRAMAT ni sustituye medición de proyecto.</p>');
+    w.document.write('<p class="muted">Validez ' + esc(jobMeta.valid||'30') + ' días. Estimación de cantidades UNE 102043. Los precios los introduce el usuario. No sustituye medición de proyecto.</p>');
     w.document.write('<button onclick="window.print()">Imprimir / Guardar PDF</button></body></html>');
     w.document.close();
     setTimeout(function(){ try { w.focus(); w.print(); } catch(e){} }, 250);
