@@ -143,40 +143,9 @@
   }
 
   const screens = $all('.screen');
-  const storeMap = [
-    {name:'OBRAMAT Almería',postalPrefixes:['040','041','042','043','044','045','046','047','048']},
-    {name:'OBRAMAT Granada',postalPrefixes:['180','181','182','183','184','185','186','187','188']},
-    {name:'OBRAMAT Málaga',postalPrefixes:['290','291','292','293','294','295','296','297']},
-    {name:'OBRAMAT Murcia',postalPrefixes:['300','301','302','303','304','305','306','307','308']},
-    {name:'OBRAMAT Córdoba',postalPrefixes:['140','141','142','143','144','145','146','147','148','149']}
-  ];
-  let postalState = {code:'',store:''};
-  try { postalState = JSON.parse(localStorage.getItem('calculadora-postal-v1') || '{"code":"","store":""}'); } catch(e){}
-  const ACCESS_STORE = 'calculadora-access-v1';
-  const ACCESS_HASH = 'ecb565830c0e28693d2e04e6360c7c07a6738ef62b7fc332f53e7daeb13a4737';
-  let hasAccess = false;
-  try { hasAccess = localStorage.getItem(ACCESS_STORE) === ACCESS_HASH; } catch(e){}
   const nav = $all('[data-nav]');
   const data = window.CALC_DATA || {};
-  function setLocked(on){ document.body.dataset.locked = on ? '1' : '0'; }
-  async function sha256hex(text){
-    if(window.crypto && crypto.subtle){
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-    }
-    return '';
-  }
-  function enterApp(){
-    setLocked(false);
-    if(postalState.code && /^[0-9]{5}$/.test(postalState.code)){
-      if(el('storeTitle')) el('storeTitle').textContent = postalState.store || resolveStore(postalState.code);
-      if(el('storeSub')) el('storeSub').textContent = 'CP ' + postalState.code + ' · referencias vinculadas a zona';
-      if(el('storebar')) el('storebar').classList.add('show');
-      show('home');
-    } else show('postal');
-  }
   function show(id){
-    if(!hasAccess && id !== 'gate'){ id = 'gate'; }
     screens.forEach(x => x.classList.toggle('active', x.id === id));
     nav.forEach(b => b.classList.toggle('active', b.dataset.nav === (['wall','lining','roof','wet','ceramic'].includes(id) ? 'home' : id)));
     if(id === 'work') renderWork();
@@ -192,66 +161,8 @@
     const app = document.querySelector('.app') || document.querySelector('.shell');
     if(app) app.scrollTop = 0;
   }
-  function resolveStore(cp){
-    const prefix = cp.slice(0,3);
-    const hit = storeMap.find(s => s.postalPrefixes.includes(prefix));
-    return hit ? hit.name : 'Almacén OBRAMAT por verificar';
-  }
-  function applyPostal(cp){
-    const store = resolveStore(cp);
-    postalState = {code:cp,store};
-    try { localStorage.setItem('calculadora-postal-v1', JSON.stringify(postalState)); } catch(e){}
-    const title = el('storeTitle'), sub = el('storeSub'), bar = el('storebar');
-    if(title) title.textContent = store;
-    if(sub) sub.textContent = 'CP ' + cp + ' · referencias vinculadas a zona';
-    if(bar) bar.classList.add('show');
-    show('home');
-  }
-  on(el('postalForm'), 'submit', e => {
-    e.preventDefault();
-    const cp = (el('postalCode') && el('postalCode').value.trim()) || '';
-    const err = el('postalError');
-    if(!/^[0-9]{5}$/.test(cp)){ if(err) err.textContent = 'Introduce un código postal español de 5 dígitos.'; return; }
-    if(err) err.textContent = '';
-    applyPostal(cp);
-  });
-  on(el('useLocation'), 'click', () => {
-    const status = el('locationStatus');
-    const err = el('postalError');
-    if(err) err.textContent = '';
-    if(!navigator.geolocation){ if(status) status.textContent = 'Este navegador no permite obtener la ubicación.'; return; }
-    if(status) status.textContent = 'Solicitando permiso de ubicación…';
-    navigator.geolocation.getCurrentPosition(async pos => {
-      try{
-        if(status) status.textContent = 'Localizando código postal…';
-        const lat = pos.coords.latitude, lon = pos.coords.longitude;
-        const res = await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon) + '&addressdetails=1', {headers:{'Accept':'application/json'}});
-        if(!res.ok) throw new Error('reverse');
-        const geo = await res.json();
-        const cp = (geo.address && geo.address.postcode || '').match(/\d{5}/)?.[0] || '';
-        if(!cp) throw new Error('postcode');
-        if(el('postalCode')) el('postalCode').value = cp;
-        if(status) status.textContent = 'Código postal detectado: ' + cp;
-        applyPostal(cp);
-      }catch(err2){ if(status) status.textContent = 'No he podido obtener el código postal automáticamente. Introdúcelo manualmente.'; }
-    }, err3 => {
-      const msg = err3.code === 1 ? 'Permiso de ubicación denegado. Actívalo en el navegador para usar esta opción.' : err3.code === 2 ? 'No se ha podido determinar tu ubicación.' : 'La ubicación ha tardado demasiado en responder.';
-      if(status) status.textContent = msg;
-    }, {enableHighAccuracy:true,timeout:12000,maximumAge:300000});
-  });
-  on(el('gateToggle'), 'click', e => {
-    const input=el('gateKey'); if(!input) return;
-    const show=input.type==='password';
-    input.type=show?'text':'password';
-    e.currentTarget.textContent=show?'Ocultar':'Ver';
-    e.currentTarget.setAttribute('aria-pressed',String(show));
-    e.currentTarget.setAttribute('aria-label',show?'Ocultar clave':'Mostrar clave');
-  });
-  on(el('changePostal'), 'click', () => {
-    if(el('postalCode')) el('postalCode').value = postalState.code || '';
-    if(el('storebar')) el('storebar').classList.remove('show');
-    show('postal');
-  });
+  // Navegación directa: la app abre en Inicio, sin clave ni código postal.
+  show('home');
   const PYL_LENGTHS = [2, 2.5, 2.6, 2.7, 2.8, 3];
   function bestPylBoard(H){
     const h = Math.max(0, Number(H) || 0);
@@ -328,23 +239,6 @@
     if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'UNE 102043 · acabado Q2 · juntas + cabezas · ≈0,40 kg/m² · +10% merma']);
     return rows;
   }
-  on(el('gateForm'), 'submit', async e => {
-    e.preventDefault();
-    const raw = (el('gateKey') && el('gateKey').value) || '';
-    const err = el('gateError');
-    const hash = await sha256hex(raw.trim());
-    if(hash !== ACCESS_HASH){
-      if(err) err.textContent = 'Clave incorrecta.';
-      return;
-    }
-    try { localStorage.setItem(ACCESS_STORE, ACCESS_HASH); } catch(err2){}
-    hasAccess = true;
-    if(err) err.textContent = '';
-    enterApp();
-  });
-  setLocked(!hasAccess);
-  if(hasAccess) enterApp();
-  else show('gate');
   // Controles estáticos: listeners directos para evitar fallos táctiles en Android/WebView.
   $all('[data-open]').forEach(btn => on(btn, 'click', e => {
     e.preventDefault(); e.stopPropagation(); show(btn.dataset.open);
