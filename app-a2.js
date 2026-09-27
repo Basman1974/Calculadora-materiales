@@ -70,23 +70,26 @@
     return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">DETALLE</span></div><div class="sketchCanvas techDrawing">'+svg+'</div><div class="sketchNote">Esquema técnico simplificado basado en detalles constructivos de fabricante. Verificar siempre el sistema concreto.</div>';
   }
   const MOUNT_SPRITE_CROPS={
-    'assets/montaje-tabique.svg':[0,0,144,281],
-    'assets/montaje-directo.svg':[147,0,127,281],
-    'assets/montaje-semidirecto.svg':[278,0,142,281],
-    'assets/montaje-autoportante.svg':[0,285,216,163],
-    'assets/montaje-techo-simple.svg':[219,285,201,163],
-    'assets/montaje-techo-doble.svg':[0,451,223,179],
-    'assets/montaje-techo-sierra.svg':[226,451,194,179]
+    'assets/montaje-tabique.svg':[0,0,247,482],
+    'assets/montaje-directo.svg':[252,0,218,482],
+    'assets/montaje-semidirecto.svg':[477,0,243,482],
+    'assets/montaje-autoportante.svg':[0,489,370,279],
+    'assets/montaje-techo-simple.svg':[375,489,345,279],
+    'assets/montaje-techo-doble.svg':[0,773,382,307],
+    'assets/montaje-techo-sierra.svg':[387,773,333,307]
   };
   function mountingGraphic(path,title){
     const crop=MOUNT_SPRITE_CROPS[path];
-    if(crop && window.MOUNT_SPRITE){
-      const x=crop[0],y=crop[1],w=crop[2],h=crop[3];
-      return '<svg class="mountingSheetImg mountingSprite" viewBox="'+x+' '+y+' '+w+' '+h+'" role="img" aria-label="'+title+'" preserveAspectRatio="xMidYMid meet">'+
-        '<image href="data:image/webp;base64,'+window.MOUNT_SPRITE+'" x="0" y="0" width="420" height="630"/>'+
-      '</svg>';
+    if(crop){
+      if(window.MOUNT_SPRITE && window.MOUNT_SPRITE.length===73032){
+        const x=crop[0],y=crop[1],w=crop[2],h=crop[3];
+        return '<svg class="mountingSheetImg mountingSprite" viewBox="'+x+' '+y+' '+w+' '+h+'" role="img" aria-label="'+title+'" preserveAspectRatio="xMidYMid meet">'+
+          '<image href="data:image/webp;base64,'+window.MOUNT_SPRITE+'" x="0" y="0" width="720" height="1080"/>'+
+        '</svg>';
+      }
+      return '<div class="mountingImageError">No se pudo cargar la lámina de montaje.</div>';
     }
-    return '<img class="mountingSheetImg" src="'+path+'?v=20260927-exact2" alt="'+title+'" loading="lazy" decoding="async">';
+    return '<img class="mountingSheetImg" src="'+path+'?v=20260927-fiximg1" alt="'+title+'" loading="lazy" decoding="async">';
   }
   function mountingSheet(path,title,sub,detail){
     return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">MONTAJE</span></div>'+
