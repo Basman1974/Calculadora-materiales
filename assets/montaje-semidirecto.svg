@@ -1,9 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720"><style>
-text{font-family:Arial,Helvetica,sans-serif;fill:#202124}.title{font-size:27px;font-weight:800;fill:#fff}.sub{font-size:14px;font-weight:700}.lab{font-size:13px;font-weight:700}.dim{font-size:12px}.call{stroke:#222;stroke-width:1.4;fill:none}.metal{fill:#d9e1e5;stroke:#44515a;stroke-width:1.5}.metal2{fill:#bfcbd1;stroke:#44515a;stroke-width:1.3}.board{fill:#efe5c7;stroke:#756b55;stroke-width:1.4}.wool{fill:#d9bf7a;stroke:#957338;stroke-width:1.1}.slab{fill:#d7d7d7;stroke:#666;stroke-width:1.4}.brick{fill:#c8895e;stroke:#7c563d;stroke-width:1}.adh{fill:#bababa;stroke:#777;stroke-width:1}.edge{stroke:#d84b24;stroke-width:3}.screw{fill:#333}.diml{stroke:#333;stroke-width:1.1;fill:none}</style><defs><pattern id="bp" width="42" height="24" patternUnits="userSpaceOnUse"><rect width="42" height="24" fill="#c8895e"/><path d="M0 0h42M0 24h42M0 12h42M21 0v12M10 12v12M32 12v12" stroke="#8a5b3d" stroke-width=".8"/></pattern></defs><rect width="540" height="720" fill="#fff"/><rect x="0" y="0" width="540" height="62" fill="#e64b1a"/><rect x="528" y="0" width="12" height="720" fill="#e64b1a"/>
-<text class="title" x="24" y="40">TRASDOSADO SEMIDIRECTO</text><text class="sub" x="24" y="86">Maestra / omega fijada al soporte</text>
-<g transform="translate(38 110)"><path class="slab" d="M18 0h400l28 14H46z"/><path class="slab" d="M18 316h400l28 14H46z"/><path fill="url(#bp)" d="M25 40h130v250H25z"/>
-<path class="metal" d="M165 48l12 3v226l-12-3zM225 48l12 3v226l-12-3zM285 48l12 3v226l-12-3z"/>
-<path class="wool" d="M180 65h42v193h-42zM240 65h42v193h-42z"/><path class="board" d="M310 44h106l18 8v228l-18 10H310z"/>
-<path class="call" d="M104 150L5 150"/><text class="lab" x="-22" y="145">Muro existente</text><path class="call" d="M170 95L95 50"/><text class="lab" x="20" y="43">Maestra / omega</text><path class="call" d="M202 180L90 230"/><text class="lab" x="10" y="246">Lana mineral</text><path class="call" d="M370 160h82"/><text class="lab" x="454" y="164">Placa PYL</text>
-<path class="diml" d="M165 28h60M165 22v12M225 22v12"/><text class="dim" x="176" y="18">Modulación</text></g>
-<g transform="translate(70 500)"><rect fill="url(#bp)" x="0" y="0" width="130" height="145"/><path class="metal" d="M145 6h10v133h-10zM205 6h10v133h-10z"/><rect class="wool" x="158" y="12" width="44" height="121"/><rect class="board" x="235" y="0" width="115" height="145"/><text class="lab" x="50" y="175">Vista frontal del sistema</text></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 720">
+<defs>
+ <linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#8d969c"/><stop offset=".18" stop-color="#edf2f4"/><stop offset=".48" stop-color="#aeb8be"/><stop offset=".75" stop-color="#f5f7f8"/><stop offset="1" stop-color="#7d888e"/></linearGradient>
+ <linearGradient id="board" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7f0de"/><stop offset="1" stop-color="#ddd1b7"/></linearGradient>
+ <linearGradient id="wool" x1="0" x2="1"><stop stop-color="#e8cf78"/><stop offset=".5" stop-color="#cda94c"/><stop offset="1" stop-color="#f0d886"/></linearGradient>
+ <pattern id="brick" width="48" height="28" patternUnits="userSpaceOnUse"><rect width="48" height="28" fill="#c97c42"/><path d="M0 0H48M0 14H48M0 28H48M24 0V14M12 14V28M36 14V28" stroke="#754323" stroke-width="1"/></pattern>
+ <pattern id="conc" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="#b9b9b6"/><circle cx="7" cy="8" r="1.4" fill="#858581"/><circle cx="25" cy="15" r="1" fill="#8f8f8b"/><circle cx="13" cy="27" r=".9" fill="#777"/></pattern>
+ <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity=".2"/></filter>
+</defs>
+<style>
+.t{font-family:Arial,Helvetica,sans-serif;fill:#181818}.ttl{font:800 30px Arial,Helvetica,sans-serif;fill:#fff}.sub{font:700 13px Arial,Helvetica,sans-serif}.lab{font:700 14px Arial,Helvetica,sans-serif}.small{font:12px Arial,Helvetica,sans-serif}.lead{stroke:#151515;stroke-width:1.6;fill:none}.dim{stroke:#111;stroke-width:1.4;fill:none}.steel{fill:url(#metal);stroke:#485158;stroke-width:1.4}.pyl{fill:url(#board);stroke:#6f685b;stroke-width:1.5}.ins{fill:url(#wool);stroke:#9a762d;stroke-width:1.2}.screw{fill:#222}.orange{fill:#e84912}.outline{stroke:#333;stroke-width:1.3;fill:none}
+</style><rect width="540" height="720" fill="#fffdfa"/><rect class="orange" width="540" height="64"/><rect x="536" y="64" width="4" height="656" fill="#e84912"/><rect x="0" y="64" width="4" height="656" fill="#e84912"/><text class="ttl" x="24" y="43">TRASDOSADO SEMIDIRECTO</text>
+<text class="sub" x="24" y="88">Maestras metálicas fijadas al soporte con aislamiento y PYL</text>
+<g transform="translate(38 108)" filter="url(#shadow)">
+ <path d="M42 58L340 7l88 33-298 55z" fill="url(#brick)" stroke="#754323"/><path d="M42 58v248l88 30V95z" fill="url(#brick)" stroke="#754323"/>
+ <path class="steel" d="M146 86l16-3v220l-16 5zM222 72l16-3v221l-16 5zM298 59l16-3v221l-16 5z"/>
+ <path class="steel" d="M152 120l75-13v9l-75 14zM228 106l75-13v9l-75 14z"/>
+ <path class="ins" d="M165 96l54-10v198l-54 11z"/>
+ <path class="pyl" d="M236 77l173-31v222l-173 31z"/>
+ <circle class="screw" cx="252" cy="99" r="2"/><circle class="screw" cx="252" cy="153" r="2"/><circle class="screw" cx="252" cy="207" r="2"/><circle class="screw" cx="252" cy="261" r="2"/><circle class="screw" cx="395" cy="99" r="2"/><circle class="screw" cx="395" cy="153" r="2"/><circle class="screw" cx="395" cy="207" r="2"/><circle class="screw" cx="395" cy="261" r="2"/>
+ <path class="dim" d="M157 52L232 38M157 46v12M232 32v12"/><text class="lab" x="169" y="31">600 mm</text>
+ <path class="dim" d="M413 100v61m-6-61h12m-12 61h12"/><text class="lab" x="425" y="136">250 mm</text>
+ <path class="dim" d="M274 294v23m-6-23h12m-12 23h12"/><text class="lab" x="286" y="314">10 mm</text>
+</g>
+<g transform="translate(86 470)">
+ <rect width="120" height="188" fill="url(#brick)" stroke="#754323"/>
+ <rect class="steel" x="132" y="0" width="17" height="188"/><path class="steel" d="M120 64h40v10h-40z"/>
+ <rect class="ins" x="152" y="9" width="45" height="170"/><rect class="pyl" x="201" width="19" height="188"/>
+ <path class="lead" d="M61 31h190"/><circle cx="61" cy="31" r="3"/><text class="lab" x="261" y="36">Muro existente</text>
+ <path class="lead" d="M140 72h111"/><circle cx="140" cy="72" r="3"/><text class="lab" x="261" y="77">Perfil omega / maestra</text>
+ <path class="lead" d="M174 112h77"/><circle cx="174" cy="112" r="3"/><text class="lab" x="261" y="117">Lana mineral</text>
+ <path class="lead" d="M210 157h41"/><circle cx="210" cy="157" r="3"/><text class="lab" x="261" y="157">Placa de yeso</text><text class="lab" x="261" y="175">laminado</text>
+</g></svg>
