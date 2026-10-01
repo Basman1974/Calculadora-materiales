@@ -1,15 +1,15 @@
 window.CALC_DATA = {
     ladrillos:{
-      'Hueco sencillo 33x16.5x4':{u:18,m:18,p:630,w:1.5,img:'https://media.adeo.com/media/4414479/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Cerámica · 33 × 16,5 × 4 cm'},
-      'Hueco doble 33x20x7':{u:15,m:23,p:270,w:3.1,img:'https://media.adeo.com/media/4412349/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Cerámica · 33 × 20 × 7 cm'},
-      'Hueco triple 33x20x11':{u:15,m:30,p:180,w:4.87,img:'https://media.adeo.com/media/4411617/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Cerámica · 33 × 20 × 11 cm'},
-      'Termocerámico 14 cm':{u:15,m:40,p:135,w:6.5,img:'https://media.adeo.com/media/4408513/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico · 33 × 20 × 14 cm'},
-      'Termocerámico 20 cm':{u:15,m:56,p:105,w:9,img:'https://media.adeo.com/media/4413192/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico × 20 cm'},
-      'Termocerámico 24 cm':{u:15,m:67,p:90,w:10.1,img:'https://media.adeo.com/media/5987333/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico × 24 cm'},
-      'Termocerámico 29 cm':{u:15,m:81,p:75,w:12.2,img:'https://media.adeo.com/media/4411230/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico × 29 cm'},
+      'Hueco sencillo 33x16.5x4':{dims:[33,16.5,4],u:18,m:18,p:630,w:1.5,img:'https://media.adeo.com/media/4414479/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Cerámica · 33 × 16,5 × 4 cm'},
+      'Hueco doble 33x20x7':{dims:[33,20,7],u:15,m:23,p:270,w:3.1,img:'https://media.adeo.com/media/4412349/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Cerámica · 33 × 20 × 7 cm'},
+      'Hueco triple 33x20x11':{dims:[33,20,11],u:15,m:30,p:180,w:4.87,img:'https://media.adeo.com/media/4411617/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Cerámica · 33 × 20 × 11 cm'},
+      'Termocerámico 14 cm':{dims:[33,20,14],u:15,m:40,p:135,w:6.5,img:'https://media.adeo.com/media/4408513/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico · 33 × 20 × 14 cm'},
+      'Termocerámico 20 cm':{dims:[33,20,20],u:15,m:56,p:105,w:9,img:'https://media.adeo.com/media/4413192/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico × 20 cm'},
+      'Termocerámico 24 cm':{dims:[33,20,24],u:15,m:67,p:90,w:10.1,img:'https://media.adeo.com/media/5987333/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico × 24 cm'},
+      'Termocerámico 29 cm':{dims:[33,20,29],u:15,m:81,p:75,w:12.2,img:'https://media.adeo.com/media/4411230/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico × 29 cm'},
       'Perforado 10 cm':{u:40,m:60,p:360,w:2.3,img:'https://media.adeo.com/media/4405832/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Ladrillo perforado · 10 cm'},
       'Perforado 20 cm':{u:20,m:35,p:180,w:4.2,img:'',spec:'Ladrillo macizo perforado · Ref. 10942085'},
-      'Rojo liso caravista 24x12x5':{u:67,m:32,p:578,w:1.15,img:'https://media.adeo.com/media/4421256/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Caravista rojo · 24 × 12 × 5 cm'}
+      'Rojo liso caravista 24x12x5':{dims:[24,12,5],u:67,m:32,p:578,w:1.15,img:'https://media.adeo.com/media/4421256/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Caravista rojo · 24 × 12 × 5 cm'}
     },
     bloques:{
       'Bloque ligero gris 39x19x19':{u:12.5,m:30,p:90,w:14.1,img:'https://media.adeo.com/media/4413313/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Hormigón ligero · gris'},
