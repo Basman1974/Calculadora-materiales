@@ -70,7 +70,6 @@
     return '<div class="sketchHead"><div><strong>'+title+'</strong><span>'+sub+'</span></div><span class="sketchBadge">DETALLE</span></div><div class="sketchCanvas techDrawing">'+svg+'</div><div class="sketchNote">Esquema técnico simplificado basado en documentación técnica del sistema. Verificar siempre la solución concreta.</div>';
   }
   const MOUNT_SPRITE_CROPS={
-    'assets/montaje-tabique.svg':[0,0,247,482],
     'assets/montaje-directo.svg':[252,0,218,482],
     'assets/montaje-semidirecto.svg':[477,0,243,482],
     'assets/montaje-autoportante.svg':[0,489,370,279],
