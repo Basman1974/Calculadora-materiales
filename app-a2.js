@@ -38,7 +38,7 @@
   function rowConfidence(row){
     const text=((row&&row[0])+' '+(row&&row[2]||'')).toLowerCase();
     if(/fuera de tabla|revisar|verificar|obligatoria|no dimensionad/.test(text)) return {c:'review',t:'REVISAR'};
-    if(/tabla fabricante|une |une-|ficha/.test(text)) return {c:'verified',t:'VERIFICADO'};
+    if(/tabla técnica|une |une-|ficha/.test(text)) return {c:'verified',t:'VERIFICADO'};
     return {c:'estimate',t:'ESTIMACIÓN'};
   }
   function resultHTML(title, meta, rows){
