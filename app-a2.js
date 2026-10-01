@@ -414,15 +414,6 @@
     else s.selectedIndex = 0;
     syncWet();
   }
-  on(el('productLink'),'click',e=>{
-    const link=el('productLink');
-    const url=link && link.dataset ? link.dataset.productUrl : '';
-    if(!url) { e.preventDefault(); return; }
-    // Navegación directa: más fiable que target=_blank dentro de PWA/WebView Android.
-    e.preventDefault();
-    window.location.assign(url);
-  });
-
   function wetArea(){ return (el('wetMeasureMode') && el('wetMeasureMode').value === 'direct') ? num('wetArea') : num('wetL') * num('wetH'); }
   function syncWet(){
     const name = el('wetProduct') ? el('wetProduct').value : '';
@@ -432,7 +423,9 @@
     if(el('wetLWrap')) el('wetLWrap').classList.toggle('hidden', !dims);
     if(el('wetHWrap')) el('wetHWrap').classList.toggle('hidden', !dims);
     if(el('wetThicknessWrap')) el('wetThicknessWrap').classList.toggle('hidden', currentCat !== 'revestimientos');
+    if(el('wetBrickDimsWrap')) el('wetBrickDimsWrap').classList.toggle('hidden', currentCat !== 'ladrillos');
     if(el('wetMortarWrap')) el('wetMortarWrap').classList.toggle('hidden', !(currentCat === 'ladrillos' || currentCat === 'bloques'));
+    if(el('wetMortarYieldWrap')) el('wetMortarYieldWrap').classList.toggle('hidden', !(currentCat === 'ladrillos' && el('wetMortar') && el('wetMortar').value === 'predosificado'));
     if(el('wetSupportWrap')) el('wetSupportWrap').classList.toggle('hidden', !(currentCat === 'puentes' && it && it.k === 'level_primer'));
     if(it){
       if(el('productImg')){
@@ -441,26 +434,15 @@
       }
       if(el('productName')) el('productName').textContent = name;
       if(el('productSpec')) el('productSpec').textContent = it.spec || '';
-      if(el('productLink')){
-        const link=el('productLink');
-        const url=(it.url||'').trim();
-        if(/^https:\/\//i.test(url)){
-          link.href=url;
-          link.dataset.productUrl=url;
-          link.classList.remove('hidden');
-          link.setAttribute('aria-disabled','false');
-        }else{
-          link.href='#';
-          link.dataset.productUrl='';
-          link.classList.add('hidden');
-          link.setAttribute('aria-disabled','true');
-        }
-      }
       const chips = [];
       if(it.u) chips.push(it.u + ' ud/m²');
       if(it.kg) chips.push(it.kg + ' kg/m²·mm');
       if(it.min != null && it.max != null) chips.push(it.min === it.max ? it.min + ' consumo' : it.min + '–' + it.max + ' consumo');
       if(el('productChips')) el('productChips').innerHTML = chips.map(x => '<span class="chip">' + x + '</span>').join('');
     }
-    if(el('wetInfo')) el('wetInfo').textContent = currentCat === 'ladrillos' || currentCat === 'bloques' ? 'El rendimiento base se muestra separado de la merma.' : currentCat === 'revestimientos' ? 'El consumo depende del espesor seleccionado.' : 'Cada puente de unión mantiene su fórmula específica.';
+    if(el('wetInfo')) el('wetInfo').textContent = currentCat === 'ladrillos'
+      ? 'Las unidades por m² y el mortero se calculan con las dimensiones reales del ladrillo y el espesor de junta que indiques.'
+      : currentCat === 'bloques' ? 'El rendimiento base se muestra separado de la merma.'
+      : currentCat === 'revestimientos' ? 'El consumo depende del espesor seleccionado.'
+      : 'Cada puente de unión mantiene su fórmula específica.';
   }
