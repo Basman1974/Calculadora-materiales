@@ -1,5 +1,5 @@
 (() => {
-  const v = '20261001-wallsketch1';
+  const v = '20261001-tabique-referencia';
   const base = ['app-a1.js', 'app-a2.js', 'app-b.js'];
 
   async function getPart(name){
@@ -31,3 +31,4 @@
     document.body.prepend(box);
   });
 })();
+

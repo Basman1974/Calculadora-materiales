@@ -295,3 +295,9 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 .mountingSprite{display:block;width:100%;height:auto;max-height:none!important;background:#fff;border-radius:8px}
 .mountingSheetWrap:has(.mountingSprite){padding:4px;background:#fff;overflow:hidden}
 @media(max-width:520px){.mountingSprite{max-height:none!important}}
+
+
+/* Referencia aportada para el ejemplo de Tabique; conserva la imagen completa. */
+.wallReferenceLink{display:block;width:100%;max-width:900px;color:#183d2a;text-decoration:none;text-align:center}
+.wallReferenceLink .mountingSheetImg{max-width:none;max-height:none;border-radius:0}
+.wallReferenceLink span{display:inline-block;padding:10px;font-size:14px;font-weight:700;text-decoration:underline}

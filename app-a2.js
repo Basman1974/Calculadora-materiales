@@ -78,6 +78,10 @@
     'assets/montaje-techo-sierra.svg':[387,773,333,307]
   };
   function mountingGraphic(path,title){
+    if(path==='assets/montaje-tabique.svg'){
+      const src=path+'?v=20261001-tabique-referencia';
+      return '<a class="wallReferenceLink" href="'+src+'" target="_blank" rel="noopener" aria-label="Ampliar imagen del montaje de tabique"><img class="mountingSheetImg" src="'+src+'" alt="Tabique de placas de yeso a ambas caras con montantes, canales, lana mineral, juntas y sellado acústico" loading="lazy" decoding="async"><span>Ampliar imagen ↗</span></a>';
+    }
     const crop=MOUNT_SPRITE_CROPS[path];
     if(crop){
       if(window.MOUNT_SPRITE && window.MOUNT_SPRITE.length===73032){
@@ -99,6 +103,7 @@
   function renderWallSketch(a,b,p,sp,wool){
     const box=el('wallSketch'); if(!box) return;
     box.innerHTML=mountingSheet('assets/montaje-tabique.svg','Tabique PYL '+a+'+'+b,'Ejemplo de montaje','Configuración actual · M'+p+' · '+Math.round(sp*1000)+' mm · '+(wool?'con lana mineral':'sin lana mineral'));
+    box.querySelector('.sketchNote').textContent='Imagen de referencia: las capas y la lana del dibujo no varían con los selectores. Para el pedido se utiliza la configuración actual.';
   }
   function renderLiningSketch(t,l,p,sp,wool){
     const box=el('liningSketch'); if(!box) return;
@@ -453,3 +458,4 @@
       : currentCat === 'revestimientos' ? 'El consumo depende del espesor seleccionado.'
       : 'Cada puente de unión mantiene su fórmula específica.';
   }
+

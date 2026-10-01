@@ -24,3 +24,4 @@ self.addEventListener('fetch',event=>{
     }).catch(()=>caches.match(event.request,{ignoreSearch:true}).then(r=>r||caches.match('./')))
   );
 });
+
