@@ -21,7 +21,7 @@ window.CALC_DATA = {
     },
     revestimientos:{
       'weber.rev fino':{kg:1.7,max:5,p:48,img:'weberrev-fino.jpg',spec:'WEBER · saco 25 kg'},
-      'weberpral prisma':{kg:1.5,max:30,p:48,img:'weberpral-prisma.jpg',spec:'WEBER · monocapa'},
+      'weberpral prisma':{kg:1.7,max:30,p:48,img:'weberpral-prisma.jpg',spec:'WEBER · monocapa · guía técnica 2025/26: 1,7 kg/m²/mm',url:'https://www.es.weber/files/es/2025-01/GUIA%20WEBER%202025_26_web_12%2C5mb_0.pdf'},
       'weberev hidro PLUS':{kg:1.8,max:20,p:48,img:'weberev-hidro-plus.jpg',spec:'WEBER · revoco hidrófugo'},
       'APLICAREV Cal Nature Pro':{kg:1.9,max:20,p:64,img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · Nature Pro'},
       'Mortero Cal base Aplicarev 25kg BCO':{kg:1.4,max:50,p:48,img:'mortero-cal-base-aplicarev-25kg-bco.jpg',spec:'CAPA · base cal'},
@@ -29,9 +29,9 @@ window.CALC_DATA = {
     },
     puentes:{
       'Puente de unión PLUS (MH)':{min:.2,max:.25,k:'litros',img:'puente-union-plus.jpg',spec:'Morteros Henares'},
-      'SikaTop-30':{min:.15,max:.175,k:'litros',img:'sikatop-30.jpg',spec:'SIKA · 5 kg'},
+      'SikaTop-30':{min:.15,max:.175,k:'kg_range',packKg:5,img:'sikatop-30.jpg',spec:'SIKA · 5 kg · 0,150–0,175 kg/m²',url:'https://esp.sika.com/es/construccion/construir/Aditivos-hormigon-mortero/sikatop-30.html'},
       'SikaTop-50':{min:.125,max:.15,k:'litros',img:'SikaTop-50.jpg',spec:'SIKA · resina de unión'},
-      'SikaTop-10':{min:.8,max:.8,d:1.32,k:'sikatop10',img:'sikatop-10.jpg',spec:'SIKA · 5 kg'},
+      'SikaTop-10':{min:.2,max:.5,k:'kg_range',packKg:5,img:'sikatop-10.jpg',spec:'SIKA · 5 kg · 0,20–0,50 kg/m²/capa',url:'https://esp.sika.com/es/repara-tu-casa/salon/sikatop-10.html'},
       'Puente de Unión Morteros Henares (PTU-20)':{min:.4,max:.45,d:1.4,k:'rango_kilos',img:'puente-de-union-morteros-henares-ptu-20.jpg',spec:'Morteros Henares · PTU-20'},
       'Aplica primer TOP 5KG':{min:.125,max:.175,d:1.43,k:'rango_kilos',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 kg'},
       'Imprimacion Aplica Level Primer 5 L':{k:'level_primer',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 L'}
