@@ -26,8 +26,11 @@
         const c = s === 'sin_absorcion' ? .075 : s === 'poco_poroso' ? .06 : .11;
         const total = A * c * f;
         rows.push([name, Math.ceil(total / 5) + ' botes de 5 L', total.toFixed(2) + ' L · consumo según absorción del soporte']);
-      } else if(it.k === 'sikatop10' || it.k === 'rango_kilos'){
-        const c = it.k === 'sikatop10' ? it.min : (it.min + it.max) / 2, kg = A * c * f, L = kg / it.d;
+      } else if(it.k === 'kg_range'){
+        const c = (it.min + it.max) / 2, kg = A * c * f, pack = it.packKg || 5;
+        rows.push([name, Math.ceil(kg / pack) + ' envase(s) de ' + pack + ' kg', kg.toFixed(2) + ' kg · consumo medio ' + c.toFixed(3) + ' kg/m² · rango ficha ' + it.min.toFixed(3) + '–' + it.max.toFixed(3) + ' kg/m² · merma ' + w + ' %']);
+      } else if(it.k === 'rango_kilos'){
+        const c = (it.min + it.max) / 2, kg = A * c * f, L = kg / it.d;
         rows.push([name, Math.ceil(L) + ' L', L.toFixed(2) + ' L · ' + kg.toFixed(2) + ' kg · ficha de consumo']);
       } else {
         const L = A * ((it.min + it.max) / 2) * f;
