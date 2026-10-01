@@ -8,7 +8,24 @@
       return;
     }
     const A = wetArea(), w = num('wetWaste'), f = 1 + w / 100, rows = [];
-    if(currentCat === 'ladrillos' || currentCat === 'bloques'){
+    if(currentCat === 'ladrillos'){
+      const L=Math.max(1,num('wetBrickL')), H=Math.max(1,num('wetBrickH')), T=Math.max(1,num('wetBrickT')), jointMm=Math.max(0,num('wetJoint'));
+      const j=jointMm/10;
+      const unitsM2=10000/((L+j)*(H+j));
+      const base=unitsM2*A, uds=Math.ceil(base*f);
+      const wallVolM3=(T/100)*A;
+      const unitVolM3=(L/100)*(H/100)*(T/100);
+      const mortarM3=Math.max(0,wallVolM3-(base*unitVolM3));
+      const mortarL=mortarM3*1000*f;
+      rows.push(['Ladrillo cerámico',uds+' uds',unitsM2.toFixed(2)+' ud/m² · formato '+L.toString().replace('.',',')+' × '+H.toString().replace('.',',')+' × '+T.toString().replace('.',',')+' cm · junta '+jointMm.toFixed(0)+' mm · merma '+w+' %']);
+      rows.push(['Mortero de colocación',mortarL.toFixed(1)+' L', 'Volumen geométrico de tendeles y llagas para '+A.toFixed(2)+' m² · antes de merma '+(mortarM3*1000).toFixed(1)+' L']);
+      if(el('wetMortar') && el('wetMortar').value === 'predosificado'){
+        const yieldL=Math.max(1,num('wetMortarYield')||14);
+        rows.push(['Mortero predosificado',Math.ceil(mortarL/yieldL)+' sacos de 25 kg',mortarL.toFixed(1)+' L necesarios · rendimiento configurado '+yieldL.toFixed(1)+' L/saco']);
+      }else{
+        rows.push(['Mortero hecho en obra',mortarL.toFixed(1)+' L','Volumen fresco estimado; la dosificación cemento/arena se define aparte']);
+      }
+    } else if(currentCat === 'bloques'){
       const base = it.u * A, uds = Math.ceil(base * f), kg = uds * it.w;
       rows.push([name, uds + ' uds', it.u + ' ud/m² base · ' + Math.ceil(base) + ' uds sin merma · +' + w + '% merma · ' + kg.toFixed(2) + ' kg']);
       if(it.m){
@@ -43,7 +60,7 @@
   }
   on(el('wetForm'), 'submit', e => { e.preventDefault(); calcWet(); });
   ['wetProduct','wetMeasureMode','wetThickness','wetSupport','wetMortar','wetWaste'].forEach(id => on(el(id), 'change', calcWet));
-  ['wetArea','wetL','wetH'].forEach(id => on(el(id), 'input', calcWet));
+  ['wetArea','wetL','wetH','wetBrickL','wetBrickH','wetBrickT','wetJoint','wetMortarYield'].forEach(id => on(el(id), 'input', calcWet));
   function ceramicBodyLabel(k){ return {porcelanico:'Porcelánico',pasta_roja:'Pasta roja',pasta_blanca:'Pasta blanca'}[k] || 'Porcelánico'; }
   function ceramicGlueKgM2(side, body, bond, trowel){
     const t=Math.max(6, Number(trowel)||10);
