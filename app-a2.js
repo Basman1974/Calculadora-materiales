@@ -412,6 +412,14 @@
     Object.keys(group).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; s.appendChild(o); });
     if(prev && group[prev]) s.value = prev;
     else s.selectedIndex = 0;
+    if(currentCat==='ladrillos'){
+      const it=group[s.value];
+      if(it && Array.isArray(it.dims)){
+        if(el('wetBrickL')) el('wetBrickL').value=String(it.dims[0]);
+        if(el('wetBrickH')) el('wetBrickH').value=String(it.dims[1]);
+        if(el('wetBrickT')) el('wetBrickT').value=String(it.dims[2]);
+      }
+    }
     syncWet();
   }
   function wetArea(){ return (el('wetMeasureMode') && el('wetMeasureMode').value === 'direct') ? num('wetArea') : num('wetL') * num('wetH'); }
@@ -435,7 +443,7 @@
       if(el('productName')) el('productName').textContent = name;
       if(el('productSpec')) el('productSpec').textContent = it.spec || '';
       const chips = [];
-      if(it.u) chips.push(it.u + ' ud/m²');
+      if(it.u && currentCat!=='ladrillos') chips.push(it.u + ' ud/m²');
       if(it.kg) chips.push(it.kg + ' kg/m²·mm');
       if(it.min != null && it.max != null) chips.push(it.min === it.max ? it.min + ' consumo' : it.min + '–' + it.max + ' consumo');
       if(el('productChips')) el('productChips').innerHTML = chips.map(x => '<span class="chip">' + x + '</span>').join('');
