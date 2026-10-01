@@ -181,10 +181,10 @@
   }));
 
   function calcLining(){
-    const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=t==='direct'?1:num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15;
+    const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=t==='direct'?1:num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15,waste=Math.max(0,num('lWaste')||0),wf=1+waste/100;
     const holes=openingsM2(num('lDoors'),num('lWins')),net=netArea(A,holes),board=bestPylBoard(H),kind=boardTypeLabel('lBoardType');
-    const liningPlates=Math.ceil(net*l/board.area*1.08);
-    const rows=[['Placa PYL '+kind+' '+thick.toString().replace('.',',')+' mm · '+board.label,liningPlates+' uds','UNE-EN 520 · '+kind+' · altura '+H.toFixed(2)+' m · '+board.note+' · merma 8 % · '+l+' capa(s) · neto '+net.toFixed(2)+' m²']];
+    const liningPlates=Math.ceil(net*l/board.area*wf);
+    const rows=[['Placa PYL '+kind+' '+thick.toString().replace('.',',')+' mm · '+board.label,liningPlates+' uds','UNE-EN 520 · '+kind+' · altura '+H.toFixed(2)+' m · '+board.note+' · merma '+waste+' % · '+l+' capa(s) · neto '+net.toFixed(2)+' m²']];
     let title='', structural=null, useP=p, useSp=sp, doubled=false;
     if(el('lLayersWrap'))el('lLayersWrap').classList.toggle('hidden',t==='direct');
     if(el('lProfileWrap'))el('lProfileWrap').classList.toggle('hidden',t==='direct');
@@ -194,7 +194,7 @@
     const finish=mergeFaceWork([pylFaceWork(net,l,thick)]);
     const useWool=t!=='direct'&&el('lWool')&&el('lWool').value!=='0';
     if(t==='direct'){
-      title='Trasdosado directo';rows.push(['Pasta de agarre',Math.ceil(net*4.5)+' kg','UNE 102043 · trasdosado directo · ≈4,5 kg/m²']);
+      title='Trasdosado directo';const pasteKg=net*5*wf;rows.push(['Pasta de agarre',Math.ceil(pasteKg/20)+' saco(s) de 20 kg',pasteKg.toFixed(1)+' kg · 5,0 kg/m² base · merma '+waste+' % · referencia Knauf Perlfix / UNE-EN 14496']);
     }else if(t==='semi'){
       title='Trasdosado semidirecto';const o=Math.ceil(L/sp)+1;rows.push(['Perfil omega / auxiliar',o*Math.ceil(H/3)+' barras','UNE-EN 14195 · '+o+' ejes'],tacoRow(H,o,'omega'));if(useWool)rows.push(woolRow(net,woolThick(p,'semi'),'semi'));
     }else{
@@ -249,7 +249,7 @@
     setLiningType(btn.dataset.liningType);
   }));
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
-  ['lType','lLayers','lS','lP','lBoardThick','lWool','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
+  ['lType','lLayers','lS','lP','lBoardThick','lWool','lWaste','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
   ['lL','lH'].forEach(id => on(el(id), 'input', calcLining));
   const roofMeta = {
     double:{fam:'continuo',famName:'Continuo PYL',name:'Doble TC47',hint:'Primaria + secundaria · 47/500'},
@@ -310,7 +310,7 @@
     return ['Empalme TC47', ud + ' uds · ' + Math.ceil(ud / 50) + ' caja(s) de 50', 'UNE 102043 · unión de barras de 3 m · 1 pieza por junta de perfil'];
   }
   function calcRoof(){
-    const L = num('rL'), W = num('rW'), A = L * W, l = num('rLayers');
+    const L = num('rL'), W = num('rW'), A = L * W, l = num('rLayers'), waste=Math.max(0,num('rWaste')||0), wf=1+waste/100;
     const holes = num('rHoles'), net = netArea(A, holes);
     const kind = boardTypeLabel('rBoardType');
     const fmt = (el('rBoard') ? el('rBoard').value : '2,1.2').split(',').map(Number);
@@ -322,13 +322,13 @@
     let rows = [], title = 'Techo', meta = 'plenum ' + d + ' cm';
     if(sys === 'desmontable60' || sys === 'desmontable120'){
       const tile60 = sys === 'desmontable60';
-      const tileUds = Math.ceil(net * (tile60 ? 2.78 : 1.39) * 1.08);
+      const tileUds = Math.ceil(net * (tile60 ? 2.78 : 1.39) * wf);
       const primM = A * 0.84, sec12M = A * (tile60 ? 1.67 : 0.84), sec6M = A * (tile60 ? 0.84 : 1.67);
       const hang = Math.ceil(A * 0.70), peri = 2 * (L + W);
       title = tile60 ? 'Techo desmontable 60 × 60' : 'Techo desmontable 60 × 120';
       meta = 'Perfilería T24 vista · primarios cada 1,20 m';
       rows = [
-        [tile60 ? 'Placa desmontable 600 × 600' : 'Placa desmontable 600 × 1200', tileUds + ' uds', (tile60 ? '2,78' : '1,39') + ' ud/m² · merma corte 8 % · sistema T24'],
+        [tile60 ? 'Placa desmontable 600 × 600' : 'Placa desmontable 600 × 1200', tileUds + ' uds', (tile60 ? '2,78' : '1,39') + ' ud/m² · merma '+waste+' % · sistema T24'],
         ['Perfil T24 primario 3600', Math.ceil(primM / 3.6) + ' barras', primM.toFixed(1) + ' m · 0,84 m/m²'],
         ['Perfil T24 secundario 1200', Math.ceil(sec12M / 1.2) + ' barras', sec12M.toFixed(1) + ' m · ' + (tile60 ? '1,67' : '0,84') + ' m/m²'],
         ['Perfil T24 secundario 600', Math.ceil(sec6M / 0.6) + ' barras', sec6M.toFixed(1) + ' m · ' + (tile60 ? '0,84' : '1,67') + ' m/m²'],
@@ -337,26 +337,26 @@
         ['Varilla o cuelgue', hang + ' uds', 'Plenum ' + d + ' cm · una por suspensión']
       ];
     } else if(sys === 'escayola'){
-      const plates = Math.ceil(net * 1.67 * 1.05);
+      const plates = Math.ceil(net * 1.67 * wf);
       const fix = Math.ceil(A * 3);
       const estopa = A * 0.22;
       const pasta = A * 6;
       title = 'Techo fijo de escayola';
       meta = 'Fijación por estopa · mín. 3 puntos/m²';
       rows = [
-        ['Placa de escayola 1000 × 600', plates + ' uds', '1,67 ud/m² · merma 5 % · placa nervada habitual'],
+        ['Placa de escayola 1000 × 600', plates + ' uds', '1,67 ud/m² · merma '+waste+' % · placa nervada habitual'],
         ['Fijaciones de estopa', fix + ' uds', 'NTE · mínimo 3 puntos/m² no alineados · solo si plenum ≤ 25 cm'],
         ['Estopa / fibra vegetal', Math.ceil(estopa) + ' kg', '0,22 kg/m² · esparto o sisal amasado con pasta'],
         ['Pasta de escayola UNE-EN 13279-1', Math.ceil(pasta / 20) + ' saco(s) de 20 kg', pasta.toFixed(1) + ' kg · estopadas + juntas + enlucido'],
         ['Aviso de plenum', d > 25 ? 'Plenum ' + d + ' cm: usar varilla, no solo estopa' : 'Plenum ' + d + ' cm válido para estopa', 'Estopa admisible hasta 25 cm de separación al forjado']
       ];
     } else {
-      const plates = Math.ceil(net * l * 1.08 / (fmt[0] * fmt[1]));
-      rows = [['Placa PYL ' + kind + ' ' + Math.round(fmt[0] * 1000) + ' × ' + Math.round(fmt[1] * 1000), plates + ' uds', 'UNE-EN 520 · ' + kind + ' · ' + l + ' capa(s) · merma 8 % · neto ' + net.toFixed(2) + ' m²']];
+      const plates = Math.ceil(net * l * wf / (fmt[0] * fmt[1]));
+      rows = [['Placa PYL ' + kind + ' ' + Math.round(fmt[0] * 1000) + ' × ' + Math.round(fmt[1] * 1000), plates + ' uds', 'UNE-EN 520 · ' + kind + ' · ' + l + ' capa(s) · merma ' + waste + ' % · neto ' + net.toFixed(2) + ' m²']];
       if(sys === 'double'){
         title = 'Techo doble TC47';
-        const prim = tc47Pack(L, W, 1.0, 3), sec = tc47Pack(W, L, 0.5, 3);
-        rows.push(['TC47 primario 3000', prim.bars + ' barras', 'UNE 102043 · cada 1,00 m · ' + prim.runs + ' recorridos · ' + prim.ml.toFixed(1) + ' m'], ['TC47 secundario 3000', sec.bars + ' barras', 'UNE 102043 · cada 0,50 m · ' + sec.runs + ' recorridos · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(prim.splices + sec.splices), ['Crucetas', Math.ceil(A / .475) + ' uds', 'Cruces primaria-secundaria'], ['Horquillas', Math.ceil(A / .95) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / .95 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
+        const prim = tc47Pack(L, W, 0.9, 3), sec = tc47Pack(W, L, 0.5, 3);
+        rows.push(['TC47 primario 3000', prim.bars + ' barras', 'UNE 102043 · referencia conservadora 0,90 m · ' + prim.runs + ' recorridos · ' + prim.ml.toFixed(1) + ' m'], ['TC47 secundario 3000', sec.bars + ' barras', 'UNE 102043 · cada 0,50 m · ' + sec.runs + ' recorridos · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(prim.splices + sec.splices), ['Crucetas', Math.ceil(A / .475) + ' uds', 'Cruces primaria-secundaria'], ['Horquillas', Math.ceil(A / .99) + ' uds', '≈1,01 ud/m² · criterio conservador entre Placo/Pladur/Knauf'], ['Varilla M6 1 m', Math.ceil(A / .99 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
       } else if(sys === 'simple'){
         title = 'Techo TC47 simple';
         const pack = tc47Pack(Math.max(L, W), Math.min(L, W), 0.5, 3);
@@ -381,7 +381,7 @@
     if(box){ box.innerHTML = resultHTML(obj.title, meta + ' · neto ' + net.toFixed(2) + ' m²', rows); bindAdd(box, obj); }
   }
   on(el('roofForm'), 'submit', e => { e.preventDefault(); calcRoof(); });
-  ['rSys','rBoard','rLayers','rBoardType','rHoles','rLabor'].forEach(id => on(el(id), 'change', calcRoof));
+  ['rSys','rBoard','rLayers','rBoardType','rHoles','rWaste','rLabor'].forEach(id => on(el(id), 'change', calcRoof));
   ['rL','rW','rDrop'].forEach(id => on(el(id), 'input', calcRoof));
   function setWetCat(cat){
     if(!data[cat]) return;
