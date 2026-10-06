@@ -1,5 +1,5 @@
 (() => {
-  const v = '20261001-tabique-referencia';
+  const v = '20261006-lamina-acustica';
   const base = ['app-a1.js', 'app-a2.js', 'app-b.js'];
 
   async function getPart(name){
@@ -31,4 +31,5 @@
     document.body.prepend(box);
   });
 })();
+
 

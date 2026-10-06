@@ -53,6 +53,8 @@
     return m ? Math.abs(Number(m[0])) : 0;
   }
   function lineUnit(name, val){
+    // Una cantidad expresada solo en m² tiene unidad explícita; el nombre no la cambia.
+    if(/^\s*\d+(?:[.,]\d+)?\s*m(?:²|2)\s*$/i.test(String(val||''))) return 'm²';
     const s = (String(val||'') + ' ' + String(name||'')).toLowerCase();
     if(s.includes('€')) return '€';
     if(s.includes('barra')) return 'barra';
@@ -112,7 +114,7 @@
         map[key].qty += 1;
         map[key].unit = 'partida';
       } else {
-        map[key].qty += lineQty(val);
+        map[key].qty = Math.round((map[key].qty + lineQty(val)) * 1e6) / 1e6;
         if(detail && map[key].detail.indexOf(detail) < 0) map[key].detail = map[key].detail || detail;
       }
     }));

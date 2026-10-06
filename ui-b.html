@@ -35,6 +35,9 @@
         <div class="grid">
           <label id="rBoardWrap">Formato placa PYL<select id="rBoard"><option value="2,1.2">2000 × 1200</option><option value="2.7,1.2">2700 × 1200</option><option value="2,.6">2000 × 600</option></select></label>
           <label id="rLayersWrap">Capas PYL<select id="rLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
+          <label>Lámina acústica entre placas<select id="rMembrane" aria-describedby="rMembraneHint"><option value="0">Sin lámina</option><option value="1">Con lámina</option></select></label>
+          <label id="rMembraneWasteWrap" class="hidden">Merma de lámina (%)<input id="rMembraneWaste" value="0" inputmode="decimal" aria-describedby="rMembraneHint"></label>
+          <div class="info" id="rMembraneHint" aria-live="polite">Disponible con doble placa PYL.</div>
           <label id="rBoardTypeWrap">Tipo de placa PYL<select id="rBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
           <label>Huecos (m²)<input id="rHoles" value="0" inputmode="decimal"></label><label>Merma de placas<select id="rWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option><option value="12">12 %</option><option value="15">15 %</option></select></label>
           <label>Mano de obra (€/m²)<input id="rLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
@@ -108,3 +111,4 @@
       <label>Soporte<select id="aSupport"><option value="cement">Cementoso</option><option value="radiant">Radiante</option><option value="existing">Cerámica existente</option><option value="gypsum">PYL</option><option value="cementboard">Fibrocemento</option><option value="wood">Madera</option><option value="metal">Metal</option></select></label>
     </div></div><button class="calc" type="submit">Ver adhesivo</button></form><div class="result hidden" id="adhResult"></div>
   </section>
+
