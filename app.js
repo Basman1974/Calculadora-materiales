@@ -1,5 +1,5 @@
 (() => {
-  const v = '20261006-lamina-acustica';
+  const v = '20261006-aviso-actualizacion';
   const base = ['app-a1.js', 'app-a2.js', 'app-b.js'];
 
   async function getPart(name){

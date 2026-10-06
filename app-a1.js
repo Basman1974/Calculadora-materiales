@@ -5,6 +5,11 @@
   function el(id){ if(cache[id] === undefined) cache[id] = document.getElementById(id); return cache[id]; }
   function num(id){ const n = el(id); if(!n) return 0; return Math.max(0, Number(String(n.value).replace(',','.')) || 0); }
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
+  on(el('closeUpdateNotice'),'click',()=>{
+    el('updateNotice').hidden=true;
+    const heading=document.querySelector('#home .hero h2');
+    if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
+  });
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
   let work = [];

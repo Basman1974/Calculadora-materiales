@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Calculadora Construcción">
-  <link rel="stylesheet" href="style.css?v=20260927-fiximg1">
+  <link rel="stylesheet" href="style.css?v=20261006-aviso-actualizacion">
   <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
@@ -39,6 +39,13 @@
     </div>
   </div>
   <section class="screen active" id="home">
+    <aside class="updateNotice" id="updateNotice" aria-labelledby="updateNoticeTitle">
+      <div class="updateNoticeTop"><span>NOVEDADES · 6 OCT 2026</span><button class="btn" id="closeUpdateNotice" type="button">Cerrar aviso <span aria-hidden="true">×</span></button></div>
+      <h2 id="updateNoticeTitle">Ya puedes presupuestar la lámina acústica</h2>
+      <p>Añádela entre dos placas en <strong>Tabique, Trasdosado y Techo PYL</strong>.</p>
+      <ul><li>Calcula los <strong>m² descontando los huecos</strong> y añade la merma que necesites.</li><li>En Tabique puedes elegir una cara o ambas.</li><li>Pulsa <strong>«Añadir a Obra»</strong> y pon tu precio por m² en <strong>Lista</strong>.</li></ul>
+      <p class="updateNoticeNote">Solo disponible con doble placa. El precio lo introduces tú.</p>
+    </aside>
     <div class="hero"><h2>¿Qué vas a calcular?</h2><p>Toca un trabajo. Luego solo pides las medidas del paño.</p></div>
     <div class="tiles">
       <button class="tile" data-open="wall" type="button"><img class="tilePhoto" width="800" height="537" sizes="(max-width:520px) 100vw, 50vw" fetchpriority="high" decoding="async" src="https://static.wixstatic.com/media/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png/v1/fill/w_800,h_537,al_c,q_75/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png" alt="Tabique PYL"><span class="tileShade"></span><span class="tileTop">OBRA SECA</span><span class="tileText"><strong>Tabique</strong><small>Estructura metálica y placas de yeso laminado.</small><span class="arrow">Empezar →</span></span></button>
@@ -134,4 +141,3 @@
       <button class="calc" type="submit">Calcular trasdosado</button>
     </form><div class="result" id="liningResult"></div>
   </section>
-
