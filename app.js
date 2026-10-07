@@ -1,5 +1,5 @@
 (() => {
-  const v = '20261006-aviso-actualizacion';
+  const v = '20261007-navegacion-materiales';
   const base = ['app-a1.js', 'app-a2.js', 'app-b.js'];
 
   async function getPart(name){
@@ -31,5 +31,6 @@
     document.body.prepend(box);
   });
 })();
+
 
 

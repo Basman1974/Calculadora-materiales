@@ -144,23 +144,42 @@
     c.querySelectorAll('[data-load-job]').forEach(b => b.onclick = () => {
       const j = savedJobs[Number(b.dataset.loadJob)];
       if(!j) return;
+      if(work.length&&!confirm('Abrir esta copia sustituirá la obra actual. ¿Continuar?'))return;
+      editingPart=null;
       work = JSON.parse(JSON.stringify(j.work || []));
+      if(j.prices){priceBook=JSON.parse(JSON.stringify(j.prices));savePrices();}else alert('Copia antigua sin tarifas guardadas: se usarán los precios actuales.');
+      if(j.company){company=Object.assign({},j.company);persist(CO_KEY,company);}
       jobMeta = Object.assign({}, jobMeta, j.meta || {});
       saveWork(); persist(JOB_KEY, jobMeta); fillJobFields(); renderWork(); renderList();
     });
     c.querySelectorAll('[data-del-job]').forEach(b => b.onclick = () => {
+      if(!confirm('¿Eliminar esta copia guardada?'))return;
       savedJobs.splice(Number(b.dataset.delJob), 1);
       persist(SNAP_KEY, savedJobs);
       renderSavedJobs();
     });
   }
+  let deletedPart=null;
+  on(el('undoDelete'),'click',()=>{if(!deletedPart)return;work.splice(deletedPart.index,0,deletedPart.part);deletedPart=null;el('undoWork').hidden=true;saveWork();renderWork();});
   function renderWork(){
     fillJobFields();
     renderSavedJobs();
     const c = el('workContent');
     if(!c) return;
-    c.innerHTML = work.length ? work.map((x,i) => '<div class="workItem"><b>' + (i + 1) + '. ' + esc(x.title) + '</b><div class="small">Zona: ' + esc(x.zone||'General') + ' · ' + (x.items||[]).length + ' líneas</div><button class="btn" data-del="' + i + '" style="margin-top:8px">Eliminar</button></div>').join('') : '<div class="empty">Todavía no has añadido partidas.</div>';
-    c.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { work.splice(Number(b.dataset.del), 1); saveWork(); renderWork(); renderList(); });
+    c.innerHTML = work.length ? work.map((x,i) => '<div class="workItem"><b>' + (i + 1) + '. ' + esc(x.title) + '</b><div class="small">Zona: ' + esc(x.zone||'General') + ' · ' + (x.items||[]).length + ' líneas</div><button class="btn" data-edit="' + i + '" type="button" '+(x.editor?'':'disabled')+'>Editar</button> <button class="btn" data-duplicate="' + i + '" type="button">Duplicar</button> <button class="btn" data-del="' + i + '" style="margin-top:8px">Eliminar</button></div>').join('') : '<div class="empty">Todavía no has añadido partidas.</div>';
+    c.querySelectorAll('[data-duplicate]').forEach(b=>b.onclick=()=>{work.push(JSON.parse(JSON.stringify(work[Number(b.dataset.duplicate)])));saveWork();renderWork();});
+    c.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{
+      const index=Number(b.dataset.edit),item=work[index],cfg=item.editor;if(!cfg)return;
+      editingPart=index;currentCat=cfg.cat||currentCat;currentCerBody=cfg.body||currentCerBody;
+      show(cfg.screen);
+      Object.entries(cfg.values).forEach(([id,value])=>{if(el(id))el(id).value=value;});
+      if(cfg.screen==='wall')calcWall();
+      if(cfg.screen==='lining')calcLining();
+      if(cfg.screen==='roof')calcRoof();
+      if(cfg.screen==='wet'){renderProducts();Object.entries(cfg.values).forEach(([id,v])=>{if(el(id))el(id).value=v;});calcWet();}
+      if(cfg.screen==='ceramic')calcLevel();
+    });
+    c.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { deletedPart={index:Number(b.dataset.del),part:work[Number(b.dataset.del)]};work.splice(deletedPart.index, 1); editingPart=null;el('undoWork').hidden=false; saveWork(); renderWork(); renderList(); });
   }
   function renderList(){
     fillJobFields();
@@ -173,7 +192,7 @@
     const head = '<div class="quoteHead"><div><div class="quoteBrand">' + esc(co) + '</div><div class="small">' + esc([company.nif, company.phone, company.mail].filter(Boolean).join(' · ')) + '</div><div class="small">' + esc(company.addr||'') + '</div></div><div class="quoteMeta"><div><b>' + esc(jobMeta.num || 'Presupuesto') + '</b></div><div>' + esc(jobMeta.name || 'Obra sin nombre') + '</div><div>' + esc(jobMeta.client ? ('Cliente: ' + jobMeta.client) : '') + '</div><div>' + esc(jobMeta.addr||'') + '</div></div></div>';
     const parts = '<div class="groupHead">PARTIDAS POR ESTANCIA</div>' + work.map((x,i) => '<div class="listLine"><span><b>' + esc(x.zone||'General') + '</b> · ' + (i+1) + '. ' + esc(x.title) + '</span><strong>' + (x.items||[]).length + '</strong></div>').join('');
     const table = '<div class="groupHead">MATERIALES Y PRECIOS</div><div class="budgetHead"><span>Concepto</span><span>Ud</span><span>€/ud</span><span>Importe</span></div>' +
-      tot.rows.map(r => '<div class="budgetLine"><div>' + esc(r.name) + '<div class="rowDetail">' + esc((r.qty ? (String(r.qty).replace('.',',') + ' ' + r.unit) : '') + (r.detail ? ' · ' + r.detail : '')) + '</div></div><div class="money">' + esc(r.labor ? '—' : (String(r.qty).replace('.',',') + ' ' + r.unit)) + '</div><div>' + (r.labor ? '<span class="money">' + money(r.total) + '</span>' : '<input class="price" data-price-key="' + esc(r.name) + '" inputmode="decimal" value="' + (r.unitPrice||'') + '">') + '</div><div class="budgetAmt">' + money(r.total) + ' €</div></div>').join('');
+      tot.rows.map(r => '<div class="budgetLine"><div>' + esc(r.name) + '<div class="rowDetail">' + esc((r.qty ? (String(r.qty).replace('.',',') + ' ' + r.unit) : '') + (r.detail ? ' · ' + r.detail : '')) + '</div></div><div class="money">' + esc(r.labor ? '—' : (String(r.qty).replace('.',',') + ' ' + r.unit)) + '</div><div>' + (r.labor ? '<span class="money">' + money(r.total) + '</span>' : '<input class="price" data-price-key="' + esc(r.name) + '" aria-label="Precio por '+esc(r.unit)+' de '+esc(r.name)+'" placeholder="Sin precio" inputmode="decimal" value="' + (r.missing?'':r.unitPrice) + '">') + '</div><div class="budgetAmt">' + (r.missing?'Sin precio':money(r.total)+' €') + '</div></div>').join('');
     const sums = '<div class="budgetTot"><span>Materiales</span><span>' + money(tot.mat) + ' €</span></div>' +
       '<div class="budgetTot"><span>Mano de obra</span><span>' + money(tot.labor) + ' €</span></div>' +
       (tot.extra ? '<div class="budgetTot"><span>Desplazamiento / varios</span><span>' + money(tot.extra) + ' €</span></div>' : '') +
@@ -183,12 +202,12 @@
       '<div class="budgetTot grand"><span>TOTAL</span><span>' + money(tot.grand) + ' €</span></div>';
     const notes = jobMeta.notes ? '<div class="info">' + esc(jobMeta.notes) + '</div>' : '';
     const valid = jobMeta.valid ? '<div class="small" style="margin-top:8px">Validez: ' + esc(jobMeta.valid) + ' días. Cantidades orientativas UNE 102043. Precios introducidos por el usuario.</div>' : '';
-    c.innerHTML = head + parts + table + sums + notes + valid;
+    c.innerHTML = (tot.missing?'<div class="info" role="status">Faltan '+tot.missing+' materiales por valorar. Total provisional.</div>':'') + head + parts + table + sums + notes + valid;
     c.querySelectorAll('[data-price-key]').forEach(inp => {
       inp.onchange = inp.onblur = () => {
         const key = inp.dataset.priceKey;
         const v = Number(String(inp.value).replace(',','.'));
-        if(isFinite(v) && v >= 0) priceBook[key] = v; else delete priceBook[key];
+        if(inp.value.trim()!=='' && isFinite(v) && v >= 0) priceBook[key] = v; else delete priceBook[key];
         savePrices(); renderList();
       };
     });
@@ -201,10 +220,11 @@
     if(jobMeta.name) lines.push('Obra: ' + jobMeta.name);
     if(jobMeta.client) lines.push('Cliente: ' + jobMeta.client);
     if(jobMeta.addr) lines.push('Dirección: ' + jobMeta.addr);
+    if(tot.missing)lines.push('PRESUPUESTO PROVISIONAL: '+tot.missing+' materiales sin precio');
     lines.push('');
     work.forEach((x,i) => lines.push((i+1) + '. [' + (x.zone||'General') + '] ' + x.title));
     lines.push('');
-    tot.rows.forEach(r => lines.push(r.name + ' · ' + (r.labor ? money(r.total)+' €' : (String(r.qty).replace('.',',') + ' ' + r.unit + ' × ' + money(r.unitPrice) + ' = ' + money(r.total) + ' €'))));
+    tot.rows.forEach(r => lines.push(r.name + ' · ' + (r.labor ? money(r.total)+' €' : (String(r.qty).replace('.',',') + ' ' + r.unit + ' × ' + (r.missing?'SIN PRECIO':money(r.unitPrice) + ' = ' + money(r.total) + ' €')))));
     lines.push('');
     lines.push('Materiales: ' + money(tot.mat) + ' €');
     lines.push('Mano de obra: ' + money(tot.labor) + ' €');
@@ -219,13 +239,15 @@
     return lines.join('\n');
   }
   function exportPrint(){
+    if(budgetTotals().missing&&!confirm('Faltan precios. El documento será un presupuesto provisional. ¿Exportar?'))return;
     readJobFields(); saveJob();
     const tot = budgetTotals();
     const w = window.open('', '_blank');
     if(!w){ window.print(); return; }
-    const rows = tot.rows.map(r => '<tr><td>' + esc(r.name) + '</td><td style="text-align:right">' + (r.labor ? '—' : esc(String(r.qty).replace('.',',') + ' ' + r.unit)) + '</td><td style="text-align:right">' + (r.labor ? '—' : money(r.unitPrice)) + '</td><td style="text-align:right">' + money(r.total) + ' €</td></tr>').join('');
+    const rows = tot.rows.map(r => '<tr><td>' + esc(r.name) + '</td><td style="text-align:right">' + (r.labor ? '—' : esc(String(r.qty).replace('.',',') + ' ' + r.unit)) + '</td><td style="text-align:right">' + (r.labor ? '—' : r.missing?'Sin precio':money(r.unitPrice)) + '</td><td style="text-align:right">' + (r.missing?'Pendiente':money(r.total)+' €') + '</td></tr>').join('');
     w.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>' + esc(jobMeta.num || 'Presupuesto') + '</title><style>body{font:14px/1.4 system-ui,Segoe UI,Arial;margin:24px;color:#111}h1{font-size:20px;margin:0}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border-bottom:1px solid #ccc;padding:6px 4px;text-align:left;vertical-align:top}th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#555}.tot{margin-top:14px}.tot div{display:flex;justify-content:space-between;padding:3px 0}.grand{font-weight:800;font-size:18px;border-top:2px solid #111;margin-top:8px;padding-top:8px}.muted{color:#555;font-size:12px}header{display:flex;justify-content:space-between;gap:16px;margin-bottom:18px}@media print{button{display:none}}</style></head><body>');
     w.document.write('<header><div><h1>' + esc(company.name || 'Presupuesto de obra') + '</h1><div class="muted">' + esc([company.nif,company.phone,company.mail,company.addr].filter(Boolean).join(' · ')) + '</div></div><div class="muted"><b>' + esc(jobMeta.num||'') + '</b><br>' + esc(jobMeta.name||'') + '<br>' + esc(jobMeta.client?('Cliente: '+jobMeta.client):'') + '<br>' + esc(jobMeta.addr||'') + '<br>' + esc(new Date().toLocaleDateString('es-ES')) + '</div></header>');
+    if(tot.missing)w.document.write('<p><b>PRESUPUESTO PROVISIONAL: '+tot.missing+' materiales sin precio.</b></p>');
     w.document.write('<p class="muted">Partidas: ' + work.map(x => esc(x.title)).join(' · ') + '</p>');
     w.document.write('<table><thead><tr><th>Concepto</th><th style="text-align:right">Cant.</th><th style="text-align:right">€/ud</th><th style="text-align:right">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>');
     w.document.write('<div class="tot"><div><span>Materiales</span><span>' + money(tot.mat) + ' €</span></div><div><span>Mano de obra</span><span>' + money(tot.labor) + ' €</span></div>' + (tot.extra?('<div><span>Varios</span><span>' + money(tot.extra) + ' €</span></div>'):'') + (tot.disc?('<div><span>Descuento</span><span>− ' + money(tot.disc) + ' €</span></div>'):'') + '<div><span>Base imponible</span><span>' + money(tot.taxable) + ' €</span></div><div><span>IVA ' + tot.vatPct + ' %</span><span>' + money(tot.vat) + ' €</span></div><div class="grand"><span>TOTAL</span><span>' + money(tot.grand) + ' €</span></div></div>');
@@ -236,16 +258,17 @@
     setTimeout(function(){ try { w.focus(); w.print(); } catch(e){} }, 250);
   }
   function exportCsv(){
+    if(budgetTotals().missing&&!confirm('Faltan precios. El CSV será provisional. ¿Exportar?'))return;
     readJobFields();
     const tot = budgetTotals();
     const lines = [['Presupuesto', jobMeta.num||'', jobMeta.name||'', jobMeta.client||''],['Concepto','Cantidad','Unidad','Precio ud','Importe']];
-    tot.rows.forEach(r => lines.push([r.name, String(r.qty).replace('.',','), r.unit, money(r.unitPrice), money(r.total)]));
+    tot.rows.forEach(r => lines.push([r.name, String(r.qty).replace('.',','), r.unit, r.missing?'Sin precio':money(r.unitPrice), r.missing?'Pendiente':money(r.total)]));
     lines.push([]);
     lines.push(['Materiales','','','',money(tot.mat)]);
     lines.push(['Mano de obra','','','',money(tot.labor)]);
     lines.push(['Base','','','',money(tot.taxable)]);
     lines.push(['IVA ' + tot.vatPct + '%','','','',money(tot.vat)]);
-    lines.push(['TOTAL','','','',money(tot.grand)]);
+    lines.push([tot.missing?'TOTAL PROVISIONAL':'TOTAL','','','',money(tot.grand)]);
     const csv = lines.map(row => row.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(';')).join('\r\n');
     const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
     const a = document.createElement('a');
@@ -259,6 +282,8 @@
     window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
   }
   function newJob(){
+    if(work.length&&!confirm('Crear una obra nueva vacía la actual. Guarda una copia antes si quieres conservarla. ¿Continuar?'))return;
+    editingPart=null;
     saveJob();
     work = [];
     jobMeta.name = ''; jobMeta.client = ''; jobMeta.addr = ''; jobMeta.notes = ''; jobMeta.laborExtra = 0; jobMeta.extra = 0; jobMeta.disc = 0;
@@ -275,8 +300,8 @@
   }
   function saveSnap(){
     readJobFields();
-    savedJobs.unshift({at:Date.now(), meta:Object.assign({}, jobMeta), work:JSON.parse(JSON.stringify(work))});
-    if(savedJobs.length > 20) savedJobs = savedJobs.slice(0,20);
+    savedJobs.unshift({at:Date.now(), meta:Object.assign({}, jobMeta), work:JSON.parse(JSON.stringify(work)),prices:JSON.parse(JSON.stringify(priceBook)),company:Object.assign({},company)});
+
     persist(SNAP_KEY, savedJobs); persist(JOB_KEY, jobMeta); persist(CO_KEY, company);
     renderSavedJobs();
   }
@@ -324,5 +349,42 @@
     on(el(id), 'change', () => { saveJob(); if(id==='jobVat'||id==='jobDisc'||id==='jobLaborExtra'||id==='jobExtra') renderList(); });
     on(el(id), 'blur', saveJob);
   });
+  ['viewAmounts','viewMaterials'].forEach(id=>on(el(id),'click',()=>{
+    const materials=id==='viewMaterials';el('listContent').classList.toggle('materialsOnly',materials);
+    el('viewMaterials').setAttribute('aria-pressed',String(materials));el('viewAmounts').setAttribute('aria-pressed',String(!materials));
+  }));
+  on(el('shareBudget'),'click',async()=>{
+    const text=budgetText();
+    try{if(navigator.share)await navigator.share({title:'Presupuesto',text});else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert('Presupuesto copiado para compartir.');}else exportWa();}catch(e){if(e.name!=='AbortError')alert('No se pudo compartir. Usa PDF o WhatsApp.');}
+  });
+  on(el('showNews'),'click',()=>{el('updateNotice').hidden=false;show('home');});
+  on(el('backupExport'),'click',()=>{
+    saveJob();
+    const payload={format:'calculadora-backup',version:1,work,priceBook,jobMeta,company,savedJobs};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
+    const a=document.createElement('a');a.href=url;a.download='calculadora-copia-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    el('backupStatus').textContent='Copia descargada. Contiene datos de clientes y empresa: guárdala en un lugar seguro.';
+  });
+  on(el('backupImport'),'change',async e=>{
+    try{
+      const file=e.target.files[0];if(!file)return;if(file.size>5000000)throw Error('Archivo demasiado grande');
+      const d=JSON.parse(await file.text());
+      const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
+      const parts=x=>Array.isArray(x)&&x.every(p=>obj(p)&&typeof p.title==='string'&&Array.isArray(p.items)&&p.items.every(r=>Array.isArray(r)&&r.length>=2&&r.every(v=>typeof v==='string')));
+      const prices=x=>obj(x)&&Object.values(x).every(v=>typeof v==='number'&&Number.isFinite(v)&&v>=0);
+      const fields=x=>obj(x)&&Object.values(x).every(v=>typeof v==='string'||typeof v==='number');
+      if(d.format!=='calculadora-backup'||d.version!==1||!parts(d.work)||!prices(d.priceBook)||!fields(d.jobMeta)||!fields(d.company)||!Array.isArray(d.savedJobs)||!d.savedJobs.every(j=>obj(j)&&parts(j.work)&&fields(j.meta)&&(!j.prices||prices(j.prices))&&(!j.company||fields(j.company))))throw Error('Formato de copia no válido');
+      if(!confirm('Restaurar sustituirá las obras, tarifas y datos actuales. Descarga primero una copia si quieres conservarlos. ¿Continuar?'))return;
+      work=d.work;priceBook=d.priceBook;jobMeta=d.jobMeta;company=d.company;savedJobs=d.savedJobs;editingPart=null;
+      saveWork();savePrices();persist(JOB_KEY,jobMeta);persist(CO_KEY,company);persist(SNAP_KEY,savedJobs);fillJobFields();renderWork();renderList();el('backupStatus').textContent='Copia restaurada.';
+    }catch(err){el('backupStatus').textContent='No se ha restaurado: '+err.message;}finally{e.target.value='';}
+  });
+  // Recuperar las medidas del último uso sin alterar los presupuestos guardados.
+  try{const draft=JSON.parse(localStorage.getItem('calc-form-draft')||'{}');Object.entries(draft).forEach(([id,v])=>{const node=el(id);if(node&&node.closest('form')&&typeof v==='string')node.value=v;});}catch(e){}
+  document.addEventListener('input',saveDraft);
+  document.addEventListener('change',saveDraft);
+  function saveDraft(e){if(!e.target.closest('form'))return;const draft={};$all('form input[id],form select[id]').forEach(n=>draft[n.id]=n.value);persist('calc-form-draft',draft);}
+
   fillJobFields();
 })();
+

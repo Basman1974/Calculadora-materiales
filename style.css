@@ -312,3 +312,13 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 .wallReferenceLink{display:block;width:100%;max-width:900px;color:#183d2a;text-decoration:none;text-align:center}
 .wallReferenceLink .mountingSheetImg{max-width:none;max-height:none;border-radius:0}
 .wallReferenceLink span{display:inline-block;padding:10px;font-size:14px;font-weight:700;text-decoration:underline}
+
+
+/* Navegación y lectura en obra */
+.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{height:155px}.tileText small{display:none}.tileText strong{font-size:1.1rem}.tileTop{font-size:.6rem}
+.mountPreview{margin:12px 0;border:1px solid var(--line);border-radius:12px;padding:10px}.mountPreview summary{cursor:pointer;font-weight:800;min-height:44px;padding:10px}
+.workItem .btn{margin:6px 4px 0 0;min-height:48px}.btn:disabled{opacity:.5;cursor:not-allowed}.nav button{min-height:56px}.nav button span:last-child{font-size:.7rem}
+.quickLine{align-items:flex-start}.quickLine strong{flex:0 0 42%}.budgetLine .price{min-width:0}.info{overflow-wrap:anywhere}
+@media(max-width:380px){.tile{height:145px}.tileText{left:10px;right:10px}.nav button span:last-child{font-size:.63rem}}
+
+.materialsOnly .budgetLine{grid-template-columns:minmax(0,1fr) auto}.materialsOnly .budgetLine>div:nth-child(n+3),.materialsOnly .budgetHead,.materialsOnly .budgetTot{display:none}.actions [aria-pressed="true"]{outline:2px solid var(--text)}

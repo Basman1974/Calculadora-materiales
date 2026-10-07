@@ -7,9 +7,12 @@
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
+    try{localStorage.setItem('calc-notice-seen','20261007');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
+  try{if(localStorage.getItem('calc-notice-seen')==='20261007')el('updateNotice').hidden=true;}catch(e){}
+  let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
   let work = [];
@@ -58,6 +61,9 @@
     return m ? Math.abs(Number(m[0])) : 0;
   }
   function lineUnit(name, val){
+    const explicit=String(val||'').match(/^\s*\d+(?:[.,]\d+)?\s*(m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|rollos?\b|cajas?\b|panel(?:es)?\b|L\b)/i);
+    if(explicit){const u=explicit[1].toLowerCase();return ({m2:'m²',uds:'ud',barras:'barra',sacos:'saco',rollos:'rollo',cajas:'caja',paneles:'panel',l:'L'})[u]||u;}
+
     // Una cantidad expresada solo en m² tiene unidad explícita; el nombre no la cambia.
     if(/^\s*\d+(?:[.,]\d+)?\s*m(?:²|2)\s*$/i.test(String(val||''))) return 'm²';
     const s = (String(val||'') + ' ' + String(name||'')).toLowerCase();
@@ -74,7 +80,7 @@
     if(s.includes(' m ') || s.includes('m ·')) return 'm';
     return 'ud';
   }
-  function persist(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
+  function persist(key, val){ try { localStorage.setItem(key, JSON.stringify(val));if(el('saveStatus'))el('saveStatus').textContent='Guardado en este dispositivo'; } catch(e){if(el('saveStatus'))el('saveStatus').textContent='No se pudo guardar. Descarga una copia desde Más antes de cerrar.';} }
   function saveWork(){ persist(WORK_KEY, work); }
   function savePrices(){ persist(PRICE_KEY, priceBook); }
   function readJobFields(){
@@ -97,7 +103,7 @@
   function saveJob(){ readJobFields(); persist(JOB_KEY, jobMeta); persist(CO_KEY, company); }
   function fillJobFields(){
     const map = {jobName:jobMeta.name,jobClient:jobMeta.client,jobAddr:jobMeta.addr,jobVat:jobMeta.vat,jobDisc:jobMeta.disc,jobLaborExtra:jobMeta.laborExtra,jobExtra:jobMeta.extra,jobValid:jobMeta.valid,jobNotes:jobMeta.notes,jobNum:jobMeta.num,coName:company.name,coNif:company.nif,coPhone:company.phone,coMail:company.mail,coAddr:company.addr};
-    Object.keys(map).forEach(id => { if(el(id) && map[id] != null && map[id] !== '') el(id).value = map[id]; });
+    Object.keys(map).forEach(id => { if(el(id) && map[id] != null) el(id).value = map[id]; });
     if(el('jobNum') && !el('jobNum').value){
       const n = 'P-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String((savedJobs.length||0)+1).padStart(3,'0');
       el('jobNum').value = n; jobMeta.num = n;
@@ -106,9 +112,11 @@
   function nextQuoteNum(){
     return 'P-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Date.now()).slice(-4);
   }
+  function isTechnicalRow(row){return /comprobación|huecos descontados|aviso|fuera de tabla/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]);}
   function mergedLines(){
     const map = Object.create(null);
     work.forEach(part => (part.items||[]).forEach(row => {
+      if(isTechnicalRow(row)) return;
       const name = row[0], val = row[1], detail = row[2] || '';
       const labor = /^Mano de obra/i.test(name);
       const key = name;
@@ -131,7 +139,7 @@
       const unitPrice = isFinite(price) ? price : 0;
       const qty = line.labor ? 1 : line.qty;
       const total = line.labor ? line.amount : qty * unitPrice;
-      return Object.assign({}, line, {qty:qty, unitPrice:unitPrice, total:total});
+      return Object.assign({}, line, {qty:qty, unitPrice:unitPrice, total:total, missing:!line.labor&&!Object.prototype.hasOwnProperty.call(priceBook,line.name)});
     });
   }
   function budgetTotals(){
@@ -146,15 +154,22 @@
     const taxable = base - disc;
     const vatPct = Number(jobMeta.vat)||0;
     const vat = taxable * vatPct / 100;
-    return {rows, mat, labor, extra, disc, discPct, taxable, vat, vatPct, grand: taxable + vat};
+    return {missing:rows.filter(r=>r.missing).length, rows, mat, labor, extra, disc, discPct, taxable, vat, vatPct, grand: taxable + vat};
   }
 
   const screens = $all('.screen');
   const nav = $all('[data-nav]');
   const data = window.CALC_DATA || {};
-  function show(id){
+  let currentScreen='home';
+  const scrollPositions={};
+  function show(id, fromHistory=false){
+    if(!el(id))return;
+    scrollPositions[currentScreen]=window.scrollY;
+    if(id!==currentScreen&&!fromHistory)history.pushState({screen:id},'', '#'+id);
+    currentScreen=id;
     screens.forEach(x => x.classList.toggle('active', x.id === id));
     nav.forEach(b => b.classList.toggle('active', b.dataset.nav === (['wall','lining','roof','wet','ceramic'].includes(id) ? 'home' : id)));
+    if(editingPart!==null&&id!==work[editingPart]?.editor?.screen)editingPart=null;
     if(id === 'work') renderWork();
     if(id === 'list') renderList();
     if(id === 'wet'){ renderProducts(); calcWet(); }
@@ -162,13 +177,15 @@
     else if(id === 'lining' && !primed.lining){ calcLining(); primed.lining = 1; }
     else if(id === 'roof' && !primed.roof){ calcRoof(); primed.roof = 1; }
     else if(id === 'ceramic' && !primed.ceramic){ calcLevel(); primed.ceramic = 1; }
-    window.scrollTo(0, 0);
+    window.scrollTo(0, scrollPositions[id]||0);
     const shell = document.scrollingElement || document.documentElement;
-    if(shell) shell.scrollTop = 0;
+    if(shell) shell.scrollTop = scrollPositions[id]||0;
     const app = document.querySelector('.app') || document.querySelector('.shell');
     if(app) app.scrollTop = 0;
   }
   // Navegación directa: la app abre en Inicio, sin clave ni código postal.
+  history.replaceState({screen:'home'},'', '#home');
+  window.addEventListener('popstate',e=>show(e.state?.screen||'home',true));
   show('home');
   const PYL_LENGTHS = [2, 2.5, 2.6, 2.7, 2.8, 3];
   function bestPylBoard(H){
@@ -358,3 +375,4 @@
       if(el('adhResult')) el('adhResult').classList.toggle('hidden', level);
     }
   });
+

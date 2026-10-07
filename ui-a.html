@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Calculadora Construcción">
-  <link rel="stylesheet" href="style.css?v=20261006-aviso-actualizacion">
+  <link rel="stylesheet" href="style.css?v=20261007-navegacion-materiales">
   <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
@@ -40,14 +40,14 @@
   </div>
   <section class="screen active" id="home">
     <aside class="updateNotice" id="updateNotice" aria-labelledby="updateNoticeTitle">
-      <div class="updateNoticeTop"><span>NOVEDADES · 6 OCT 2026</span><button class="btn" id="closeUpdateNotice" type="button">Cerrar aviso <span aria-hidden="true">×</span></button></div>
-      <h2 id="updateNoticeTitle">Ya puedes presupuestar la lámina acústica</h2>
-      <p>Añádela entre dos placas en <strong>Tabique, Trasdosado y Techo PYL</strong>.</p>
-      <ul><li>Calcula los <strong>m² descontando los huecos</strong> y añade la merma que necesites.</li><li>En Tabique puedes elegir una cara o ambas.</li><li>Pulsa <strong>«Añadir a Obra»</strong> y pon tu precio por m² en <strong>Lista</strong>.</li></ul>
-      <p class="updateNoticeNote">Solo disponible con doble placa. El precio lo introduces tú.</p>
+      <div class="updateNoticeTop"><span>NOVEDADES · 7 OCT 2026</span><button class="btn" id="closeUpdateNotice" type="button">Cerrar aviso <span aria-hidden="true">×</span></button></div>
+      <h2 id="updateNoticeTitle">Materiales completos y obras más fáciles de gestionar</h2>
+      <p>Ahora verás todos los materiales calculados, incluida la banda y la lámina acústica cuando corresponda.</p>
+      <ul><li>Edita o duplica nuevas partidas desde <strong>Obras</strong>.</li><li>Detecta precios pendientes y descarga una copia de seguridad desde <strong>Más</strong>.</li><li>Pulsa <strong>«Añadir a Obra»</strong> y pon tu precio por m² en <strong>Presupuesto</strong>.</li></ul>
+      <p class="updateNoticeNote">Las partidas antiguas sin medidas guardadas se pueden duplicar; para cambiar sus medidas debes recalcularlas.</p>
     </aside>
     <div class="hero"><h2>¿Qué vas a calcular?</h2><p>Toca un trabajo. Luego solo pides las medidas del paño.</p></div>
-    <div class="tiles">
+    <button class="btn" data-nav="work" type="button">Continuar mi obra</button><div class="tiles">
       <button class="tile" data-open="wall" type="button"><img class="tilePhoto" width="800" height="537" sizes="(max-width:520px) 100vw, 50vw" fetchpriority="high" decoding="async" src="https://static.wixstatic.com/media/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png/v1/fill/w_800,h_537,al_c,q_75/420f35_b3381aea7c84499998f30581f62d5cd7~mv2.png" alt="Tabique PYL"><span class="tileShade"></span><span class="tileTop">OBRA SECA</span><span class="tileText"><strong>Tabique</strong><small>Estructura metálica y placas de yeso laminado.</small><span class="arrow">Empezar →</span></span></button>
       <button class="tile" data-open="lining" type="button"><img class="tilePhoto" width="800" height="532" sizes="(max-width:520px) 100vw, 50vw" fetchpriority="high" decoding="async" src="https://www.gyproclatenplaatsen.be/sites/89/images/kamerbrede-gipskarton.jpg" alt="Trasdosado"><span class="tileShade"></span><span class="tileTop">REVESTIMIENTO</span><span class="tileText"><strong>Trasdosado</strong><small>Directo, semidirecto o autoportante.</small><span class="arrow">Empezar →</span></span></button>
       <button class="tile" data-open="roof" type="button"><img class="tilePhoto" width="800" height="533" sizes="(max-width:520px) 100vw, 50vw" loading="lazy" decoding="async" src="https://images.squarespace-cdn.com/content/v1/688cd53107e36267f90172f3/1754060088863-WS71FRXOAHONWJFSGGA3/Commercial%2BDrywall%2BSan%20Francisco.webp?format=750w" alt="Techo"><span class="tileShade"></span><span class="tileTop">FALSO TECHO</span><span class="tileText"><strong>Techo</strong><small>Perfilería, suspensión, varillas y placas.</small><span class="arrow">Empezar →</span></span></button>
@@ -70,7 +70,7 @@
       <div class="panel easyBlock">
         <div class="easyTitle">Sistema</div>
         <div class="presetBar" aria-label="Plantillas de tabique"><button type="button" class="preset" data-wall-preset="vivienda">Vivienda 1+1</button><button type="button" class="preset" data-wall-preset="bano">Baño 1+1 @400</button><button type="button" class="preset" data-wall-preset="doble">Doble 2+2</button></div>
-        <div class="systemSketch" id="wallSketch" aria-live="polite"></div>
+        <details class="mountPreview"><summary>Ver ejemplo de montaje</summary><div class="systemSketch" id="wallSketch" aria-live="polite"></div></details>
         <div class="grid">
           <label>Placas cara 1<select id="wA"><option value="1" selected>1 placa</option><option value="2">2 placas</option></select></label>
           <label>Placas cara 2<select id="wB"><option value="1">1 placa</option><option value="2">2 placas</option></select></label>
@@ -105,7 +105,7 @@
       <button type="button" class="sysFam" data-lining-type="semi" aria-pressed="false">Semidirecto</button>
       <button type="button" class="sysFam active" data-lining-type="auto" aria-pressed="true">Autoportante</button>
     </div>
-    <div class="systemSketch" id="liningSketch" aria-live="polite"></div>
+    <details class="mountPreview"><summary>Ver ejemplo de montaje</summary><div class="systemSketch" id="liningSketch" aria-live="polite"></div></details>
     <form id="liningForm">
       <label class="hidden">Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label>
       <div class="panel easyBlock">
@@ -141,3 +141,4 @@
       <button class="calc" type="submit">Calcular trasdosado</button>
     </form><div class="result" id="liningResult"></div>
   </section>
+

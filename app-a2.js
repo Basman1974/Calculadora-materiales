@@ -38,14 +38,14 @@
   function rowConfidence(row){
     const text=((row&&row[0])+' '+(row&&row[2]||'')).toLowerCase();
     if(/fuera de tabla|revisar|verificar|obligatoria|no dimensionad/.test(text)) return {c:'review',t:'REVISAR'};
-    if(/tabla técnica|une |une-|ficha/.test(text)) return {c:'verified',t:'VERIFICADO'};
+    if(/tabla técnica|une |une-|ficha/.test(text)) return {c:'estimate',t:'REFERENCIA ORIENTATIVA'};
     return {c:'estimate',t:'ESTIMACIÓN'};
   }
   function resultHTML(title, meta, rows){
-    const quick=rows.filter(x=>!/comprobación de altura|huecos descontados|aviso/i.test(String(x[0]))).slice(0,6);
+    const quick=rows.filter(x=>!isTechnicalRow(x));
     const quickHtml=quick.map(x=>'<div class="quickLine"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
     const tech=rows.map(x=>{const q=rowConfidence(x);return '<div class="row"><div class="rowName">'+esc(x[0])+' <span class="trust '+q.c+'">'+q.t+'</span></div><div class="rowVal">'+esc(x[1])+'</div>'+(x[2]?'<div class="rowDetail">'+esc(x[2])+'</div>':'')+'</div>';}).join('');
-    return '<div class="resultHead"><div class="eyebrow">RESULTADO RÁPIDO</div><div class="resultTitle">'+esc(title)+'</div><div class="resultMeta">'+esc(meta)+'</div></div>'+
+    return '<div class="resultHead"><div class="eyebrow">MATERIALES CALCULADOS</div><div class="resultTitle">'+esc(title)+'</div><div class="resultMeta">'+esc(meta)+'</div></div>'+
       '<div class="quickResult">'+quickHtml+'</div>'+
       '<details class="techDetails"><summary>Ver cálculo técnico, fórmulas y fuentes</summary><div class="groupHead">DETALLE TÉCNICO</div>'+tech+'</details>'+
       '<div class="workZoneWrap"><label>Estancia / zona<input class="workZone" placeholder="Ej. Baño principal"></label></div>'+
@@ -55,13 +55,16 @@
     if(!node) return;
     const b=node.querySelector('.addWork');
     if(b) b.onclick=e=>{
+      const section=node.closest('.screen');
+      const values={}; section.querySelectorAll('input[id],select[id],textarea[id]').forEach(x=>values[x.id]=x.value);
       const z=node.querySelector('.workZone');
-      const copy=Object.assign({},obj,{zone:(z&&z.value.trim())||'General'});
-      work.push(copy); saveWork();
-      e.target.textContent='Añadido';
-      setTimeout(()=>e.target.textContent='Añadir a Obra',700);
+      const copy=Object.assign({},obj,{zone:(z&&z.value.trim())||'General',editor:{screen:section.id,values,cat:currentCat,body:currentCerBody}});
+      if(editingPart!==null){work[editingPart]=copy;editingPart=null;}else work.push(copy);
+      saveWork(); b.textContent='Guardado en Obra';
     };
+    if(b&&editingPart!==null){b.textContent='Guardar cambios';const z=node.querySelector('.workZone');if(z)z.value=work[editingPart]?.zone||'';}
   }
+
   function sketchLegend(items){
     const names={board:'Placa PYL',metal:'Perfilería',wool:'Lana mineral',support:'Soporte / muro',adhesive:'Pasta / adhesivo',hang:'Suspensión',tile:'Placa registrable',rope:'Estopa'};
     return '<div class="sketchLegend">'+items.map(k=>'<span><i class="skKey skKey-'+k+'"></i>'+names[k]+'</span>').join('')+'</div>';
@@ -494,3 +497,4 @@
       : currentCat === 'revestimientos' ? 'El consumo depende del espesor seleccionado.'
       : 'Cada puente de unión mantiene su fórmula específica.';
   }
+
