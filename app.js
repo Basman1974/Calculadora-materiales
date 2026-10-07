@@ -1,5 +1,5 @@
 (() => {
-  const v = '20261007-navegacion-materiales';
+  const v = '20261007-montajes';
   const base = ['app-a1.js', 'app-a2.js', 'app-b.js'];
 
   async function getPart(name){
@@ -31,6 +31,7 @@
     document.body.prepend(box);
   });
 })();
+
 
 
 

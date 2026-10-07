@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Calculadora Construcción">
-  <link rel="stylesheet" href="style.css?v=20261007-navegacion-materiales">
+  <link rel="stylesheet" href="style.css?v=20261007-montajes">
   <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
@@ -58,6 +58,7 @@
   <section class="screen" id="wall">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
     <div class="sectionTitle">Tabique</div><p class="lead">Pon largo y alto. Lo demás ya viene relleno.</p>
+    <div class="mountPreview"><button class="btn mountToggle" type="button" aria-expanded="false" aria-controls="wallSketch" data-mount="wallSketch">Ver montaje · Tabique</button><div class="systemSketch" id="wallSketch" hidden></div></div>
     <div class="famBanner slim"><span class="famName">Tabique PYL</span><span class="famSub">Dos caras · UNE 102043</span></div>
     <form id="wallForm">
       <div class="panel easyBlock">
@@ -70,7 +71,7 @@
       <div class="panel easyBlock">
         <div class="easyTitle">Sistema</div>
         <div class="presetBar" aria-label="Plantillas de tabique"><button type="button" class="preset" data-wall-preset="vivienda">Vivienda 1+1</button><button type="button" class="preset" data-wall-preset="bano">Baño 1+1 @400</button><button type="button" class="preset" data-wall-preset="doble">Doble 2+2</button></div>
-        <details class="mountPreview"><summary>Ver ejemplo de montaje</summary><div class="systemSketch" id="wallSketch" aria-live="polite"></div></details>
+        
         <div class="grid">
           <label>Placas cara 1<select id="wA"><option value="1" selected>1 placa</option><option value="2">2 placas</option></select></label>
           <label>Placas cara 2<select id="wB"><option value="1">1 placa</option><option value="2">2 placas</option></select></label>
@@ -99,13 +100,14 @@
   <section class="screen" id="lining">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
     <div class="sectionTitle">Trasdosado</div><p class="lead">Elige cómo va fijado. Luego largo y alto.</p>
+    <div class="mountPreview"><button class="btn mountToggle" type="button" aria-expanded="false" aria-controls="liningSketch" data-mount="liningSketch">Ver montaje · Trasdosado</button><div class="systemSketch" id="liningSketch" hidden></div></div>
     <div class="famBanner slim" id="liningFamNow"><span class="famName">Trasdosado autoportante</span><span class="famSub">Canal + montante · cámara para lana</span></div>
     <div class="sysFamBar" id="liningFamBar" role="tablist">
       <button type="button" class="sysFam" data-lining-type="direct" aria-pressed="false">Directo</button>
       <button type="button" class="sysFam" data-lining-type="semi" aria-pressed="false">Semidirecto</button>
       <button type="button" class="sysFam active" data-lining-type="auto" aria-pressed="true">Autoportante</button>
     </div>
-    <details class="mountPreview"><summary>Ver ejemplo de montaje</summary><div class="systemSketch" id="liningSketch" aria-live="polite"></div></details>
+    
     <form id="liningForm">
       <label class="hidden">Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label>
       <div class="panel easyBlock">
@@ -141,4 +143,5 @@
       <button class="calc" type="submit">Calcular trasdosado</button>
     </form><div class="result" id="liningResult"></div>
   </section>
+
 

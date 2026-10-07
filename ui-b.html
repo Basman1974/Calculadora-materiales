@@ -1,6 +1,7 @@
 <section class="screen" id="roof">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
     <div class="sectionTitle">Techo</div><p class="lead">Elige el sistema y luego las medidas de la estancia.</p>
+    <div class="mountPreview"><button class="btn mountToggle" type="button" aria-expanded="false" aria-controls="roofSketch" data-mount="roofSketch">Ver montaje · Techo</button><div class="systemSketch" id="roofSketch" hidden></div></div>
     <div class="sysPanel" id="roofSysPanel">
       <div class="sysPanelHead"><div class="sysStep">1</div><div><div class="sysPanelTitle">Tipo de techo</div><div class="sysPanelHint">Primero la familia, luego la tarjeta.</div></div></div>
       <div class="sysNow" id="roofSysNow"><span class="sysNowFam">Continuo PYL</span><strong>Doble TC47</strong><span>Primaria + secundaria</span></div>
@@ -18,7 +19,7 @@
         <button type="button" class="sysBtn hidden" data-roof-sys="desmontable120" data-fam="registrable" aria-pressed="false"><span class="sysTag">Registrable</span><strong>60 × 120</strong><small>T24 vista</small></button>
         <button type="button" class="sysBtn hidden" data-roof-sys="escayola" data-fam="tradicional" aria-pressed="false"><span class="sysTag">Tradicional</span><strong>Escayola</strong><small>Estopa al forjado</small></button>
       </div>
-      <details class="mountPreview"><summary>Ver ejemplo de montaje</summary><div class="systemSketch" id="roofSketch" aria-live="polite"></div></details>
+      
     </div>
     <form id="roofForm">
       <label class="hidden">Sistema<select id="rSys"><option value="double" selected>Doble TC47</option><option value="simple">TC47 simple</option><option value="sierra">Sierra + TC47</option><option value="cm70">Canal + M70</option><option value="desmontable60">60 × 60</option><option value="desmontable120">60 × 120</option><option value="escayola">Escayola</option></select></label>
@@ -111,5 +112,6 @@
       <label>Soporte<select id="aSupport"><option value="cement">Cementoso</option><option value="radiant">Radiante</option><option value="existing">Cerámica existente</option><option value="gypsum">PYL</option><option value="cementboard">Fibrocemento</option><option value="wood">Madera</option><option value="metal">Metal</option></select></label>
     </div></div><button class="calc" type="submit">Ver adhesivo</button></form><div class="result hidden" id="adhResult"></div>
   </section>
+
 
 

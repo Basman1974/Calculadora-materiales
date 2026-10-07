@@ -313,6 +313,14 @@
     if(level) calcLevel(); else adhesiveClass();
   }));
 
+  $all('[data-mount]').forEach(button=>on(button,'click',()=>{
+    const panel=el(button.dataset.mount);if(!panel)return;
+    panel.hidden=!panel.hidden;
+    button.setAttribute('aria-expanded',String(!panel.hidden));
+    const name={wallSketch:'Tabique',liningSketch:'Trasdosado',roofSketch:'Techo'}[panel.id];
+    button.textContent=(panel.hidden?'Ver montaje · ':'Ocultar montaje · ')+name;
+  }));
+
   // Ayuda y desplegables: control directo para evitar fallos de <details> en Android/WebView.
   $all('.helpAcc > summary, .moreBox > summary').forEach(summary => on(summary, 'click', e => {
     e.preventDefault();
@@ -375,4 +383,5 @@
       if(el('adhResult')) el('adhResult').classList.toggle('hidden', level);
     }
   });
+
 

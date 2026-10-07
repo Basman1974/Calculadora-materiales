@@ -93,7 +93,7 @@
           '<image href="data:image/webp;base64,'+window.MOUNT_SPRITE+'" x="0" y="0" width="720" height="1080"/>'+
         '</svg>';
       }
-      return '<div class="mountingImageError">No se pudo cargar la lámina de montaje.</div>';
+      return '<img class="mountingSheetImg" src="'+path+'?v=20261007-montajes" alt="'+esc(title)+'">';
     }
     return '<img class="mountingSheetImg" src="'+path+'?v=20260927-fiximg1" alt="'+title+'" loading="lazy" decoding="async">';
   }
@@ -497,4 +497,5 @@
       : currentCat === 'revestimientos' ? 'El consumo depende del espesor seleccionado.'
       : 'Cada puente de unión mantiene su fórmula específica.';
   }
+
 

@@ -322,3 +322,6 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 @media(max-width:380px){.tile{height:145px}.tileText{left:10px;right:10px}.nav button span:last-child{font-size:.63rem}}
 
 .materialsOnly .budgetLine{grid-template-columns:minmax(0,1fr) auto}.materialsOnly .budgetLine>div:nth-child(n+3),.materialsOnly .budgetHead,.materialsOnly .budgetTot{display:none}.actions [aria-pressed="true"]{outline:2px solid var(--text)}
+
+
+.mountToggle{display:block;width:100%;min-height:52px;text-align:left;background:var(--accentSoft);border:2px solid var(--text);color:var(--text);font-weight:900;touch-action:manipulation}.mountToggle:focus-visible{outline:3px solid var(--text);outline-offset:3px}.systemSketch[hidden]{display:none!important}
