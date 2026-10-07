@@ -57,7 +57,17 @@
       <button type="button" class="cat" data-cat="puentes">Puentes · 7</button>
     </div>
     <form id="wetForm"><div class="panel">
-      <label>Producto<select id="wetProduct"></select></label>
+      <label class="hidden">Producto<select id="wetProduct"></select></label>
+      <div class="wetPicker">
+        <div class="easyTitle">1. Elige el producto</div>
+        <button class="btn wetPickerToggle" id="wetPickerToggle" type="button" aria-expanded="false" aria-controls="wetPickerPanel"><span>Producto seleccionado</span><strong id="wetSelectedName"></strong><span class="wetPickerAction">Cambiar producto ▾</span></button>
+        <div id="wetPickerPanel" hidden>
+          <label>Buscar en esta categoría<input id="wetProductSearch" type="search" placeholder="Nombre, medida o tipo…" autocomplete="off"></label>
+          <div id="wetProductCount" class="small" role="status"></div>
+          <div id="wetProductOptions" class="wetProductOptions" aria-label="Productos disponibles"></div>
+          <button class="btn" id="wetPickerClose" type="button">Cerrar selección</button>
+        </div>
+      </div>
       <div class="productCard">
         <div class="productImgWrap"><img class="productImg" id="productImg" alt="Producto" loading="lazy" decoding="async" width="300" height="300"></div>
         <div><div class="productName" id="productName"></div><div class="productSpec" id="productSpec"></div><div class="chips" id="productChips"></div></div>

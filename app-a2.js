@@ -440,6 +440,38 @@
     if(img) return img;
     return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="100%" height="100%" fill="%23eef3ef"/><text x="50%" y="50%" text-anchor="middle" fill="%23666" font-size="18">Producto</text></svg>';
   }
+  function closeWetPicker(){
+    el('wetPickerPanel').hidden=true;el('wetPickerToggle').setAttribute('aria-expanded','false');el('wetPickerToggle').focus({preventScroll:true});
+  }
+  function renderWetChoices(){
+    const box=el('wetProductOptions');if(!box)return;
+    const normalize=x=>String(x).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const query=normalize(el('wetProductSearch').value).trim();
+    const group=data[currentCat]||{},selected=el('wetProduct').value;
+    const names=Object.keys(group).filter(name=>normalize(name+' '+(group[name].spec||'')).includes(query));
+    el('wetProductCount').textContent=names.length?names.length+' productos disponibles':'No hay coincidencias. Prueba otro nombre o medida.';
+    box.replaceChildren();
+    names.forEach(name=>{
+      const item=group[name],b=document.createElement('button');b.type='button';b.className='wetProductChoice';b.setAttribute('aria-pressed',String(name===selected));
+      const img=document.createElement('img');img.src=productImgSrc(item);img.alt='';img.loading='lazy';img.onerror=()=>{img.onerror=null;img.src=productImgSrc({});};
+      const text=document.createElement('span'),title=document.createElement('strong'),spec=document.createElement('small'),state=document.createElement('span');
+      title.textContent=name;spec.textContent=item.spec||'Consulta las características al seleccionarlo';state.className='wetChoiceState';state.textContent=name===selected?'✓ Seleccionado':'Seleccionar';text.append(title,spec,state);b.append(img,text);
+      b.onclick=()=>{
+        el('wetProduct').value=name;
+        if(currentCat==='ladrillos'&&Array.isArray(item.dims))['wetBrickL','wetBrickH','wetBrickT'].forEach((id,i)=>el(id).value=String(item.dims[i]));
+        el('wetProduct').dispatchEvent(new Event('change',{bubbles:true}));closeWetPicker();
+      };
+      box.appendChild(b);
+    });
+  }
+  on(el('wetPickerToggle'),'click',()=>{
+    const panel=el('wetPickerPanel');panel.hidden=!panel.hidden;
+    el('wetPickerToggle').setAttribute('aria-expanded',String(!panel.hidden));
+    if(!panel.hidden){el('wetProductSearch').value='';renderWetChoices();el('wetProductSearch').focus({preventScroll:true});}
+  });
+  on(el('wetPickerClose'),'click',closeWetPicker);
+  on(el('wetProductSearch'),'input',renderWetChoices);
+  on(el('wetPickerPanel'),'keydown',e=>{if(e.key==='Escape'){e.preventDefault();closeWetPicker();}});
   function renderProducts(){
     const s = el('wetProduct');
     const group = data[currentCat];
@@ -450,6 +482,7 @@
       if(box) box.innerHTML = resultHTML('Obra húmeda', 'Sin catálogo', [['Aviso', 'No hay productos', 'La categoría ' + currentCat + ' no está en data.js']]);
       return;
     }
+    if(el('wetProductSearch'))el('wetProductSearch').value='';
     const prev = s.value;
     s.innerHTML = '';
     Object.keys(group).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; s.appendChild(o); });
@@ -469,6 +502,8 @@
   function syncWet(){
     const name = el('wetProduct') ? el('wetProduct').value : '';
     const it = data[currentCat] && data[currentCat][name];
+    if(el('wetSelectedName'))el('wetSelectedName').textContent=name||'Aún no hay producto';
+    if(el('wetProductOptions'))renderWetChoices();
     const dims = el('wetMeasureMode') && el('wetMeasureMode').value === 'dims';
     if(el('wetAreaWrap')) el('wetAreaWrap').classList.toggle('hidden', dims);
     if(el('wetLWrap')) el('wetLWrap').classList.toggle('hidden', !dims);
