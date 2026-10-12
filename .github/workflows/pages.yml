@@ -52,3 +52,34 @@ jobs:
       - name: Desplegar
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verificar recursos publicados
+        env:
+          PUBLIC_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          python3 - << 'PY'
+          import hashlib, os, re, time, urllib.request
+          from pathlib import Path
+          base = os.environ['PUBLIC_URL'].rstrip('/') + '/'
+          version = re.search(r"const v = '([^']+)'", Path('app.js').read_text()).group(1)
+          files = ['index.html','ui-a.html','ui-b.html','ui-c.html','app.js','app-a1.js','app-a2.js','app-b.js','data.js','style.css','service-worker.js','manifest.json','logo.png']
+          expected = {name:hashlib.sha256(Path(name).read_bytes()).digest() for name in files}
+          for attempt in range(12):
+              pending = []
+              for name in files:
+                  try:
+                      request = urllib.request.Request(base + name + '?verify=' + version, headers={'Cache-Control':'no-cache'})
+                      with urllib.request.urlopen(request, timeout=15) as response:
+                          if response.status != 200 or hashlib.sha256(response.read()).digest() != expected[name]:
+                              pending.append(name)
+                  except Exception as error:
+                      pending.append(name)
+                      print(name, type(error).__name__)
+              if not pending:
+                  print('OK: 13 recursos publicados con HTTP 200 y contenido idéntico al commit. Versión:', version)
+                  break
+              print('Pendientes de propagación:', ', '.join(pending))
+              if attempt == 11:
+                  raise SystemExit('La versión publicada no coincide con el commit')
+              time.sleep(10)
+          PY
