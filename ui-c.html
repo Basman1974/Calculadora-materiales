@@ -18,10 +18,12 @@
     <div class="hero"><h2>Presupuesto</h2><p>Escribe el precio de cada línea. Los materiales sin precio quedan marcados.</p></div>
     <div class="panel"><div class="grid">
       <label>IVA<select id="jobVat"><option value="10">10 % · vivienda</option><option value="21" selected>21 % · general</option><option value="0">Sin IVA</option></select></label>
-      <label>Descuento (%)<input id="jobDisc" value="0" inputmode="decimal"></label>
+      <label>BENEFICIO INDUSTRIAL (%)<input id="jobProfitPct" value="0" inputmode="decimal" aria-describedby="jobProfitHelp jobProfitPctError"><span id="jobProfitPctError" class="small" role="status" hidden></span></label>
+      <label>Descuento (%)<input id="jobDisc" value="0" inputmode="decimal" aria-describedby="jobDiscError"><span id="jobDiscError" class="small" role="status" hidden></span></label>
       <label>Mano de obra extra (€)<input id="jobLaborExtra" value="0" inputmode="decimal"></label>
       <label>Desplazamiento / varios (€)<input id="jobExtra" value="0" inputmode="decimal"></label>
     </div>
+    <p id="jobProfitHelp" class="small">El beneficio industrial es un recargo sobre materiales, mano de obra y extras, antes del descuento y del IVA. Se aplica a los importes introducidos: si ya incluyen margen comercial, evita duplicarlo. Admite de 0 a 1.000 %, con decimales. Descuento: de 0 a 100 %.</p>
     <div class="actions" style="padding:10px 0 0">
       <button class="btn" id="exportPrint" type="button">PDF / IMPRIMIR</button>
       <button class="btn" id="exportCsv" type="button">CSV (abrir en Excel)</button>
@@ -105,7 +107,8 @@
       <div class="helpBody">
         <ul>
           <li>Los €/ud se escriben en Lista y quedan en este dispositivo. También puedes importar un CSV con columnas concepto;precio.</li>
-          <li>IVA 10 %, 21 % o sin IVA. Descuento sobre la base. Mano de obra extra y desplazamiento son importes sueltos.</li>
+          <li>Beneficio industrial: recargo configurable sobre materiales, mano de obra y extras. Por defecto, 0 %. Si los precios ya incluyen margen, evita duplicarlo.</li>
+          <li>El descuento se aplica después del beneficio industrial. Sobre la base resultante se calcula el IVA: 10 %, 21 % o sin IVA.</li>
           <li>PDF: elige «Guardar como PDF» en el diálogo del navegador. Lleva empresa, n.º, cliente e IVA.</li>
           <li>CSV para Excel. WhatsApp manda el texto del presupuesto.</li>
         </ul>
@@ -162,8 +165,8 @@
 <script src="assets/mount-sprite-06.js?v=20260927-fiximg1"></script>
 <script src="assets/mount-sprite-07.js?v=20260927-fiximg1"></script>
 <script src="assets/mount-sprite-08.js?v=20260927-fiximg1"></script>
-<script src="data.js?v=20261007-selector-productos" defer></script>
-<script src="app.js?v=20261007-selector-productos" defer></script>
+<script src="data.js?v=20261012-beneficio-industrial" defer></script>
+<script src="app.js?v=20261012-beneficio-industrial" defer></script>
 </body>
 </html>
 

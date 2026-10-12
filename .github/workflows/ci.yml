@@ -112,3 +112,6 @@ jobs:
           cat app-a1.js app-a2.js app-b.js > /tmp/app-full.js
           node --check /tmp/app-full.js
           python3 -m json.tool manifest.json >/dev/null
+
+      - name: Pruebas de presupuesto y beneficio industrial
+        run: node --test tests/*.test.js

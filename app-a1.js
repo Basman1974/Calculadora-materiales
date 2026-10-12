@@ -7,17 +7,17 @@
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261007');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261012-beneficio-industrial');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261007')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261012-beneficio-industrial')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
   let work = [];
   let priceBook = {};
-  let jobMeta = {name:'',client:'',addr:'',vat:'21',laborExtra:0,extra:0,disc:0,valid:'30',notes:'',num:''};
+  let jobMeta = {name:'',client:'',addr:'',vat:'21',laborExtra:0,extra:0,disc:0,profitPct:0,valid:'30',notes:'',num:''};
   let company = {name:'',nif:'',phone:'',mail:'',addr:''};
   let savedJobs = [];
   const primed = Object.create(null);
@@ -28,7 +28,7 @@
   const SNAP_KEY = 'calculadora-jobs-v1';
   try { work = JSON.parse(localStorage.getItem(WORK_KEY) || '[]') || []; } catch(e){ work = []; }
   try { priceBook = JSON.parse(localStorage.getItem(PRICE_KEY) || '{}') || {}; } catch(e){ priceBook = {}; }
-  try { jobMeta = Object.assign(jobMeta, JSON.parse(localStorage.getItem(JOB_KEY) || '{}') || {}); } catch(e){}
+  try { jobMeta = Object.assign(jobMeta, normalizeJobMeta(JSON.parse(localStorage.getItem(JOB_KEY) || '{}') || {})); } catch(e){}
   try { company = Object.assign(company, JSON.parse(localStorage.getItem(CO_KEY) || '{}') || {}); } catch(e){}
   try { savedJobs = JSON.parse(localStorage.getItem(SNAP_KEY) || '[]') || []; } catch(e){ savedJobs = []; }
 
@@ -83,12 +83,51 @@
   function persist(key, val){ try { localStorage.setItem(key, JSON.stringify(val));if(el('saveStatus'))el('saveStatus').textContent='Guardado en este dispositivo'; } catch(e){if(el('saveStatus'))el('saveStatus').textContent='No se pudo guardar. Descarga una copia desde Más antes de cerrar.';} }
   function saveWork(){ persist(WORK_KEY, work); }
   function savePrices(){ persist(PRICE_KEY, priceBook); }
+  // Límite técnico de entrada para el recargo; no es un porcentaje legal o comercial.
+  function percentageValue(value, max){
+    if(typeof value === 'number') return Number.isFinite(value) && value >= 0 && value <= max ? value : null;
+    const text = String(value == null ? '' : value).trim();
+    if(text === '') return 0;
+    if(!/^(?:\d+(?:[.,]\d*)?|[.,]\d+)$/.test(text)) return null;
+    const n = Number(text.replace(',', '.'));
+    return Number.isFinite(n) && n >= 0 && n <= max ? n : null;
+  }
+  function normalizeJobMeta(meta){
+    return Object.assign({}, meta, {profitPct:percentageValue(meta.profitPct, 1000) ?? 0, disc:percentageValue(meta.disc, 100) ?? 0});
+  }
+  function decimalText(value){
+    return Number(value).toLocaleString('es-ES', {useGrouping:false, maximumSignificantDigits:21});
+  }
+  function unitPriceText(value){
+    const [whole, fraction=''] = decimalText(value).split(',');
+    return whole + ',' + fraction.padEnd(2, '0');
+  }
+  function readPercentage(id, previous, max){
+    const input = el(id);
+    if(!input) return percentageValue(previous, max) ?? 0;
+    const value = percentageValue(input.value, max);
+    const message = value === null ? 'Introduce un porcentaje entre 0 y ' + max.toLocaleString('es-ES') + ' %, con coma o punto decimal. Se mantiene el último porcentaje válido.' : '';
+    input.setCustomValidity(message);
+    input.setAttribute('aria-invalid', String(value === null));
+    const error = el(id + 'Error');
+    if(error){ error.textContent = message; error.hidden = !message; }
+    return value === null ? (percentageValue(previous, max) ?? 0) : value;
+  }
+  function budgetInputValid(){
+    readJobFields();
+    for(const id of ['jobProfitPct','jobDisc']){
+      const input = el(id);
+      if(input && !input.checkValidity()){ input.reportValidity(); input.focus(); return false; }
+    }
+    return true;
+  }
   function readJobFields(){
     jobMeta.name = (el('jobName') && el('jobName').value) || jobMeta.name || '';
     jobMeta.client = (el('jobClient') && el('jobClient').value) || '';
     jobMeta.addr = (el('jobAddr') && el('jobAddr').value) || '';
     jobMeta.vat = (el('jobVat') && el('jobVat').value) || jobMeta.vat || '21';
-    jobMeta.disc = num('jobDisc');
+    jobMeta.disc = readPercentage('jobDisc', jobMeta.disc, 100);
+    jobMeta.profitPct = readPercentage('jobProfitPct', jobMeta.profitPct, 1000);
     jobMeta.laborExtra = num('jobLaborExtra');
     jobMeta.extra = num('jobExtra');
     jobMeta.valid = (el('jobValid') && el('jobValid').value) || jobMeta.valid || '30';
@@ -102,8 +141,10 @@
   }
   function saveJob(){ readJobFields(); persist(JOB_KEY, jobMeta); persist(CO_KEY, company); }
   function fillJobFields(){
-    const map = {jobName:jobMeta.name,jobClient:jobMeta.client,jobAddr:jobMeta.addr,jobVat:jobMeta.vat,jobDisc:jobMeta.disc,jobLaborExtra:jobMeta.laborExtra,jobExtra:jobMeta.extra,jobValid:jobMeta.valid,jobNotes:jobMeta.notes,jobNum:jobMeta.num,coName:company.name,coNif:company.nif,coPhone:company.phone,coMail:company.mail,coAddr:company.addr};
+    const map = {jobName:jobMeta.name,jobClient:jobMeta.client,jobAddr:jobMeta.addr,jobVat:jobMeta.vat,jobDisc:decimalText(jobMeta.disc ?? 0),jobProfitPct:decimalText(jobMeta.profitPct ?? 0),jobLaborExtra:jobMeta.laborExtra,jobExtra:jobMeta.extra,jobValid:jobMeta.valid,jobNotes:jobMeta.notes,jobNum:jobMeta.num,coName:company.name,coNif:company.nif,coPhone:company.phone,coMail:company.mail,coAddr:company.addr};
     Object.keys(map).forEach(id => { if(el(id) && map[id] != null) el(id).value = map[id]; });
+    readPercentage('jobProfitPct', jobMeta.profitPct, 1000);
+    readPercentage('jobDisc', jobMeta.disc, 100);
     if(el('jobNum') && !el('jobNum').value){
       const n = 'P-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String((savedJobs.length||0)+1).padStart(3,'0');
       el('jobNum').value = n; jobMeta.num = n;
@@ -139,22 +180,43 @@
       const unitPrice = isFinite(price) ? price : 0;
       const qty = line.labor ? 1 : line.qty;
       const total = line.labor ? line.amount : qty * unitPrice;
-      return Object.assign({}, line, {qty:qty, unitPrice:unitPrice, total:total, missing:!line.labor&&!Object.prototype.hasOwnProperty.call(priceBook,line.name)});
+      return Object.assign({}, line, {qty:qty, unitPrice:unitPrice, total:roundEuros(total), missing:!line.labor&&!Object.prototype.hasOwnProperty.call(priceBook,line.name)});
     });
   }
+  function roundEuros(value){ return Math.round((value + Math.abs(value) * Number.EPSILON) * 100) / 100; }
   function budgetTotals(){
     const rows = budgetRows();
     let mat = 0, labor = 0;
     rows.forEach(r => { if(r.labor) labor += r.total; else mat += r.total; });
-    labor += Number(jobMeta.laborExtra)||0;
-    const extra = Number(jobMeta.extra)||0;
-    const discPct = Math.max(0, Number(jobMeta.disc)||0);
-    const base = Math.max(0, mat + labor + extra);
-    const disc = base * discPct / 100;
-    const taxable = base - disc;
+    mat = roundEuros(mat);
+    labor = roundEuros(labor + (Number(jobMeta.laborExtra)||0));
+    const extra = roundEuros(Number(jobMeta.extra)||0);
+    const discPct = percentageValue(jobMeta.disc, 100) ?? 0;
+    const base = roundEuros(Math.max(0, mat + labor + extra));
+    const profitPct = percentageValue(jobMeta.profitPct, 1000) ?? 0;
+    const profit = roundEuros(base * profitPct / 100);
+    const subtotal = roundEuros(base + profit);
+    const disc = roundEuros(subtotal * discPct / 100);
+    const taxable = roundEuros(subtotal - disc);
     const vatPct = Number(jobMeta.vat)||0;
-    const vat = taxable * vatPct / 100;
-    return {missing:rows.filter(r=>r.missing).length, rows, mat, labor, extra, disc, discPct, taxable, vat, vatPct, grand: taxable + vat};
+    const vat = roundEuros(taxable * vatPct / 100);
+    return {missing:rows.filter(r=>r.missing).length, rows, mat, labor, extra, base, profitPct, profit, subtotal, disc, discPct, taxable, vat, vatPct, grand:roundEuros(taxable + vat)};
+  }
+  // Un mismo desglose para pantalla, impresión/PDF, CSV y texto compartido.
+  function budgetSummary(tot){
+    const pct = n => decimalText(n) + ' %';
+    return [
+      {label:'Materiales', amount:tot.mat},
+      {label:'Mano de obra', amount:tot.labor},
+      ...(tot.extra ? [{label:'Desplazamiento / varios', amount:tot.extra}] : []),
+      {label:'Coste base', amount:tot.base},
+      {label:'Beneficio industrial ' + pct(tot.profitPct), amount:tot.profit},
+      {label:'Subtotal', amount:tot.subtotal},
+      ...(tot.discPct ? [{label:'Descuento ' + pct(tot.discPct), amount:-tot.disc}] : []),
+      {label:'Base imponible', amount:tot.taxable},
+      {label:'IVA ' + pct(tot.vatPct), amount:tot.vat},
+      {label:tot.missing ? 'TOTAL PROVISIONAL' : 'TOTAL', amount:tot.grand, grand:true}
+    ];
   }
 
   const screens = $all('.screen');

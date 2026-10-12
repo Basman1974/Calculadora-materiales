@@ -149,7 +149,7 @@
       work = JSON.parse(JSON.stringify(j.work || []));
       if(j.prices){priceBook=JSON.parse(JSON.stringify(j.prices));savePrices();}else alert('Copia antigua sin tarifas guardadas: se usarán los precios actuales.');
       if(j.company){company=Object.assign({},j.company);persist(CO_KEY,company);}
-      jobMeta = Object.assign({}, jobMeta, j.meta || {});
+      jobMeta = Object.assign({}, jobMeta, normalizeJobMeta(j.meta || {}));
       saveWork(); persist(JOB_KEY, jobMeta); fillJobFields(); renderWork(); renderList();
     });
     c.querySelectorAll('[data-del-job]').forEach(b => b.onclick = () => {
@@ -182,7 +182,6 @@
     c.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { deletedPart={index:Number(b.dataset.del),part:work[Number(b.dataset.del)]};work.splice(deletedPart.index, 1); editingPart=null;el('undoWork').hidden=false; saveWork(); renderWork(); renderList(); });
   }
   function renderList(){
-    fillJobFields();
     readJobFields();
     const c = el('listContent');
     if(!c) return;
@@ -193,13 +192,7 @@
     const parts = '<div class="groupHead">PARTIDAS POR ESTANCIA</div>' + work.map((x,i) => '<div class="listLine"><span><b>' + esc(x.zone||'General') + '</b> · ' + (i+1) + '. ' + esc(x.title) + '</span><strong>' + (x.items||[]).length + '</strong></div>').join('');
     const table = '<div class="groupHead">MATERIALES Y PRECIOS</div><div class="budgetHead"><span>Concepto</span><span>Ud</span><span>€/ud</span><span>Importe</span></div>' +
       tot.rows.map(r => '<div class="budgetLine"><div>' + esc(r.name) + '<div class="rowDetail">' + esc((r.qty ? (String(r.qty).replace('.',',') + ' ' + r.unit) : '') + (r.detail ? ' · ' + r.detail : '')) + '</div></div><div class="money">' + esc(r.labor ? '—' : (String(r.qty).replace('.',',') + ' ' + r.unit)) + '</div><div>' + (r.labor ? '<span class="money">' + money(r.total) + '</span>' : '<input class="price" data-price-key="' + esc(r.name) + '" aria-label="Precio por '+esc(r.unit)+' de '+esc(r.name)+'" placeholder="Sin precio" inputmode="decimal" value="' + (r.missing?'':r.unitPrice) + '">') + '</div><div class="budgetAmt">' + (r.missing?'Sin precio':money(r.total)+' €') + '</div></div>').join('');
-    const sums = '<div class="budgetTot"><span>Materiales</span><span>' + money(tot.mat) + ' €</span></div>' +
-      '<div class="budgetTot"><span>Mano de obra</span><span>' + money(tot.labor) + ' €</span></div>' +
-      (tot.extra ? '<div class="budgetTot"><span>Desplazamiento / varios</span><span>' + money(tot.extra) + ' €</span></div>' : '') +
-      (tot.disc ? '<div class="budgetTot"><span>Descuento ' + tot.discPct + ' %</span><span>− ' + money(tot.disc) + ' €</span></div>' : '') +
-      '<div class="budgetTot"><span>Base imponible</span><span>' + money(tot.taxable) + ' €</span></div>' +
-      '<div class="budgetTot"><span>IVA ' + tot.vatPct + ' %</span><span>' + money(tot.vat) + ' €</span></div>' +
-      '<div class="budgetTot grand"><span>TOTAL</span><span>' + money(tot.grand) + ' €</span></div>';
+    const sums = budgetSummary(tot).map(line => '<div class="budgetTot' + (line.grand ? ' grand' : '') + '"><span>' + esc(line.label) + '</span><span>' + money(line.amount) + ' €</span></div>').join('');
     const notes = jobMeta.notes ? '<div class="info">' + esc(jobMeta.notes) + '</div>' : '';
     const valid = jobMeta.valid ? '<div class="small" style="margin-top:8px">Validez: ' + esc(jobMeta.valid) + ' días. Cantidades orientativas UNE 102043. Precios introducidos por el usuario.</div>' : '';
     c.innerHTML = (tot.missing?'<div class="info" role="status">Faltan '+tot.missing+' materiales por valorar. Total provisional.</div>':'') + head + parts + table + sums + notes + valid;
@@ -213,7 +206,7 @@
     });
   }
   function budgetText(){
-    readJobFields();
+    if(!budgetInputValid()) return '';
     const tot = budgetTotals();
     const lines = [];
     lines.push((company.name || 'Presupuesto') + (jobMeta.num ? ' · ' + jobMeta.num : ''));
@@ -224,33 +217,28 @@
     lines.push('');
     work.forEach((x,i) => lines.push((i+1) + '. [' + (x.zone||'General') + '] ' + x.title));
     lines.push('');
-    tot.rows.forEach(r => lines.push(r.name + ' · ' + (r.labor ? money(r.total)+' €' : (String(r.qty).replace('.',',') + ' ' + r.unit + ' × ' + (r.missing?'SIN PRECIO':money(r.unitPrice) + ' = ' + money(r.total) + ' €')))));
+    tot.rows.forEach(r => lines.push(r.name + ' · ' + (r.labor ? money(r.total)+' €' : (String(r.qty).replace('.',',') + ' ' + r.unit + ' × ' + (r.missing?'SIN PRECIO':unitPriceText(r.unitPrice) + ' = ' + money(r.total) + ' €')))));
     lines.push('');
-    lines.push('Materiales: ' + money(tot.mat) + ' €');
-    lines.push('Mano de obra: ' + money(tot.labor) + ' €');
-    if(tot.extra) lines.push('Varios: ' + money(tot.extra) + ' €');
-    if(tot.disc) lines.push('Descuento: −' + money(tot.disc) + ' €');
-    lines.push('Base: ' + money(tot.taxable) + ' €');
-    lines.push('IVA ' + tot.vatPct + '%: ' + money(tot.vat) + ' €');
-    lines.push('TOTAL: ' + money(tot.grand) + ' €');
+    budgetSummary(tot).forEach(line => lines.push(line.label + ': ' + money(line.amount) + ' €'));
     if(jobMeta.notes){ lines.push(''); lines.push(jobMeta.notes); }
     lines.push('');
     lines.push('Estimación UNE 102043. Precios introducidos por el usuario.');
     return lines.join('\n');
   }
   function exportPrint(){
+    if(!budgetInputValid()) return;
     if(budgetTotals().missing&&!confirm('Faltan precios. El documento será un presupuesto provisional. ¿Exportar?'))return;
     readJobFields(); saveJob();
     const tot = budgetTotals();
     const w = window.open('', '_blank');
     if(!w){ window.print(); return; }
-    const rows = tot.rows.map(r => '<tr><td>' + esc(r.name) + '</td><td style="text-align:right">' + (r.labor ? '—' : esc(String(r.qty).replace('.',',') + ' ' + r.unit)) + '</td><td style="text-align:right">' + (r.labor ? '—' : r.missing?'Sin precio':money(r.unitPrice)) + '</td><td style="text-align:right">' + (r.missing?'Pendiente':money(r.total)+' €') + '</td></tr>').join('');
+    const rows = tot.rows.map(r => '<tr><td>' + esc(r.name) + '</td><td style="text-align:right">' + (r.labor ? '—' : esc(String(r.qty).replace('.',',') + ' ' + r.unit)) + '</td><td style="text-align:right">' + (r.labor ? '—' : r.missing?'Sin precio':unitPriceText(r.unitPrice)) + '</td><td style="text-align:right">' + (r.missing?'Pendiente':money(r.total)+' €') + '</td></tr>').join('');
     w.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>' + esc(jobMeta.num || 'Presupuesto') + '</title><style>body{font:14px/1.4 system-ui,Segoe UI,Arial;margin:24px;color:#111}h1{font-size:20px;margin:0}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border-bottom:1px solid #ccc;padding:6px 4px;text-align:left;vertical-align:top}th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#555}.tot{margin-top:14px}.tot div{display:flex;justify-content:space-between;padding:3px 0}.grand{font-weight:800;font-size:18px;border-top:2px solid #111;margin-top:8px;padding-top:8px}.muted{color:#555;font-size:12px}header{display:flex;justify-content:space-between;gap:16px;margin-bottom:18px}@media print{button{display:none}}</style></head><body>');
     w.document.write('<header><div><h1>' + esc(company.name || 'Presupuesto de obra') + '</h1><div class="muted">' + esc([company.nif,company.phone,company.mail,company.addr].filter(Boolean).join(' · ')) + '</div></div><div class="muted"><b>' + esc(jobMeta.num||'') + '</b><br>' + esc(jobMeta.name||'') + '<br>' + esc(jobMeta.client?('Cliente: '+jobMeta.client):'') + '<br>' + esc(jobMeta.addr||'') + '<br>' + esc(new Date().toLocaleDateString('es-ES')) + '</div></header>');
     if(tot.missing)w.document.write('<p><b>PRESUPUESTO PROVISIONAL: '+tot.missing+' materiales sin precio.</b></p>');
     w.document.write('<p class="muted">Partidas: ' + work.map(x => esc(x.title)).join(' · ') + '</p>');
     w.document.write('<table><thead><tr><th>Concepto</th><th style="text-align:right">Cant.</th><th style="text-align:right">€/ud</th><th style="text-align:right">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>');
-    w.document.write('<div class="tot"><div><span>Materiales</span><span>' + money(tot.mat) + ' €</span></div><div><span>Mano de obra</span><span>' + money(tot.labor) + ' €</span></div>' + (tot.extra?('<div><span>Varios</span><span>' + money(tot.extra) + ' €</span></div>'):'') + (tot.disc?('<div><span>Descuento</span><span>− ' + money(tot.disc) + ' €</span></div>'):'') + '<div><span>Base imponible</span><span>' + money(tot.taxable) + ' €</span></div><div><span>IVA ' + tot.vatPct + ' %</span><span>' + money(tot.vat) + ' €</span></div><div class="grand"><span>TOTAL</span><span>' + money(tot.grand) + ' €</span></div></div>');
+    w.document.write('<div class="tot">' + budgetSummary(tot).map(line => '<div' + (line.grand ? ' class="grand"' : '') + '><span>' + esc(line.label) + '</span><span>' + money(line.amount) + ' €</span></div>').join('') + '</div>');
     if(jobMeta.notes) w.document.write('<p>' + esc(jobMeta.notes).replace(/\n/g,'<br>') + '</p>');
     w.document.write('<p class="muted">Validez ' + esc(jobMeta.valid||'30') + ' días. Estimación de cantidades UNE 102043. Los precios los introduce el usuario. No sustituye medición de proyecto.</p>');
     w.document.write('<button onclick="window.print()">Imprimir / Guardar PDF</button></body></html>');
@@ -258,17 +246,15 @@
     setTimeout(function(){ try { w.focus(); w.print(); } catch(e){} }, 250);
   }
   function exportCsv(){
+    if(!budgetInputValid()) return;
     if(budgetTotals().missing&&!confirm('Faltan precios. El CSV será provisional. ¿Exportar?'))return;
     readJobFields();
     const tot = budgetTotals();
     const lines = [['Presupuesto', jobMeta.num||'', jobMeta.name||'', jobMeta.client||''],['Concepto','Cantidad','Unidad','Precio ud','Importe']];
-    tot.rows.forEach(r => lines.push([r.name, String(r.qty).replace('.',','), r.unit, r.missing?'Sin precio':money(r.unitPrice), r.missing?'Pendiente':money(r.total)]));
+    if(tot.missing) lines.splice(1, 0, ['PRESUPUESTO PROVISIONAL', String(tot.missing) + ' materiales sin precio']);
+    tot.rows.forEach(r => lines.push([r.name, String(r.qty).replace('.',','), r.unit, r.missing?'Sin precio':unitPriceText(r.unitPrice), r.missing?'Pendiente':money(r.total)]));
     lines.push([]);
-    lines.push(['Materiales','','','',money(tot.mat)]);
-    lines.push(['Mano de obra','','','',money(tot.labor)]);
-    lines.push(['Base','','','',money(tot.taxable)]);
-    lines.push(['IVA ' + tot.vatPct + '%','','','',money(tot.vat)]);
-    lines.push([tot.missing?'TOTAL PROVISIONAL':'TOTAL','','','',money(tot.grand)]);
+    budgetSummary(tot).forEach(line => lines.push([line.label,'','','',money(line.amount)]));
     const csv = lines.map(row => row.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(';')).join('\r\n');
     const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
     const a = document.createElement('a');
@@ -279,6 +265,7 @@
   }
   function exportWa(){
     const txt = budgetText();
+    if(!txt) return;
     window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
   }
   function newJob(){
@@ -286,7 +273,7 @@
     editingPart=null;
     saveJob();
     work = [];
-    jobMeta.name = ''; jobMeta.client = ''; jobMeta.addr = ''; jobMeta.notes = ''; jobMeta.laborExtra = 0; jobMeta.extra = 0; jobMeta.disc = 0;
+    jobMeta.name = ''; jobMeta.client = ''; jobMeta.addr = ''; jobMeta.notes = ''; jobMeta.laborExtra = 0; jobMeta.extra = 0; jobMeta.disc = 0; jobMeta.profitPct = 0;
     jobMeta.num = nextQuoteNum();
     if(el('jobName')) el('jobName').value = '';
     if(el('jobClient')) el('jobClient').value = '';
@@ -295,11 +282,12 @@
     if(el('jobLaborExtra')) el('jobLaborExtra').value = '0';
     if(el('jobExtra')) el('jobExtra').value = '0';
     if(el('jobDisc')) el('jobDisc').value = '0';
+    if(el('jobProfitPct')) el('jobProfitPct').value = '0';
     if(el('jobNum')) el('jobNum').value = jobMeta.num;
     saveWork(); persist(JOB_KEY, jobMeta); renderWork(); renderList();
   }
   function saveSnap(){
-    readJobFields();
+    if(!budgetInputValid()) return;
     savedJobs.unshift({at:Date.now(), meta:Object.assign({}, jobMeta), work:JSON.parse(JSON.stringify(work)),prices:JSON.parse(JSON.stringify(priceBook)),company:Object.assign({},company)});
 
     persist(SNAP_KEY, savedJobs); persist(JOB_KEY, jobMeta); persist(CO_KEY, company);
@@ -343,22 +331,28 @@
     if(el('installApp')) el('installApp').classList.add('hidden');
   });
   if('serviceWorker' in navigator){
-    window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
+    const registerWorker = () => navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    // Los fragmentos pueden terminar de cargarse después del evento load.
+    if(document.readyState === 'complete') registerWorker();
+    else window.addEventListener('load', registerWorker, {once:true});
   }
-  ['jobName','jobClient','jobAddr','jobVat','jobDisc','jobLaborExtra','jobExtra','jobValid','jobNotes','jobNum','coName','coNif','coPhone','coMail','coAddr'].forEach(id => {
-    on(el(id), 'change', () => { saveJob(); if(id==='jobVat'||id==='jobDisc'||id==='jobLaborExtra'||id==='jobExtra') renderList(); });
+  ['jobName','jobClient','jobAddr','jobVat','jobDisc','jobProfitPct','jobLaborExtra','jobExtra','jobValid','jobNotes','jobNum','coName','coNif','coPhone','coMail','coAddr'].forEach(id => {
+    on(el(id), 'change', () => { saveJob(); if(['jobVat','jobDisc','jobProfitPct','jobLaborExtra','jobExtra'].includes(id)) renderList(); });
     on(el(id), 'blur', saveJob);
   });
+  ['jobProfitPct','jobDisc'].forEach(id => on(el(id), 'input', () => { saveJob(); renderList(); }));
   ['viewAmounts','viewMaterials'].forEach(id=>on(el(id),'click',()=>{
     const materials=id==='viewMaterials';el('listContent').classList.toggle('materialsOnly',materials);
     el('viewMaterials').setAttribute('aria-pressed',String(materials));el('viewAmounts').setAttribute('aria-pressed',String(!materials));
   }));
   on(el('shareBudget'),'click',async()=>{
     const text=budgetText();
+    if(!text) return;
     try{if(navigator.share)await navigator.share({title:'Presupuesto',text});else if(navigator.clipboard){await navigator.clipboard.writeText(text);alert('Presupuesto copiado para compartir.');}else exportWa();}catch(e){if(e.name!=='AbortError')alert('No se pudo compartir. Usa PDF o WhatsApp.');}
   });
   on(el('showNews'),'click',()=>{el('updateNotice').hidden=false;show('home');});
   on(el('backupExport'),'click',()=>{
+    if(!budgetInputValid()) return;
     saveJob();
     const payload={format:'calculadora-backup',version:1,work,priceBook,jobMeta,company,savedJobs};
     const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
@@ -373,9 +367,10 @@
       const parts=x=>Array.isArray(x)&&x.every(p=>obj(p)&&typeof p.title==='string'&&Array.isArray(p.items)&&p.items.every(r=>Array.isArray(r)&&r.length>=2&&r.every(v=>typeof v==='string')));
       const prices=x=>obj(x)&&Object.values(x).every(v=>typeof v==='number'&&Number.isFinite(v)&&v>=0);
       const fields=x=>obj(x)&&Object.values(x).every(v=>typeof v==='string'||typeof v==='number');
-      if(d.format!=='calculadora-backup'||d.version!==1||!parts(d.work)||!prices(d.priceBook)||!fields(d.jobMeta)||!fields(d.company)||!Array.isArray(d.savedJobs)||!d.savedJobs.every(j=>obj(j)&&parts(j.work)&&fields(j.meta)&&(!j.prices||prices(j.prices))&&(!j.company||fields(j.company))))throw Error('Formato de copia no válido');
+      const meta=x=>fields(x)&&(!Object.prototype.hasOwnProperty.call(x,'profitPct')||percentageValue(x.profitPct,1000)!==null);
+      if(d.format!=='calculadora-backup'||d.version!==1||!parts(d.work)||!prices(d.priceBook)||!meta(d.jobMeta)||!fields(d.company)||!Array.isArray(d.savedJobs)||!d.savedJobs.every(j=>obj(j)&&parts(j.work)&&meta(j.meta)&&(!j.prices||prices(j.prices))&&(!j.company||fields(j.company))))throw Error('Formato de copia no válido');
       if(!confirm('Restaurar sustituirá las obras, tarifas y datos actuales. Descarga primero una copia si quieres conservarlos. ¿Continuar?'))return;
-      work=d.work;priceBook=d.priceBook;jobMeta=d.jobMeta;company=d.company;savedJobs=d.savedJobs;editingPart=null;
+      work=d.work;priceBook=d.priceBook;jobMeta=normalizeJobMeta(d.jobMeta);company=d.company;savedJobs=d.savedJobs.map(j=>Object.assign({},j,{meta:normalizeJobMeta(j.meta)}));editingPart=null;
       saveWork();savePrices();persist(JOB_KEY,jobMeta);persist(CO_KEY,company);persist(SNAP_KEY,savedJobs);fillJobFields();renderWork();renderList();el('backupStatus').textContent='Copia restaurada.';
     }catch(err){el('backupStatus').textContent='No se ha restaurado: '+err.message;}finally{e.target.value='';}
   });
