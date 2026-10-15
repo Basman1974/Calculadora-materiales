@@ -66,7 +66,7 @@ label{display:block;font-size:.77rem;font-weight:900}input,select{width:100%;min
 .sysNow strong{font-size:.95rem;font-weight:950}
 .sysNow span:last-child{font-size:.72rem;font-weight:700;opacity:.85}
 .budgetLine{display:grid;grid-template-columns:minmax(0,1.3fr) 64px 72px 70px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:.76rem}
-.budgetLine input{min-height:36px;margin-top:0;padding:6px 7px;font-size:.78rem}
+.budgetLine input{min-height:47px;margin-top:0;padding:6px 7px;font-size:.78rem}
 .budgetHead{display:grid;grid-template-columns:minmax(0,1.3fr) 64px 72px 70px;gap:6px;font-size:.65rem;font-weight:950;letter-spacing:.04em;color:var(--muted);padding-bottom:6px}
 .budgetTot{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-weight:950}
 .budgetTot.grand{font-size:1.05rem;color:var(--accent);border-top:2px solid var(--accent);margin-top:6px;padding-top:10px}
@@ -328,3 +328,22 @@ select{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation
 
 /* Selección visual de productos de obra húmeda */
 .wetPicker{margin:12px 0}.wetPickerToggle{width:100%;text-align:left;display:grid;gap:6px;border:2px solid var(--text);background:var(--accentSoft);padding:14px}.wetPickerToggle>span:first-child{font-size:.75rem}.wetPickerToggle strong{font-size:1rem}.wetPickerAction{font-weight:900;text-decoration:underline}.wetProductOptions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.wetProductChoice{display:flex;gap:12px;align-items:center;text-align:left;padding:12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);min-width:0}.wetProductChoice[aria-pressed="true"]{border-color:var(--text);background:var(--accentSoft)}.wetProductChoice img{width:64px;height:76px;object-fit:contain;background:#fff;border-radius:8px}.wetProductChoice strong,.wetProductChoice small,.wetChoiceState{display:block;overflow-wrap:anywhere}.wetProductChoice strong{font-size:.9rem}.wetProductChoice small{font-size:.75rem;margin:5px 0}.wetChoiceState{font-weight:850;font-size:.8rem}.wetProductChoice:focus-visible,.wetPickerToggle:focus-visible{outline:3px solid var(--text);outline-offset:3px}#wetPickerPanel{padding:12px 0}#wetPickerPanel[hidden]{display:none!important}@media(max-width:600px){.wetProductOptions{grid-template-columns:1fr}}
+
+/* Los importes y controles activos deben conservar contraste en tema oscuro. */
+body[data-mode="dark"] :is(.rowVal,.quickLine strong,.groupHead,.eyebrow,.budgetTot.grand,.back,.cat.active,.sysBtn.active,.sysBtn.active small,.sysNow,.mode[aria-pressed="true"],.color[aria-pressed="true"]){color:var(--text)}
+.budgetLine>div{min-width:0;overflow-wrap:anywhere}
+@media(max-width:380px){.budgetLine,.budgetHead{grid-template-columns:minmax(0,1fr) 46px 68px 68px}}
+
+/* Tarifas: fuentes de precio debajo de cada línea y controles cómodos en móvil. */
+.priceSource{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:end;padding:6px 0 10px}
+.priceSource .small{overflow-wrap:anywhere}.priceSource .btn{grid-column:1/-1;min-height:44px}.priceSource select{min-height:44px}
+.materialsOnly .priceSource{display:none}
+.priceTools{margin:14px 0;border-top:1px solid var(--line);padding-top:12px}.priceTools[hidden],#tariffPreview[hidden],#tariffVatWrap[hidden]{display:none!important}
+.priceCard{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--card);overflow-wrap:anywhere}
+.priceCard h3{font-size:1rem;margin:0 0 6px}.priceOffer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;border-top:1px solid var(--line);padding:12px 0;align-items:center}.priceOffer strong{overflow-wrap:anywhere}
+.priceInline{display:flex;gap:10px;align-items:end}.priceInline label{flex:1;min-width:0}.pricePreviewLine{display:grid;gap:4px;padding:10px 0;border-bottom:1px solid var(--line)}
+.helpCsv{white-space:pre-wrap;overflow-wrap:anywhere;padding:10px;background:var(--soft);border-radius:8px;font-size:.75rem}
+#prices .actions,#list .priceTools .actions{flex-wrap:wrap}#prices .actions .btn{flex:1 1 180px}#prices input,#prices select{font-size:16px;min-height:47px}
+@media(max-width:520px){.priceSource,.priceOffer{grid-template-columns:minmax(0,1fr)}.priceInline{display:grid;grid-template-columns:1fr}.priceInline .btn{width:100%}}
+@media print{.priceSource,.priceTools{display:none!important}}
+.price[aria-invalid="true"]{outline:2px solid var(--text);outline-offset:2px;border-style:dashed}

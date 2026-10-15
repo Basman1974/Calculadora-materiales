@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 // Pruebas de los handlers reales con almacenamiento y DOM simulado.
 // No sustituyen una comprobación visual en Android.
-function fixture({oldSnapshot=false,missing=false,unitPrice=50,quantity='10 ud'}={}){
+function fixture({oldSnapshot=false,missing=false,unitPrice=50,quantity='10 ud',partsOverride}={}){
   class Node {
     constructor(value=''){this.value=value;this.events={};this.dataset={};this.children=[];this.hidden=false;this.invalid='';this.attributes={};this.textContent='';this.classList={toggle:()=>{}};}
     addEventListener(name,fn){(this.events[name]??=[]).push(fn);}
@@ -35,7 +35,7 @@ function fixture({oldSnapshot=false,missing=false,unitPrice=50,quantity='10 ud'}
   const nodes={};
   for(const id of ['jobName','jobClient','jobAddr','jobVat','jobDisc','jobProfitPct','jobProfitPctError','jobDiscError','jobLaborExtra','jobExtra','jobValid','jobNotes','jobNum','coName','coNif','coPhone','coMail','coAddr','saveStatus','listContent','workContent','savedJobs','undoWork','undoDelete','exportPrint','exportCsv','exportWa','shareBudget','jobNew','jobSaveSnap','backupExport','backupImport'])nodes[id]=new Node();
   nodes.backupStatus=new Node();
-  const parts=[{title:'Prueba',zone:'Salón',items:[['Material',quantity,''],['Mano de obra montaje','200,00 €','']]}];
+  const parts=partsOverride||[{title:'Prueba',zone:'Salón',items:[['Material',quantity,''],['Mano de obra montaje','200,00 €','']]}];
   const prices=missing?{}:{Material:unitPrice};
   const meta={name:'Prueba',vat:'21',laborExtra:200,extra:100,disc:0,num:'P-TEST'};
   const storage=new Map([
@@ -227,4 +227,26 @@ test('Los precios unitarios conservan sus decimales en todas las exportaciones',
   await f.fire('exportWa');
   assert.equal(decodeURIComponent(f.opens[1].url.split('?text=')[1]),text);
   await f.fire('shareBudget');assert.equal(f.shared[0].text,text);
+});
+
+test('Cálculo incompleto con precios completos: provisional en todas las exportaciones',async()=>{
+  const f=fixture({partsOverride:[{title:'Techo',items:[['Material','1 ud',''],['Aviso de despiece','Despiece pendiente de validar','Anclajes al soporte']]}]});
+  assert.equal(f.totals().missing,0);assert.equal(f.totals().incomplete,1);
+  await f.fire('exportCsv');assert.match(await f.blobs.at(-1).text(),/partidas con cálculo incompleto/);
+  await f.fire('exportPrint');assert.match(f.opens[0].html,/TOTAL PROVISIONAL/);
+  await f.fire('exportWa');assert.match(decodeURIComponent(f.opens[1].url),/PRESUPUESTO PROVISIONAL/);
+  await f.fire('shareBudget');assert.match(f.shared[0].text,/TOTAL PROVISIONAL/);
+});
+test('Importe adicional no válido: se conserva el anterior y se bloquea la exportación',async()=>{
+  const f=fixture();await f.input('jobExtra','Infinity','change');assert.equal(f.state().jobMeta.extra,100);assert.equal(f.nodes.jobExtra.checkValidity(),false);await f.fire('exportCsv');assert.equal(f.links.length,0);
+});
+test('Una copia con editor mal formado o IVA no válido no sustituye la obra',async()=>{
+  const f=fixture();await f.fire('backupExport');const backup=JSON.parse(await f.blobs.at(-1).text());
+  for(const damage of [()=>backup.work[0].editor={screen:'roof',values:null},()=>{delete backup.work[0].editor;backup.jobMeta.vat='Infinity';}]){
+    damage();f.nodes.backupImport.files=[{size:200,text:async()=>JSON.stringify(backup)}];await f.fire('backupImport','change');assert.match(f.nodes.backupStatus.textContent,/No se ha restaurado/);assert.equal(f.state().work[0].title,'Prueba');
+  }
+});
+
+test('CSV exportado protege nombres de cliente que empiezan por fórmula',async()=>{
+  const f=fixture();f.nodes.jobClient.value='=SUM(A1)';await f.fire('exportCsv');assert.match(await f.blobs.at(-1).text(),/"'=SUM\(A1\)"/);
 });

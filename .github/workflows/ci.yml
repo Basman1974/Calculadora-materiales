@@ -37,7 +37,7 @@ jobs:
           html = ''.join(Path(p).read_text(encoding='utf-8', errors='replace') for p in ['ui-a.html','ui-b.html','ui-c.html'])
           js = ''.join(Path(p).read_text(encoding='utf-8', errors='replace') for p in ['app-a1.js','app-a2.js','app-b.js']) + Path('data.js').read_text(encoding='utf-8', errors='replace')
           missing = []
-          for token in ['id="wall"','id="lining"','id="roof"','id="wet"','id="ceramic"','id="wBoardThick"','id="lBoardThick"','id="cBond"','id="cPattern"','id="cThickness"','id="cJoint"','id="cTrowel"','id="priceCsv"','id="installApp"','data-cer-body','src="app.js?v=','src="data.js?v=','href="style.css']:
+          for token in ['id="wall"','id="lining"','id="roof"','id="wet"','id="ceramic"','id="wBoardThick"','id="lBoardThick"','id="cBond"','id="cPattern"','id="cThickness"','id="cJoint"','id="cTrowel"','id="priceCsv"','id="installApp"','id="prices"','id="supplierForm"','id="tariffForm"','id="previewTariff"','data-cer-body','src="app.js?v=','src="data.js?v=','href="style.css']:
               if token not in html: missing.append('html:'+token)
           for token in ['function calcWall','function calcLining','function calcRoof','function calcWet','function calcLevel','function pylFaceWork','function bestPylBoard','function mmScrews','function ceramicGlueKgM2','function adhesiveClass','function groutKgM2','function rowConfidence','PLACO_HEIGHT_WALL','PLACO_HEIGHT_LINING','choosePlacoHeight','CALC_DATA']:
               if token not in js: missing.append('js:'+token)
@@ -113,5 +113,5 @@ jobs:
           node --check /tmp/app-full.js
           python3 -m json.tool manifest.json >/dev/null
 
-      - name: Pruebas de presupuesto y beneficio industrial
+      - name: Pruebas de materiales, proveedores, presupuestos, fuentes y PWA
         run: node --test tests/*.test.js

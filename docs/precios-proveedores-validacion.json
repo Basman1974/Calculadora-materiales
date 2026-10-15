@@ -1,0 +1,37 @@
+{
+  "date_utc": "2026-10-15T12:00:29.804932+00:00",
+  "base_remote_commit": "cdc20a230cf8b925ea7963ba128e247316614d99",
+  "local_base": "auditoria local 20261012-auditoria",
+  "version": "20261015-precios-proveedores",
+  "node": "v24.19.0",
+  "ci_steps_executed_locally": [
+    {
+      "name": "Comprobar archivos",
+      "exit_code": 0
+    },
+    {
+      "name": "Comprobar interfaz y funciones",
+      "exit_code": 0
+    },
+    {
+      "name": "Sintaxis JavaScript",
+      "exit_code": 0
+    },
+    {
+      "name": "Pruebas de materiales, proveedores, presupuestos, fuentes y PWA",
+      "exit_code": 0
+    }
+  ],
+  "test_cases": {
+    "tests/budget-flows.test.js": 16,
+    "tests/budget.test.js": 22,
+    "tests/materials.test.js": 33,
+    "tests/prices.test.js": 51,
+    "tests/pwa.test.js": 12,
+    "tests/sources.test.js": 3
+  },
+  "total_tests": 137,
+  "browser_check": "Intentado /usr/bin/chromium con Playwright; bloqueado por el entorno: setsockopt: Operation not permitted",
+  "android_check": "No ejecutada",
+  "published": false
+}

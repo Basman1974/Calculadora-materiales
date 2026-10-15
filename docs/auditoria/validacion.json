@@ -1,0 +1,32 @@
+{
+  "date_utc": "2026-10-12T05:38:04.281438+00:00",
+  "node": "v24.19.0",
+  "ci_steps_executed_locally": [
+    {
+      "name": "Comprobar archivos",
+      "exit_code": 0
+    },
+    {
+      "name": "Comprobar interfaz y funciones",
+      "exit_code": 0
+    },
+    {
+      "name": "Sintaxis JavaScript",
+      "exit_code": 0
+    },
+    {
+      "name": "Pruebas de materiales, presupuestos, fuentes y PWA",
+      "exit_code": 0
+    }
+  ],
+  "test_cases": {
+    "tests/budget-flows.test.js": 16,
+    "tests/budget.test.js": 22,
+    "tests/materials.test.js": 33,
+    "tests/pwa.test.js": 12,
+    "tests/sources.test.js": 3
+  },
+  "total_tests": 86,
+  "browser_visual_check": "No ejecutada: Chromium de Playwright no disponible en este entorno",
+  "remote_actions_for_audit": "No ejecutadas: cambios no publicados"
+}

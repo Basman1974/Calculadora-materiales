@@ -9,7 +9,7 @@ window.CALC_DATA = {
       'Termocerámico 29 cm':{dims:[33,20,29],u:15,m:81,p:75,w:12.2,img:'https://media.adeo.com/media/4411230/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico × 29 cm'},
       'Perforado 10 cm':{u:40,m:60,p:360,w:2.3,img:'https://media.adeo.com/media/4405832/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Ladrillo perforado · 10 cm'},
       'Perforado 20 cm':{u:20,m:35,p:180,w:4.2,img:'',spec:'Ladrillo macizo perforado · Ref. 10942085'},
-      'Rojo liso caravista 24x12x5':{dims:[24,12,5],u:67,m:32,p:578,w:1.15,img:'https://media.adeo.com/media/4421256/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Caravista rojo · 24 × 12 × 5 cm'}
+      'Rojo liso caravista 24x12x5':{needsDimensionCheck:true,u:67,m:32,p:578,w:1.15,img:'https://media.adeo.com/media/4421256/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Caravista rojo · 24 × 12 × 5 cm · confirmar alto y espesor'}
     },
     bloques:{
       'Bloque ligero gris 39x19x19':{u:12.5,m:30,p:90,w:14.1,img:'https://media.adeo.com/media/4413313/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Hormigón ligero · gris'},
@@ -20,20 +20,20 @@ window.CALC_DATA = {
       'Bloque gris 39x19x10':{u:12.5,m:18,p:132,w:9,img:'https://media.adeo.com/media/4398369/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Hormigón · 39 × 19 × 10 cm'}
     },
     revestimientos:{
-      'weber.rev fino':{kg:1.7,max:5,p:48,img:'weberrev-fino.jpg',spec:'WEBER · saco 25 kg'},
-      'weberpral prisma':{kg:1.7,max:30,p:48,img:'weberpral-prisma.jpg',spec:'WEBER · monocapa · guía técnica 2025/26: 1,7 kg/m²/mm',url:'https://www.es.weber/files/es/2025-01/GUIA%20WEBER%202025_26_web_12%2C5mb_0.pdf'},
-      'weberev hidro PLUS':{kg:1.8,max:20,p:48,img:'weberev-hidro-plus.jpg',spec:'WEBER · revoco hidrófugo'},
-      'APLICAREV Cal Nature Pro':{kg:1.9,max:20,p:64,img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · Nature Pro'},
-      'Mortero Cal base Aplicarev 25kg BCO':{kg:1.4,max:50,p:48,img:'mortero-cal-base-aplicarev-25kg-bco.jpg',spec:'CAPA · base cal'},
-      'Mortero Cal revoco Aplicarev 25kg BCO':{kg:1.4,max:9,p:48,img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · revoco cal'}
+      'weber.rev fino':{kg:1.7,min:2,max:5,sourceId:'weber-fino-2025',p:48,img:'weberrev-fino.jpg',spec:'WEBER · saco 25 kg'},
+      'weberpral prisma':{kg:1.5,min:12,max:30,maxLayer:15,sourceId:'weber-prisma-2026',p:48,img:'weberpral-prisma.jpg',spec:'WEBER · monocapa · ficha 12/01/2026: 1,5 kg/m²/mm',url:'https://www.es.weber/files/es/2025-01/GUIA%20WEBER%202025_26_web_12%2C5mb_0.pdf'},
+      'weberev hidro PLUS':{kg:1.8,min:10,max:20,maxLayer:10,sourceId:'weber-hidro-2026',p:48,img:'weberev-hidro-plus.jpg',spec:'WEBER · revoco hidrófugo'},
+      'APLICAREV Cal Nature Pro':{kg:1.9,max:20,maxLayer:20,p:42,sourceId:'capa-nature-2024',img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · Nature Pro'},
+      'Mortero Cal base Aplicarev 25kg BCO':{kg:1.4,min:10,max:50,maxLayer:15,sourceId:'capa-base-2025',p:48,img:'mortero-cal-base-aplicarev-25kg-bco.jpg',spec:'CAPA · base cal'},
+      'Mortero Cal revoco Aplicarev 25kg BCO':{kg:1.4,min:7,max:9,maxLayer:9,sourceId:'capa-revoco-2023',p:48,img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · revoco cal'}
     },
     puentes:{
-      'Puente de unión PLUS (MH)':{min:.2,max:.25,k:'litros',img:'puente-union-plus.jpg',spec:'Morteros Henares'},
-      'SikaTop-30':{min:.15,max:.175,k:'kg_range',packKg:5,img:'sikatop-30.jpg',spec:'SIKA · 5 kg · 0,150–0,175 kg/m²',url:'https://esp.sika.com/es/construccion/construir/Aditivos-hormigon-mortero/sikatop-30.html'},
-      'SikaTop-50':{min:.125,max:.15,k:'litros',img:'SikaTop-50.jpg',spec:'SIKA · resina de unión'},
-      'SikaTop-10':{min:.2,max:.5,k:'kg_range',packKg:5,img:'sikatop-10.jpg',spec:'SIKA · 5 kg · 0,20–0,50 kg/m²/capa',url:'https://esp.sika.com/es/repara-tu-casa/salon/sikatop-10.html'},
-      'Puente de Unión Morteros Henares (PTU-20)':{min:.4,max:.45,d:1.4,k:'rango_kilos',img:'puente-de-union-morteros-henares-ptu-20.jpg',spec:'Morteros Henares · PTU-20'},
-      'Aplica primer TOP 5KG':{min:.125,max:.175,d:1.43,k:'rango_kilos',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 kg'},
-      'Imprimacion Aplica Level Primer 5 L':{k:'level_primer',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 L'}
+      'Puente de unión PLUS (MH)':{min:.2,max:.25,k:'kg_range',packL:5,densityMin:1,densityMax:1.05,sourceId:'mh-plus-2023',img:'puente-union-plus.jpg',spec:'Morteros Henares'},
+      'SikaTop-30':{min:.15,max:.175,k:'kg_range',packKg:5,sourceId:'sika-top30-2018',img:'sikatop-30.jpg',spec:'SIKA · 5 kg · 0,150–0,175 kg/m²',url:'https://esp.sika.com/es/construccion/construir/Aditivos-hormigon-mortero/sikatop-30.html'},
+      'SikaTop-50':{min:.125,max:.15,k:'kg_range',packKg:5,sourceId:'sika-top50-2018',img:'SikaTop-50.jpg',spec:'SIKA · resina de unión'},
+      'SikaTop-10':{min:.2,max:.5,k:'kg_range',packKg:5,perCoat:true,sourceId:'sika-top10-2024',img:'sikatop-10.jpg',spec:'SIKA · 5 kg · 0,20–0,50 kg/m²/capa',url:'https://esp.sika.com/es/repara-tu-casa/salon/sikatop-10.html'},
+      'Puente de Unión Morteros Henares (PTU-20)':{min:.4,max:.45,k:'kg_range',packKg:5,sourceId:'mh-ptu20-2024',img:'puente-de-union-morteros-henares-ptu-20.jpg',spec:'Morteros Henares · PTU-20'},
+      'Aplica primer TOP 5KG':{min:.125,max:.175,k:'kg_range',packKg:5,sourceId:'capa-top-2025',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 kg'},
+      'Imprimacion Aplica Level Primer 5 L':{k:'level_primer',sourceId:'capa-level-2023',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 L'}
     }
   };

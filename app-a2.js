@@ -42,11 +42,14 @@
     return {c:'estimate',t:'ESTIMACIÓN'};
   }
   function resultHTML(title, meta, rows){
+    const pending=partNeedsReview({title,items:rows,calculationVersion:'20261012-auditoria'});
+    const conditionalHeight=rows.some(row=>row[0]==='Comprobación de altura');
+    const warning=pending?'Hay elementos sin dimensionar o un despiece pendiente. El presupuesto será provisional.':conditionalHeight?'Altura orientativa según tabla del sistema. Confirma perfiles, placas y condiciones: este cálculo no acredita la validez de perfiles genéricos.':'';
     const quick=rows.filter(x=>!isTechnicalRow(x));
     const quickHtml=quick.map(x=>'<div class="quickLine"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
     const tech=rows.map(x=>{const q=rowConfidence(x);return '<div class="row"><div class="rowName">'+esc(x[0])+' <span class="trust '+q.c+'">'+q.t+'</span></div><div class="rowVal">'+esc(x[1])+'</div>'+(x[2]?'<div class="rowDetail">'+esc(x[2])+'</div>':'')+'</div>';}).join('');
     return '<div class="resultHead"><div class="eyebrow">MATERIALES CALCULADOS</div><div class="resultTitle">'+esc(title)+'</div><div class="resultMeta">'+esc(meta)+'</div></div>'+
-      '<div class="quickResult">'+quickHtml+'</div>'+
+      (warning?'<div class="info" role="status">'+esc(warning)+'</div>':'')+'<div class="quickResult">'+quickHtml+'</div>'+
       '<details class="techDetails"><summary>Ver cálculo técnico, fórmulas y fuentes</summary><div class="groupHead">DETALLE TÉCNICO</div>'+tech+'</details>'+
       '<div class="workZoneWrap"><label>Estancia / zona<input class="workZone" placeholder="Ej. Baño principal"></label></div>'+
       '<div class="actions"><button class="btn addWork" type="button">Añadir a Obra</button></div>';
@@ -58,9 +61,9 @@
       const section=node.closest('.screen');
       const values={}; section.querySelectorAll('input[id],select[id],textarea[id]').forEach(x=>values[x.id]=x.value);
       const z=node.querySelector('.workZone');
-      const copy=Object.assign({},obj,{zone:(z&&z.value.trim())||'General',editor:{screen:section.id,values,cat:currentCat,body:currentCerBody}});
+      const copy=Object.assign({},obj,{calculationVersion:'20261012-auditoria',zone:(z&&z.value.trim())||'General',editor:{screen:section.id,values,cat:currentCat,body:currentCerBody}});
       if(editingPart!==null){work[editingPart]=copy;editingPart=null;}else work.push(copy);
-      saveWork(); b.textContent='Guardado en Obra';
+      freezeJobPrices();saveWork(); b.textContent='Guardado en Obra';
     };
     if(b&&editingPart!==null){b.textContent='Guardar cambios';const z=node.querySelector('.workZone');if(z)z.value=work[editingPart]?.zone||'';}
   }
@@ -136,6 +139,7 @@
   }
 
   function calcWall(){
+    if(!validCalculation('wallResult',[['wL',0.000001],['wH',0.000001],['wA',1,true],['wB',1,true],['wDoors',0,true],['wWins',0,true],['wEdges'],['wLabor'],['wMembraneWaste']],openingsM2(num('wDoors'),num('wWins'))>num('wL')*num('wH')?'Los huecos superan la superficie del tabique.':''))return;
     const L=num('wL'),H=num('wH'),A=L*H,a=num('wA'),b=num('wB'),sp=num('wS')||.6,p=num('wP'),thick=num('wBoardThick')||15;
     const jambs=jambStuds(num('wDoors'),num('wWins')), holes=openingsM2(num('wDoors'),num('wWins')), net=netArea(A,holes);
     const membrane=el('wMembrane');
@@ -164,7 +168,7 @@
     if(membraneFaces) rows.push(['Lámina acústica entre placas',membraneArea.toFixed(2)+' m²',net.toFixed(2)+' m² netos × '+membraneFaces+' cara(s) · '+(membrane.value==='both'?'ambas caras':'cara '+membrane.value)+' · merma '+membraneWaste+' % · precio por m² a introducir']);
     if(structural){
       const mode=doubled?'doble H/cajón':'simple';
-      rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla técnica verificada · M'+useP+' · '+structural.spacing+' mm · '+mode+' · gobierna la cara menos revestida: '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
+      rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla condicional: perfiles del sistema de 0,60 mm, comprobar inercia y compatibilidad · M'+useP+' · '+structural.spacing+' mm · '+mode+' · gobierna la cara menos revestida: '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
       rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),totalStudBars+' barras de 3 m',axes+' ejes/jambas × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
     }else{
       rows.push(['ALTURA FUERA DE TABLA','Requiere sistema de gran altura','No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm. Revisar documentación técnica específica del sistema.']);
@@ -173,12 +177,12 @@
     rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo · barra 3 m']);
     rows.push.apply(rows,pylJoinRows(finish));
     rows.push(mmRow(A,'wall'));
-    rows.push(['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','UNE 102043 · perímetro de canales y arranques']);
+    rows.push(['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','Estimación orientativa · perímetro de canales y arranques']);
     rows.push(tacoRow(L,2));
     const useWool=el('wWool')?el('wWool').value!=='0':true;
     if(useWool)rows.push(woolRow(net,woolThick(useP,'wall'),'wall'));
     if(holes)rows.push(['Huecos descontados',holes.toFixed(2)+' m²',(num('wDoors')||0)+' puerta(s) 0,80×2,10 · '+(num('wWins')||0)+' ventana(s) 1,20×1,20 · restan placa, pasta, cinta y lana']);
-    rows.push(cornerBeadRow(H,num('wDoors')));
+    if(num('wEdges'))rows.push(cornerBeadRow(num('wEdges')));
     const lab=laborRow(net,num('wLabor'),'tabique');if(lab)rows.push(lab);
     const obj={title:'Tabique PYL · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
     renderWallSketch(a,b,useP,useSp,useWool);
@@ -189,7 +193,7 @@
   on(el('wallForm'),'submit',e=>{e.preventDefault();calcWall();});
   ['wA','wB','wP','wS','wBoardThick','wWool','wBoardType','wDoors','wWins','wLabor'].forEach(id=>on(el(id),'change',calcWall));
   on(el('wMembrane'),'change',calcWall);
-  ['wL','wH','wMembraneWaste'].forEach(id=>on(el(id),'input',calcWall));
+  ['wL','wH','wEdges','wMembraneWaste'].forEach(id=>on(el(id),'input',calcWall));
   document.addEventListener('change', e => {
     const id=e.target && e.target.id;
     if(['wA','wB','wP','wS','wBoardThick','wWool','wBoardType'].includes(id)) calcWall();
@@ -218,6 +222,7 @@
     return active?['Lámina acústica entre placas',area.toFixed(2)+' m²',net.toFixed(2)+' m² netos · una lámina entre dos placas · merma '+waste+' % · precio por m² a introducir']:null;
   }
   function calcLining(){
+    if(!validCalculation('liningResult',[['lL',0.000001],['lH',0.000001],['lLayers',1,true],['lDoors',0,true],['lWins',0,true],['lEdges'],['lWaste'],['lLabor'],['lMembraneWaste'],...(el('lType').value==='direct'?[['lPasteRate',0.000001]]:[])],openingsM2(num('lDoors'),num('lWins'))>num('lL')*num('lH')?'Los huecos superan la superficie del trasdosado.':''))return;
     const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=t==='direct'?1:num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15,waste=Math.max(0,num('lWaste')||0),wf=1+waste/100;
     const holes=openingsM2(num('lDoors'),num('lWins')),net=netArea(A,holes),board=bestPylBoard(H),kind=boardTypeLabel('lBoardType');
     const liningPlates=Math.ceil(net*l/board.area*wf);
@@ -226,14 +231,15 @@
     const membraneRow=singleFaceMembrane('l',t!=='direct'&&l>=2,net);
     if(membraneRow) rows.push(membraneRow);
     if(el('lLayersWrap'))el('lLayersWrap').classList.toggle('hidden',t==='direct');
-    if(el('lProfileWrap'))el('lProfileWrap').classList.toggle('hidden',t==='direct');
+    if(el('lProfileWrap'))el('lProfileWrap').classList.toggle('hidden',t!=='auto');
     if(el('lSpacingWrap'))el('lSpacingWrap').classList.toggle('hidden',t==='direct');
     if(el('lWoolWrap'))el('lWoolWrap').classList.toggle('hidden',t==='direct');
     if(el('lWoolHint'))el('lWoolHint').classList.toggle('hidden',t==='direct');
+    if(el('lPasteRateWrap'))el('lPasteRateWrap').classList.toggle('hidden',t!=='direct');
     const finish=mergeFaceWork([pylFaceWork(net,l,thick)]);
     const useWool=t!=='direct'&&el('lWool')&&el('lWool').value!=='0';
     if(t==='direct'){
-      title='Trasdosado directo';const pasteKg=net*5*wf;rows.push(['Pasta de agarre',Math.ceil(pasteKg/20)+' saco(s) de 20 kg',pasteKg.toFixed(1)+' kg · 5,0 kg/m² base · merma '+waste+' % · rendimiento de ficha técnica · UNE-EN 14496']);
+      title='Trasdosado directo';const pasteRate=el('lPasteRate')?num('lPasteRate'):5,pasteKg=net*pasteRate*wf;rows.push(['Pasta de agarre',Math.ceil(pasteKg/20)+' saco(s) de 20 kg',pasteKg.toFixed(1)+' kg · '+pasteRate.toString().replace('.',',')+' kg/m² configurados · merma '+waste+' % · referencia aproximada, depende del soporte y producto']);
     }else if(t==='semi'){
       title='Trasdosado semidirecto';const o=Math.ceil(L/sp)+1;rows.push(['Perfil omega / auxiliar',o*Math.ceil(H/3)+' barras','UNE-EN 14195 · '+o+' ejes'],tacoRow(H,o,'omega'));if(useWool)rows.push(woolRow(net,woolThick(p,'semi'),'semi'));
     }else{
@@ -243,19 +249,19 @@
       const jambs=jambStuds(num('lDoors'),num('lWins')),axes=Math.ceil(L/useSp)+1+jambs,bandNeed=2*L+2*H;
       if(structural){
         const mult=doubled?2:1,seg=profileSegments(H,useP),bars=axes*mult*seg.segments,mode=doubled?'doble H/cajón':'simple';
-        rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla técnica verificada de trasdosado autoportante sin arriostrar · M'+useP+' · '+structural.spacing+' mm · '+mode+' · '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
+        rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla condicional de trasdosado sin arriostrar; perfiles del sistema de 0,60 mm, comprobar inercia y compatibilidad · M'+useP+' · '+structural.spacing+' mm · '+mode+' · '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
         rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),bars+' barras de 3 m',axes+' ejes/jambas × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
       }else{
         const bad125=(l===1&&thick<14);
         rows.push(['ALTURA / CONFIGURACIÓN FUERA DE TABLA','Revisar documentación técnica del sistema',bad125?'La tabla cargada no da valor para 1×12,5 mm en trasdosado autoportante.':'No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm.']);
         rows.push(['Montantes','No dimensionados','No se genera una cantidad estructural falsa fuera de la tabla verificada.']);
       }
-      rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo'],['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','UNE 102043 · perímetro'],tacoRow(L,2));
+      rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo'],['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','Estimación orientativa · perímetro'],tacoRow(L,2));
       if(useWool)rows.push(woolRow(net,woolThick(useP,'auto'),'auto'));
     }
     if(t!=='direct'){rows.push.apply(rows,pylJoinRows(finish));rows.push(mmRow(A,'lining'));}else rows.push.apply(rows,pylJoinRows(finish).filter(r=>r[0].indexOf('Tornillos')!==0));
     if(holes)rows.push(['Huecos descontados',holes.toFixed(2)+' m²',(num('lDoors')||0)+' puerta(s) · '+(num('lWins')||0)+' ventana(s) · restan placa y acabado']);
-    if(t!=='direct')rows.push(cornerBeadRow(H,num('lDoors')));
+    if(num('lEdges'))rows.push(cornerBeadRow(num('lEdges')));
     const lab=laborRow(net,num('lLabor'),'trasdosado');if(lab)rows.push(lab);
     const famNote=t==='direct'?'Familia Trasdosado directo':t==='semi'?'Familia Trasdosado semidirecto':'Familia Trasdosado autoportante';
     const obj={title:title+' · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
@@ -290,7 +296,7 @@
   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
   ['lType','lLayers','lS','lP','lBoardThick','lWool','lWaste','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
   on(el('lMembrane'),'change',calcLining);
-  ['lL','lH','lMembraneWaste'].forEach(id => on(el(id), 'input', calcLining));
+  ['lL','lH','lEdges','lPasteRate','lMembraneWaste'].forEach(id => on(el(id), 'input', calcLining));
   const roofMeta = {
     double:{fam:'continuo',famName:'Continuo PYL',name:'Doble TC47',hint:'Primaria + secundaria · 47/500'},
     simple:{fam:'continuo',famName:'Continuo PYL',name:'TC47 simple',hint:'Una estructura 47/500 suspendida'},
@@ -347,9 +353,16 @@
   }
   function empalmeRow(n){
     const ud = Math.max(0, Math.ceil(n));
-    return ['Empalme TC47', ud + ' uds · ' + Math.ceil(ud / 50) + ' caja(s) de 50', 'UNE 102043 · unión de barras de 3 m · 1 pieza por junta de perfil'];
+    return ['Empalme TC47', ud + ' uds · ' + Math.ceil(ud / 50) + ' caja(s) de 50', 'Estimación orientativa · unión de barras de 3 m · 1 pieza por junta de perfil'];
+  }
+  function rodRow(hangers,dropCm){
+    const length=dropCm/100;
+    if(length<=0||length>1)return ['Varilla M6','No dimensionados','Selecciona longitud comercial y margen de montaje: la varilla de 1 m no cubre este plenum.'];
+    const cuts=Math.floor(1/length+1e-10);
+    return ['Varilla M6 1 m',Math.ceil(hangers/cuts)+' uds',hangers+' suspensiones · '+cuts+' corte(s) de '+dropCm+' cm por varilla · añadir margen para fijación y regulación según montaje'];
   }
   function calcRoof(){
+    if(!validCalculation('roofResult',[['rL',0.000001],['rW',0.000001],['rLayers',1,true],['rDrop'],['rHoles'],['rWaste'],['rLabor'],['rMembraneWaste']],num('rHoles')>num('rL')*num('rW')?'Los huecos superan la superficie del techo.':''))return;
     const L = num('rL'), W = num('rW'), A = L * W, l = num('rLayers'), waste=Math.max(0,num('rWaste')||0), wf=1+waste/100;
     const holes = num('rHoles'), net = netArea(A, holes);
     const kind = boardTypeLabel('rBoardType');
@@ -363,33 +376,34 @@
     let rows = [], title = 'Techo', meta = 'plenum ' + d + ' cm';
     if(sys === 'desmontable60' || sys === 'desmontable120'){
       const tile60 = sys === 'desmontable60';
-      const tileUds = Math.ceil(net * (tile60 ? 2.78 : 1.39) * wf);
-      const primM = A * 0.84, sec12M = A * (tile60 ? 1.67 : 0.84), sec6M = A * (tile60 ? 0.84 : 1.67);
+      const tileUds = Math.ceil(net / (tile60 ? 0.36 : 0.72) * wf - 1e-10);
+      const primM = A * 0.83, sec12M = A * 1.67, sec6M = tile60 ? A * 0.83 : 0;
       const hang = Math.ceil(A * 0.70), peri = 2 * (L + W);
       title = tile60 ? 'Techo desmontable 60 × 60' : 'Techo desmontable 60 × 120';
       meta = 'Perfilería T24 vista · primarios cada 1,20 m';
       rows = [
         [tile60 ? 'Placa desmontable 600 × 600' : 'Placa desmontable 600 × 1200', tileUds + ' uds', (tile60 ? '2,78' : '1,39') + ' ud/m² · merma '+waste+' % · sistema T24'],
-        ['Perfil T24 primario 3600', Math.ceil(primM / 3.6) + ' barras', primM.toFixed(1) + ' m · 0,84 m/m²'],
-        ['Perfil T24 secundario 1200', Math.ceil(sec12M / 1.2) + ' barras', sec12M.toFixed(1) + ' m · ' + (tile60 ? '1,67' : '0,84') + ' m/m²'],
-        ['Perfil T24 secundario 600', Math.ceil(sec6M / 0.6) + ' barras', sec6M.toFixed(1) + ' m · ' + (tile60 ? '0,84' : '1,67') + ' m/m²'],
+        ['Perfil T24 primario 3600', Math.ceil(primM / 3.6) + ' barras', primM.toFixed(2) + ' m · referencia de sistema T24: 0,83 m/m²'],
+        ['Perfil T24 secundario 1200', Math.ceil(sec12M / 1.2) + ' barras', sec12M.toFixed(2) + ' m · referencia de sistema T24: 1,67 m/m²'],
+        ['Perfil T24 secundario 600', Math.ceil(sec6M / 0.6) + ' barras', sec6M.toFixed(2) + ' m · referencia de sistema T24: 0,83 m/m²'],
         ['Ángulo perimetral T24', Math.ceil(peri / 3) + ' barras', peri.toFixed(1) + ' m de perímetro · barra 3 m'],
         ['Cuelgues / suspensiones', hang + ' uds', '0,70 ud/m² · primarios cada 1,20 m'],
         ['Varilla o cuelgue', hang + ' uds', 'Plenum ' + d + ' cm · una por suspensión']
       ];
+      if(!tile60)rows=rows.filter(row=>row[0]!=='Perfil T24 secundario 600');
     } else if(sys === 'escayola'){
-      const plates = Math.ceil(net * 1.67 * wf);
+      const plates = Math.ceil(net / 0.6 * wf - 1e-10);
       const fix = Math.ceil(A * 3);
       const estopa = A * 0.22;
       const pasta = A * 6;
       title = 'Techo fijo de escayola';
-      meta = 'Fijación por estopa · mín. 3 puntos/m²';
+      meta = 'Estimación de fijación por estopa · comprobar el sistema';
       rows = [
         ['Placa de escayola 1000 × 600', plates + ' uds', '1,67 ud/m² · merma '+waste+' % · placa nervada habitual'],
-        ['Fijaciones de estopa', fix + ' uds', 'NTE · mínimo 3 puntos/m² no alineados · solo si plenum ≤ 25 cm'],
+        ['Fijaciones de estopa', fix + ' uds', 'Estimación orientativa de 3 puntos/m²; validar fijación y plenum con documentación del sistema'],
         ['Estopa / fibra vegetal', Math.ceil(estopa) + ' kg', '0,22 kg/m² · esparto o sisal amasado con pasta'],
         ['Pasta de escayola UNE-EN 13279-1', Math.ceil(pasta / 20) + ' saco(s) de 20 kg', pasta.toFixed(1) + ' kg · estopadas + juntas + enlucido'],
-        ['Aviso de plenum', d > 25 ? 'Plenum ' + d + ' cm: usar varilla, no solo estopa' : 'Plenum ' + d + ' cm válido para estopa', 'Estopa admisible hasta 25 cm de separación al forjado']
+        ['Aviso de plenum', d > 25 ? 'Plenum ' + d + ' cm: fijación pendiente de dimensionar' : 'Plenum ' + d + ' cm: verificar fijación', 'Límite histórico pendiente de contraste; comprobar la solución técnica']
       ];
     } else {
       const plates = Math.ceil(net * l * wf / (fmt[0] * fmt[1]));
@@ -397,23 +411,24 @@
       if(sys === 'double'){
         title = 'Techo doble TC47';
         const prim = tc47Pack(L, W, 0.9, 3), sec = tc47Pack(W, L, 0.5, 3);
-        rows.push(['TC47 primario 3000', prim.bars + ' barras', 'UNE 102043 · referencia conservadora 0,90 m · ' + prim.runs + ' recorridos · ' + prim.ml.toFixed(1) + ' m'], ['TC47 secundario 3000', sec.bars + ' barras', 'UNE 102043 · cada 0,50 m · ' + sec.runs + ' recorridos · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(prim.splices + sec.splices), ['Crucetas', Math.ceil(A / .475) + ' uds', 'Cruces primaria-secundaria'], ['Horquillas', Math.ceil(A / .99) + ' uds', '≈1,01 ud/m² · valor medio conservador contrastado entre varias tablas técnicas'], ['Varilla M6 1 m', Math.ceil(A / .99 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
+        rows.push(['TC47 primario 3000', prim.bars + ' barras', 'Estimación orientativa · referencia conservadora 0,90 m · ' + prim.runs + ' recorridos · ' + prim.ml.toFixed(1) + ' m'], ['TC47 secundario 3000', sec.bars + ' barras', 'Estimación orientativa · cada 0,50 m · ' + sec.runs + ' recorridos · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(prim.splices + sec.splices), ['Crucetas', prim.runs * sec.runs + ' uds', 'Cruces primaria-secundaria'], ['Horquillas', Math.ceil(A / .99) + ' uds', '≈1,01 ud/m² · estimación orientativa pendiente de verificar para el sistema'], rodRow(Math.ceil(A/.99),d));
       } else if(sys === 'simple'){
         title = 'Techo TC47 simple';
         const pack = tc47Pack(Math.max(L, W), Math.min(L, W), 0.5, 3);
-        rows.push(['TC47 portante 3000', pack.bars + ' barras', 'UNE 102043 · cada 0,50 m · ' + pack.runs + ' recorridos · ' + pack.ml.toFixed(1) + ' m'], empalmeRow(pack.splices), ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / 1.2 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
+        rows.push(['TC47 portante 3000', pack.bars + ' barras', 'Estimación orientativa · cada 0,50 m · ' + pack.runs + ' recorridos · ' + pack.ml.toFixed(1) + ' m'], empalmeRow(pack.splices), ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], rodRow(Math.ceil(A/1.2),d));
       } else if(sys === 'sierra'){
         title = 'Techo perfil sierra';
         const sec = tc47Pack(Math.max(L, W), Math.min(L, W), 0.5, 3);
         rows.push(['Perfil sierra', Math.ceil(A / 2.7) + ' barras', 'Estimación 0,37 barra/m² · verificar despiece de forjado'], ['TC47 secundario 3000', sec.bars + ' barras', 'Secundario cada 0,50 m · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(sec.splices), ['Suspensiones', Math.ceil(A / .95) + ' uds', 'Puntos de suspensión']);
       } else {
         title = 'Techo canal + montante';
-        rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'UNE-EN 14195 · apoyo perimetral'], ['Montante M70', Math.ceil(A / 1.8) + ' barras', 'UNE-EN 14195 · elemento portante biapoyado'], ['Comprobación de luz', 'Verificar tabla técnica D13', 'Sistema biapoyado: no lleva suspensiones. La luz admisible depende de perfil, modulación, placas y carga.']);
+        rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'UNE-EN 14195 · apoyo perimetral'], ['Montante M70', 'No dimensionados', 'Definir luz, sección, modulación, placas y cargas mediante la tabla del sistema; no se utiliza un ratio por m² para dimensionar el elemento portante'], ['Comprobación de luz', 'Verificar tabla técnica D13', 'Sistema biapoyado: no lleva suspensiones. La luz admisible depende de perfil, modulación, placas y carga.']);
       }
       rows.push.apply(rows, pylJoinRows(mergeFaceWork([pylFaceWork(net, l)])));
       rows.push(mmRow(A, 'roof'));
-      meta = 'UNE 102043 · plenum ' + d + ' cm';
+      meta = 'Estimación de materiales · plenum ' + d + ' cm';
     }
+    rows.push(['Aviso de despiece','Despiece pendiente de validar','Verificar sistema, carga, luz, disposición y anclajes al soporte. No equivale a una solución estructural aprobada.']);
     if(membraneRow) rows.splice(1,0,membraneRow);
     if(holes) rows.push(['Huecos descontados', holes.toFixed(2) + ' m²', 'Restan placa y acabado. La perfilería va a la superficie bruta.']);
     const lab = laborRow(net, num('rLabor'), 'techo');
@@ -458,7 +473,7 @@
       title.textContent=name;spec.textContent=item.spec||'Consulta las características al seleccionarlo';state.className='wetChoiceState';state.textContent=name===selected?'✓ Seleccionado':'Seleccionar';text.append(title,spec,state);b.append(img,text);
       b.onclick=()=>{
         el('wetProduct').value=name;
-        if(currentCat==='ladrillos'&&Array.isArray(item.dims))['wetBrickL','wetBrickH','wetBrickT'].forEach((id,i)=>el(id).value=String(item.dims[i]));
+        applyWetDefaults(item);
         el('wetProduct').dispatchEvent(new Event('change',{bubbles:true}));closeWetPicker();
       };
       box.appendChild(b);
@@ -488,15 +503,15 @@
     Object.keys(group).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; s.appendChild(o); });
     if(prev && group[prev]) s.value = prev;
     else s.selectedIndex = 0;
-    if(currentCat==='ladrillos'){
-      const it=group[s.value];
-      if(it && Array.isArray(it.dims)){
-        if(el('wetBrickL')) el('wetBrickL').value=String(it.dims[0]);
-        if(el('wetBrickH')) el('wetBrickH').value=String(it.dims[1]);
-        if(el('wetBrickT')) el('wetBrickT').value=String(it.dims[2]);
-      }
-    }
+    if(s.value!==prev)applyWetDefaults(group[s.value]);
     syncWet();
+  }
+  function applyWetDefaults(item){
+    if(!item)return;
+    if(currentCat==='ladrillos')['wetBrickL','wetBrickH','wetBrickT'].forEach((id,i)=>{if(el(id))el(id).value=Array.isArray(item.dims)?String(item.dims[i]):'';});
+    if(el('wetConsumption')&&item.k==='kg_range')el('wetConsumption').value=String((item.min+item.max)/2);
+    if(el('wetCoats'))el('wetCoats').value='1';
+    if(el('wetBlockMortar')&&item.m)el('wetBlockMortar').value=String(item.m);
   }
   function wetArea(){ return (el('wetMeasureMode') && el('wetMeasureMode').value === 'direct') ? num('wetArea') : num('wetL') * num('wetH'); }
   function syncWet(){
@@ -511,8 +526,13 @@
     if(el('wetThicknessWrap')) el('wetThicknessWrap').classList.toggle('hidden', currentCat !== 'revestimientos');
     if(el('wetBrickDimsWrap')) el('wetBrickDimsWrap').classList.toggle('hidden', currentCat !== 'ladrillos');
     if(el('wetMortarWrap')) el('wetMortarWrap').classList.toggle('hidden', !(currentCat === 'ladrillos' || currentCat === 'bloques'));
+    if(el('wetMortarWasteWrap')) el('wetMortarWasteWrap').classList.toggle('hidden', !['ladrillos','bloques'].includes(currentCat));
     if(el('wetMortarYieldWrap')) el('wetMortarYieldWrap').classList.toggle('hidden', !(currentCat === 'ladrillos' && el('wetMortar') && el('wetMortar').value === 'predosificado'));
     if(el('wetSupportWrap')) el('wetSupportWrap').classList.toggle('hidden', !(currentCat === 'puentes' && it && it.k === 'level_primer'));
+    if(el('wetConsumptionWrap'))el('wetConsumptionWrap').classList.toggle('hidden',!(currentCat==='puentes'&&it?.k==='kg_range'));
+    if(el('wetCoatsWrap'))el('wetCoatsWrap').classList.toggle('hidden',!(currentCat==='puentes'&&it?.perCoat));
+    if(el('wetBlockMortarWrap'))el('wetBlockMortarWrap').classList.toggle('hidden',currentCat!=='bloques');
+    if(el('wetConsumptionHint')&&it?.k==='kg_range')el('wetConsumptionHint').textContent='Referencia aproximada '+it.min+'–'+it.max+' kg/m²'+(it.perCoat?'/capa':'')+'. El valor inicial es la media: ajústalo según el soporte.';
     if(it){
       if(el('productImg')){
         el('productImg').onerror = function(){ this.onerror = null; this.src = productImgSrc({}); };
@@ -523,7 +543,7 @@
       const chips = [];
       if(it.u && currentCat!=='ladrillos') chips.push(it.u + ' ud/m²');
       if(it.kg) chips.push(it.kg + ' kg/m²·mm');
-      if(it.min != null && it.max != null) chips.push(it.min === it.max ? it.min + ' consumo' : it.min + '–' + it.max + ' consumo');
+      if(it.min != null && it.max != null) chips.push(it.min+'–'+it.max+' '+(currentCat==='revestimientos'?'mm de espesor':it.k==='kg_range'?'kg/m²'+(it.perCoat?'/capa':''):'consumo'));
       if(el('productChips')) el('productChips').innerHTML = chips.map(x => '<span class="chip">' + x + '</span>').join('');
     }
     if(el('wetInfo')) el('wetInfo').textContent = currentCat === 'ladrillos'

@@ -5,11 +5,11 @@ const {join} = require('node:path');
 const vm = require('node:vm');
 const root = join(__dirname,'..');
 
-function worker({failInstall=false,offline=false} = {}){
-  const events={},deleted=[],requests=[],matches=[];
+function worker({failInstall=false,offline=false,status=200,cached='recurso-cache'} = {}){
+  const events={},deleted=[],requests=[],matches=[],puts=[];
   let skipped=0,claimed=0;
   const context=vm.createContext({
-    URL,location:{origin:'https://calculadora.test'},
+    URL,Response,location:{origin:'https://calculadora.test'},
     Request:class {constructor(path,options){this.url=path;this.cache=options.cache;}},
     self:{
       addEventListener:(name,handler)=>events[name]=handler,
@@ -18,16 +18,17 @@ function worker({failInstall=false,offline=false} = {}){
     caches:{
       open:async()=>({
         addAll:async list=>{requests.push(...list);if(failInstall)throw new Error('Recurso no disponible');},
-        put:async()=>{}
+        put:async request=>{puts.push(request);},
+        match:async(request,options)=>{matches.push({request,options});return request==='./'?'pagina-cache':cached;}
       }),
-      keys:async()=>['calculadora-construccion-antigua','otra-aplicacion','calculadora-construccion-20261012-beneficio-industrial'],
+      keys:async()=>['calculadora-construccion-antigua','otra-aplicacion','calculadora-construccion-20261015-precios-proveedores'],
       delete:async key=>{deleted.push(key);},
-      match:async(request,options)=>{matches.push({request,options});return 'recurso-cache';}
+      match:async()=>{throw Error('No debe consultar otras cachés');}
     },
-    fetch:async()=>{if(offline)throw new Error('Sin conexión');return {clone:()=>({})};}
+    fetch:async()=>{if(offline)throw new Error('Sin conexión');return {ok:status>=200&&status<300,status,clone:()=>({})};}
   });
   vm.runInContext(readFileSync(join(root,'service-worker.js'),'utf8'),context);
-  return {events,deleted,requests,matches,get skipped(){return skipped;},get claimed(){return claimed;}};
+  return {events,deleted,requests,matches,puts,get skipped(){return skipped;},get claimed(){return claimed;}};
 }
 
 test('La caché completa se descarga antes de activar la actualización',async()=>{
@@ -66,6 +67,26 @@ test('Sin conexión, recupera recursos versionados ignorando los parámetros',as
   assert.equal(await promise,'recurso-cache');
   assert.equal(w.matches[0].options.ignoreSearch,true);
 });
+test('Un JS ausente sin conexión recibe 503 y nunca una página HTML',async()=>{
+  let promise;
+  // null evita el valor predeterminado de la fixture.
+  const empty=worker({offline:true,cached:null});
+  empty.events.fetch({request:{method:'GET',mode:'cors',url:'https://calculadora.test/ausente.js'},respondWith:p=>promise=p});
+  const response=await promise;assert.equal(response.status,503);assert.equal(empty.matches.some(m=>m.request==='./'),false);
+});
+test('La navegación sin conexión puede recuperar el inicio',async()=>{
+  const w=worker({offline:true,cached:null});let promise;
+  w.events.fetch({request:{method:'GET',mode:'navigate',url:'https://calculadora.test/otra'},respondWith:p=>promise=p});
+  assert.equal(await promise,'pagina-cache');
+});
+for(const status of [404,500,200]){
+  test('HTTP '+status+': solo se cachean respuestas correctas y se espera la escritura',async()=>{
+    const w=worker({status});let response,write;
+    w.events.fetch({request:{method:'GET',url:'https://calculadora.test/app.js'},respondWith:p=>response=p,waitUntil:p=>write=p});
+    await response;if(write)await write;
+    assert.equal(w.puts.length,status===200?1:0);
+  });
+}
 
 for(const readyState of ['loading','complete']){
   test('Registro del service worker con documento '+readyState,async()=>{
@@ -85,3 +106,10 @@ for(const readyState of ['loading','complete']){
     assert.equal(registered,1);
   });
 }
+
+test('Las dimensiones declaradas del logo corresponden a las del PNG real',()=>{
+  const png=readFileSync(join(root,'logo.png'));const size=png.readUInt32BE(16)+'x'+png.readUInt32BE(20);
+  const manifest=JSON.parse(readFileSync(join(root,'manifest.json'),'utf8'));
+  assert.equal(manifest.icons.find(icon=>icon.src==='logo.png').sizes,size);
+  // No afirma que este logo rectangular cumpla los tamaños de instalación.
+});

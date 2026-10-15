@@ -3,15 +3,32 @@
   const $all = s => [...document.querySelectorAll(s)];
   const cache = Object.create(null);
   function el(id){ if(cache[id] === undefined) cache[id] = document.getElementById(id); return cache[id]; }
-  function num(id){ const n = el(id); if(!n) return 0; return Math.max(0, Number(String(n.value).replace(',','.')) || 0); }
+  function finiteAmount(value){ const n=Number(String(value ?? '').replace(',','.')); return Number.isFinite(n)&&n>=0?n:0; }
+  function num(id){ const n = el(id); return n?finiteAmount(n.value):0; }
+  function validCalculation(resultId, rules, message=''){
+    const errors=[];
+    const section=el(resultId)?.closest('.screen');
+    if(section)section.querySelectorAll('input,select').forEach(input=>{input.setCustomValidity('');input.setAttribute('aria-invalid','false');});
+    rules.forEach(([id,min=0,integer=false])=>{
+      const input=el(id);if(!input)return;
+      const text=String(input.value).trim(),value=Number(text.replace(',','.'));
+      const valid=text!==''&&Number.isFinite(value)&&value>=min&&(!integer||Number.isInteger(value));
+      const error=valid?'':'Introduce un número '+(integer?'entero ':'')+(min===0.000001?'mayor que 0':'igual o mayor que '+min)+'.';
+      input.setCustomValidity(error);input.setAttribute('aria-invalid',String(!valid));
+      if(!valid)errors.push(error);
+    });
+    if(message)errors.push(message);
+    if(errors.length){const box=el(resultId);if(box)box.innerHTML='<div class="info" role="alert">'+esc(message||errors[0])+'</div>';return false;}
+    return true;
+  }
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261012-beneficio-industrial');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261015-precios-proveedores');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261012-beneficio-industrial')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261015-precios-proveedores')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
@@ -31,6 +48,15 @@
   try { jobMeta = Object.assign(jobMeta, normalizeJobMeta(JSON.parse(localStorage.getItem(JOB_KEY) || '{}') || {})); } catch(e){}
   try { company = Object.assign(company, JSON.parse(localStorage.getItem(CO_KEY) || '{}') || {}); } catch(e){}
   try { savedJobs = JSON.parse(localStorage.getItem(SNAP_KEY) || '[]') || []; } catch(e){ savedJobs = []; }
+  // No sobrescribir datos dañados al arrancar: una copia aún puede recuperarlos.
+  if(!Array.isArray(work))work=[];
+  const validPart=part=>part&&typeof part==='object'&&typeof part.title==='string'&&Array.isArray(part.items)&&part.items.every(row=>Array.isArray(row)&&row.length>=2&&row.every(value=>typeof value==='string'));
+  const validEditor=cfg=>cfg&&typeof cfg==='object'&&['wall','lining','roof','wet','ceramic'].includes(cfg.screen)&&cfg.values&&typeof cfg.values==='object'&&!Array.isArray(cfg.values)&&Object.values(cfg.values).every(value=>typeof value==='string');
+  work=work.filter(validPart).map(part=>{if(part.editor&&!validEditor(part.editor))delete part.editor;return part;});
+  if(!priceBook||typeof priceBook!=='object'||Array.isArray(priceBook))priceBook={};
+  if(!Array.isArray(savedJobs))savedJobs=[];
+  savedJobs=savedJobs.filter(job=>job&&typeof job==='object'&&Array.isArray(job.work)&&job.work.every(validPart)&&job.meta&&typeof job.meta==='object'&&!Array.isArray(job.meta));
+  savedJobs.forEach(job=>job.work.forEach(part=>{if(part.editor&&!validEditor(part.editor))delete part.editor;}));
 
   function money(n){ return (Math.round((Number(n)||0)*100)/100).toFixed(2).replace('.', ','); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -39,12 +65,8 @@
   function jambStuds(doors, wins){
     return Math.max(0, Math.round(Number(doors)||0)) * 2 + Math.max(0, Math.round(Number(wins)||0)) * 2;
   }
-  function cornerBeadRow(H, doors){
-    const h = Math.max(0, Number(H)||0);
-    const d = Math.max(0, Math.round(Number(doors)||0));
-    const runs = 2 + d * 2;
-    const m = runs * h;
-    return ['Guardavivos metálico', m.toFixed(1) + ' m · ' + Math.ceil(m / 3) + ' barras de 3 m', '2 cantos del paño + 2 jambas por puerta · ' + runs + ' verticales × ' + h.toFixed(2) + ' m · no sustituye rincones de proyecto'];
+  function cornerBeadRow(m){
+    return ['Guardavivos metálico', m.toFixed(2) + ' m · ' + Math.ceil(m / 3) + ' barras de 3 m', 'Longitud de aristas expuestas medida por el usuario; no presupone cantos libres ni jambas a toda altura.'];
   }
   function boardTypeLabel(id){
     const v = el(id) ? el(id).value : 'normal';
@@ -61,6 +83,8 @@
     return m ? Math.abs(Number(m[0])) : 0;
   }
   function lineUnit(name, val){
+    const container=String(val||'').match(/^\s*\d+(?:[.,]\d+)?\s*(envase(?:\(s\)|s)?|bote(?:s)?)\b/i);
+    if(container)return container[1].toLowerCase().startsWith('bote')?'bote':'envase';
     const explicit=String(val||'').match(/^\s*\d+(?:[.,]\d+)?\s*(m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|rollos?\b|cajas?\b|panel(?:es)?\b|L\b)/i);
     if(explicit){const u=explicit[1].toLowerCase();return ({m2:'m²',uds:'ud',barras:'barra',sacos:'saco',rollos:'rollo',cajas:'caja',paneles:'panel',l:'L'})[u]||u;}
 
@@ -93,7 +117,8 @@
     return Number.isFinite(n) && n >= 0 && n <= max ? n : null;
   }
   function normalizeJobMeta(meta){
-    return Object.assign({}, meta, {profitPct:percentageValue(meta.profitPct, 1000) ?? 0, disc:percentageValue(meta.disc, 100) ?? 0});
+    if(!meta||typeof meta!=='object'||Array.isArray(meta))meta={};
+    return Object.assign({}, meta, {profitPct:percentageValue(meta.profitPct, 1000) ?? 0, disc:percentageValue(meta.disc, 100) ?? 0,vat:percentageValue(meta.vat,100)??21,laborExtra:finiteAmount(meta.laborExtra),extra:finiteAmount(meta.extra)});
   }
   function decimalText(value){
     return Number(value).toLocaleString('es-ES', {useGrouping:false, maximumSignificantDigits:21});
@@ -115,21 +140,29 @@
   }
   function budgetInputValid(){
     readJobFields();
-    for(const id of ['jobProfitPct','jobDisc']){
+    for(const id of ['jobProfitPct','jobDisc','jobLaborExtra','jobExtra']){
       const input = el(id);
       if(input && !input.checkValidity()){ input.reportValidity(); input.focus(); return false; }
     }
+    for(const input of el('listContent')?.querySelectorAll('[data-price-key]')||[]){if(!input.checkValidity()){input.reportValidity();input.focus();return false;}}
     return true;
   }
+  function readBudgetAmount(id,previous){
+    const input=el(id);if(!input)return finiteAmount(previous);
+    const value=percentageValue(input.value,Number.MAX_VALUE);
+    input.setCustomValidity(value===null?'Introduce un importe válido igual o mayor que 0. Se conserva el último importe válido.':'');
+    input.setAttribute('aria-invalid',String(value===null));
+    return value===null?finiteAmount(previous):value;
+  }
   function readJobFields(){
-    jobMeta.name = (el('jobName') && el('jobName').value) || jobMeta.name || '';
+    jobMeta.name = el('jobName') ? el('jobName').value : jobMeta.name || '';
     jobMeta.client = (el('jobClient') && el('jobClient').value) || '';
     jobMeta.addr = (el('jobAddr') && el('jobAddr').value) || '';
     jobMeta.vat = (el('jobVat') && el('jobVat').value) || jobMeta.vat || '21';
     jobMeta.disc = readPercentage('jobDisc', jobMeta.disc, 100);
     jobMeta.profitPct = readPercentage('jobProfitPct', jobMeta.profitPct, 1000);
-    jobMeta.laborExtra = num('jobLaborExtra');
-    jobMeta.extra = num('jobExtra');
+    jobMeta.laborExtra = readBudgetAmount('jobLaborExtra',jobMeta.laborExtra);
+    jobMeta.extra = readBudgetAmount('jobExtra',jobMeta.extra);
     jobMeta.valid = (el('jobValid') && el('jobValid').value) || jobMeta.valid || '30';
     jobMeta.notes = (el('jobNotes') && el('jobNotes').value) || '';
     jobMeta.num = (el('jobNum') && el('jobNum').value) || jobMeta.num || '';
@@ -153,15 +186,28 @@
   function nextQuoteNum(){
     return 'P-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Date.now()).slice(-4);
   }
-  function isTechnicalRow(row){return /comprobación|huecos descontados|aviso|fuera de tabla/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]);}
-  function mergedLines(){
+  function isTechnicalRow(row){return !Array.isArray(row)||/comprobación|huecos descontados|aviso|fuera de tabla|volumen geométrico/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]) || !/^\s*\d+(?:[.,]\d+)?\s*(?:m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|saco\(s\)|rollos?\b|cajas?\b|panel(?:es)?\b|botes?\b|envases?\b|envase\(s\)|L\b|€)/i.test(String(row[1]));}
+  function mergedLines(parts=work){
     const map = Object.create(null);
-    work.forEach(part => (part.items||[]).forEach(row => {
-      if(isTechnicalRow(row)) return;
-      const name = row[0], val = row[1], detail = row[2] || '';
+    const brickFormats=new Set(parts.flatMap(part=>(part.items||[]).filter(row=>row[0]==='Ladrillo cerámico').map(row=>String(row[2]||'').match(/formato ([^·]+)/)?.[1].trim()||'')));
+    parts.forEach(part => (part.items||[]).forEach(row => {
+      if(isTechnicalRow(row)||(!/^Mano de obra/i.test(row[0])&&lineQty(row[1])===0)) return;
+      // Obras anteriores incluían el volumen de referencia y el mortero comprado.
+      if(row[0]==='Mortero de colocación'&&part.items.some(r=>/^Mortero (predosificado|hecho en obra)$/.test(r[0])))return;
+      const detail=row[2]||'',format=detail.match(/formato ([^·]+)/)?.[1].trim();
+      let name=row[0]==='Ladrillo cerámico'&&brickFormats.size>1?row[0]+' · '+(format||'formato sin documentar'):row[0],val=row[1];
+      if(row[0]==='Baldosas / piezas'&&format){const body=(part.items||[]).find(r=>r[0]==='Tipo de baldosa')?.[1]||'Tipo sin especificar';name+=' · '+body+' · '+format;}
+      if(row[0]==='Banda acústica'){
+        const profile=(part.items||[]).map(r=>String(r[0]).match(/^Canal R(\d+)/)).find(Boolean)?.[1];
+        if(profile)name+=' · para perfil '+profile+' mm';
+      }
+      if(row[0]==='Calzos de nivelación'){
+        const joint=(part.items||[]).find(r=>r[0]==='Mortero de juntas')?.[2]?.match(/junta (\d+(?:[.,]\d+)?) mm/)?.[1];
+        if(joint)name+=' · junta '+joint.replace(',','.')+' mm';
+      }
       const labor = /^Mano de obra/i.test(name);
-      const key = name;
-      if(!map[key]) map[key] = {name, qty:0, unit:lineUnit(name,val), detail, labor:labor, amount:0};
+      const unit=lineUnit(name,val),key=JSON.stringify([name,unit]);
+      if(!map[key]) map[key] = {name,legacyName:row[0],qty:0,unit,detail,labor:labor,amount:0};
       if(labor){
         const euros = Number(String(val).replace(',','.').replace(/[^\d.]/g,'')) || 0;
         map[key].amount += euros;
@@ -172,25 +218,32 @@
         if(detail && map[key].detail.indexOf(detail) < 0) map[key].detail = map[key].detail || detail;
       }
     }));
-    return Object.keys(map).map(k => map[k]);
+    const lines=Object.values(map);
+    return lines.map(line=>Object.assign(line,{legacyUnique:lines.filter(other=>other.legacyName===line.legacyName).length===1,key:lines.some(other=>other.name===line.name&&other.unit!==line.unit)?line.name+' ['+line.unit+']':line.name}));
   }
-  function budgetRows(){
-    return mergedLines().map(line => {
-      const price = Number(priceBook[line.name]);
-      const unitPrice = isFinite(price) ? price : 0;
-      const qty = line.labor ? 1 : line.qty;
-      const total = line.labor ? line.amount : qty * unitPrice;
-      return Object.assign({}, line, {qty:qty, unitPrice:unitPrice, total:roundEuros(total), missing:!line.labor&&!Object.prototype.hasOwnProperty.call(priceBook,line.name)});
+  function budgetRows(pricing=jobPricing){
+    return mergedLines().map(line=>{
+      const id=materialPriceId(line.name,line.unit),held=pricing.entries.find(e=>e.materialId===id);
+      const legacy=held?null:legacyLinePrice(line),price=held?held.price:legacy?.price;
+      const validPrice=typeof price==='number'&&Number.isFinite(price)&&price>=0;
+      const qty=line.labor?1:line.qty,unitPrice=validPrice?price:0,total=line.labor?line.amount:qty*unitPrice;
+      return Object.assign({},line,{id,key:legacy?.key||line.key,qty,unitPrice,total:roundEuros(total),missing:!line.labor&&!validPrice,providerId:held?.providerId||'general',providerName:held?.providerName||'Tarifa general',priceDate:held?.updatedAt||null,reference:held?.reference||''});
     });
   }
   function roundEuros(value){ return Math.round((value + Math.abs(value) * Number.EPSILON) * 100) / 100; }
-  function budgetTotals(){
-    const rows = budgetRows();
+  function partNeedsReview(part){
+    const items=part.items||[];
+    if(part.incomplete||items.some(row=>/no dimensionados|fuera de tabla|verificar tabla técnica|usar varilla|despiece pendiente|pendiente de dimensionar/i.test(row.join(' '))))return true;
+    // No recalcular ni sustituir precios de copias antiguas de forma silenciosa.
+    return part.calculationVersion!=='20261012-auditoria'&&(/techo|caravista 24x12x5/i.test(part.title)||items.some(row=>/^SikaTop-(10|30|50)$|^Puente de unión PLUS \(MH\)$|^Puente de Unión Morteros Henares \(PTU-20\)$|^Aplica primer TOP 5KG$|^weberpral prisma$|^Guardavivos metálico$/.test(row[0])));
+  }
+  function budgetTotals(pricing=jobPricing){
+    const rows = budgetRows(pricing);
     let mat = 0, labor = 0;
     rows.forEach(r => { if(r.labor) labor += r.total; else mat += r.total; });
     mat = roundEuros(mat);
-    labor = roundEuros(labor + (Number(jobMeta.laborExtra)||0));
-    const extra = roundEuros(Number(jobMeta.extra)||0);
+    labor = roundEuros(labor + finiteAmount(jobMeta.laborExtra));
+    const extra = roundEuros(finiteAmount(jobMeta.extra));
     const discPct = percentageValue(jobMeta.disc, 100) ?? 0;
     const base = roundEuros(Math.max(0, mat + labor + extra));
     const profitPct = percentageValue(jobMeta.profitPct, 1000) ?? 0;
@@ -198,9 +251,56 @@
     const subtotal = roundEuros(base + profit);
     const disc = roundEuros(subtotal * discPct / 100);
     const taxable = roundEuros(subtotal - disc);
-    const vatPct = Number(jobMeta.vat)||0;
+    const vatPct = percentageValue(jobMeta.vat,100)??0;
     const vat = roundEuros(taxable * vatPct / 100);
-    return {missing:rows.filter(r=>r.missing).length, rows, mat, labor, extra, base, profitPct, profit, subtotal, disc, discPct, taxable, vat, vatPct, grand:roundEuros(taxable + vat)};
+    const missing=rows.filter(r=>r.missing).length;
+    const incomplete=work.filter(partNeedsReview).length;
+    return {missing,incomplete,provisional:missing>0||incomplete>0, rows, mat, labor, extra, base, profitPct, profit, subtotal, disc, discPct, taxable, vat, vatPct, grand:roundEuros(taxable + vat)};
+  }
+  function provisionalText(tot){return [tot.missing?tot.missing+' materiales sin precio':'',tot.incomplete?tot.incomplete+' partidas con cálculo incompleto':''].filter(Boolean).join(' · ');}
+  function csvSafeCell(value){
+    const text=String(value);
+    return /^[\s]*[=+@-]/.test(text)&&!/^\s*-?\d+(?:[.,]\d+)?\s*$/.test(text)?"'"+text:text;
+  }
+  function parseCsvRecords(text){
+    text=String(text).replace(/^\ufeff/,'');
+    let quoted=false,semi=0,comma=0,hasContent=false;
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(c==='"'){if(quoted&&text[i+1]==='"'){i++;continue;}quoted=!quoted;}
+      if(!quoted){
+        if(c==='\n'||c==='\r'){if(hasContent)break;semi=0;comma=0;continue;}
+        if(c===';')semi++;if(c===',')comma++;
+      }
+      if(c.trim()!=='')hasContent=true;
+    }
+    const separator=semi?';':',',rows=[];let row=[],cell='',state='start';
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(state==='quoted'){
+        if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else state='closed';}
+        else cell+=c;
+        continue;
+      }
+      if(c===separator){row.push(cell);cell='';state='start';continue;}
+      if(c==='\n'||c==='\r'){row.push(cell);rows.push(row);row=[];cell='';state='start';if(c==='\r'&&text[i+1]==='\n')i++;continue;}
+      if(state==='closed'){if(c===' '||c==='\t')continue;throw Error('CSV: texto inesperado después de una comilla de cierre.');}
+      if(c==='"'){if(cell.trim()!=='')throw Error('CSV: comilla dentro de un campo sin entrecomillar.');cell='';state='quoted';}
+      else{cell+=c;state='bare';}
+    }
+    if(state==='quoted')throw Error('CSV con comillas sin cerrar');
+    if(cell!==''||row.length||state==='closed'){row.push(cell);rows.push(row);}
+    return rows;
+  }
+  function parseTariffCsv(text){
+    return parseCsvRecords(text).flatMap((fields,index)=>{
+      if(fields.every(value=>!value.trim()))return [];
+      const name=(fields[0]||'').trim(),raw=(fields[1]||'').trim();
+      if(index===0&&/^(concepto|material|nombre|producto)$/i.test(name)&&/precio/i.test(raw))return [];
+      const price=percentageValue(raw,Number.MAX_VALUE);
+      if(fields.length!==2||!name||raw===''||price===null)throw Error('Tarifa no válida en la fila '+(index+1));
+      return [[name,price]];
+    });
   }
   // Un mismo desglose para pantalla, impresión/PDF, CSV y texto compartido.
   function budgetSummary(tot){
@@ -215,9 +315,242 @@
       ...(tot.discPct ? [{label:'Descuento ' + pct(tot.discPct), amount:-tot.disc}] : []),
       {label:'Base imponible', amount:tot.taxable},
       {label:'IVA ' + pct(tot.vatPct), amount:tot.vat},
-      {label:tot.missing ? 'TOTAL PROVISIONAL' : 'TOTAL', amount:tot.grand, grand:true}
+      {label:tot.provisional ? 'TOTAL PROVISIONAL' : 'TOTAL', amount:tot.grand, grand:true}
     ];
   }
+
+  // Catálogo y precios de obra separados; ambos se guardan en una sola escritura.
+  const PRICING_KEY='calculadora-tarifas-v1';
+  const PRICE_UNITS=['ud','saco','barra','rollo','caja','panel','envase','bote','m','m²','kg','L'];
+  const clonePricing=value=>JSON.parse(JSON.stringify(value));
+  const plainObject=value=>!!value&&typeof value==='object'&&!Array.isArray(value);
+  const cleanPriceName=value=>String(value??'').normalize('NFC').trim().replace(/\s+/g,' ');
+  function priceUnit(value){
+    const text=cleanPriceName(value).toLowerCase();
+    return ({uds:'ud',unidad:'ud',unidades:'ud',sacos:'saco',barras:'barra',rollos:'rollo',cajas:'caja',paneles:'panel',envases:'envase',botes:'bote',m2:'m²',litro:'L',litros:'L',l:'L'})[text]|| (PRICE_UNITS.includes(text)?text:'');
+  }
+  function materialPriceId(name,unit){return JSON.stringify([cleanPriceName(name),priceUnit(unit)]);}
+  function priceToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function validPriceDate(value){
+    if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+    const date=new Date(value+'T00:00:00Z');return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;
+  }
+  function csvPriceDate(value){
+    const text=String(value??'').trim(),match=text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    const day=match?match[3]+'-'+match[2]+'-'+match[1]:text;
+    if(!validPriceDate(day))throw Error('Fecha no válida. Usa AAAA-MM-DD o DD/MM/AAAA.');
+    return day;
+  }
+  function netMaterialPrice(amount,included=false,vat=null){
+    const inputPrice=percentageValue(amount,Number.MAX_VALUE);
+    if(String(amount??'').trim()===''||inputPrice===null)throw Error('Introduce un precio válido igual o mayor que 0.');
+    const vatPct=included?percentageValue(vat,100):null;
+    if(included&&(String(vat??'').trim()===''||vatPct===null))throw Error('Indica el porcentaje de IVA incluido, entre 0 y 100 %.');
+    return {price:included?inputPrice/(1+vatPct/100):inputPrice,inputPrice,vatIncluded:included,vatPct};
+  }
+  function makeMaterialRate(providerId,amount,{included=false,vat=null,reference='',updatedAt=priceToday()}={}){
+    if(updatedAt!==null&&!validPriceDate(updatedAt))throw Error('Fecha del precio no válida.');
+    return Object.assign({providerId,updatedAt,reference:cleanPriceName(reference)},netMaterialPrice(amount,included,vat));
+  }
+  function emptyPriceCatalog(){return {version:1,providers:[{id:'general',name:'Tarifa general'}],materials:[],pendingRates:[]};}
+  function emptyJobPricing(providerId='general'){return {version:1,defaultProviderId:providerId,entries:[]};}
+  function validMaterialRate(rate){
+    if(!plainObject(rate)||typeof rate.providerId!=='string'||typeof rate.price!=='number'||!Number.isFinite(rate.price)||rate.price<0||typeof rate.reference!=='string'||rate.reference.length>500||(rate.updatedAt!==null&&!validPriceDate(rate.updatedAt))||typeof rate.vatIncluded!=='boolean')return false;
+    try{const expected=netMaterialPrice(rate.inputPrice,rate.vatIncluded,rate.vatPct);return expected.price===rate.price&&expected.vatPct===rate.vatPct;}catch(e){return false;}
+  }
+  function validPriceCatalog(catalog){
+    if(!plainObject(catalog)||catalog.version!==1||!Array.isArray(catalog.providers)||!Array.isArray(catalog.materials)||!Array.isArray(catalog.pendingRates))return false;
+    const providers=catalog.providers;
+    if(!providers.some(p=>p.id==='general'&&p.name==='Tarifa general')||!providers.every(p=>plainObject(p)&&/^(general|p-[a-zA-Z0-9_-]+)$/.test(p.id)&&typeof p.name==='string'&&p.name===cleanPriceName(p.name)&&p.name.length>0&&p.name.length<=160))return false;
+    if(new Set(providers.map(p=>p.id)).size!==providers.length||new Set(providers.map(p=>p.name.toLocaleLowerCase('es-ES'))).size!==providers.length)return false;
+    const known=id=>providers.some(p=>p.id===id);
+    if(!catalog.materials.every(m=>plainObject(m)&&typeof m.name==='string'&&m.name===cleanPriceName(m.name)&&m.name.length>0&&m.name.length<=500&&PRICE_UNITS.includes(m.unit)&&m.id===materialPriceId(m.name,m.unit)&&Array.isArray(m.rates)&&m.rates.every(r=>validMaterialRate(r)&&known(r.providerId))&&new Set(m.rates.map(r=>r.providerId)).size===m.rates.length))return false;
+    if(new Set(catalog.materials.map(m=>m.id)).size!==catalog.materials.length)return false;
+    return catalog.pendingRates.every(p=>plainObject(p)&&typeof p.name==='string'&&p.name===cleanPriceName(p.name)&&p.name.length>0&&p.name.length<=500&&validMaterialRate(p.rate)&&known(p.rate.providerId))&&new Set(catalog.pendingRates.map(p=>JSON.stringify([p.name,p.rate.providerId]))).size===catalog.pendingRates.length;
+  }
+  function validJobPricing(pricing){
+    return plainObject(pricing)&&pricing.version===1&&typeof pricing.defaultProviderId==='string'&&Array.isArray(pricing.entries)&&pricing.entries.every(e=>{
+      if(!plainObject(e)||typeof e.materialId!=='string'||typeof e.providerId!=='string'||!e.providerId||typeof e.providerName!=='string'||!e.providerName.trim()||typeof e.reference!=='string'||(e.updatedAt!==null&&!validPriceDate(e.updatedAt))||(e.price!==null&&(typeof e.price!=='number'||!Number.isFinite(e.price)||e.price<0)))return false;
+      try{const key=JSON.parse(e.materialId);return Array.isArray(key)&&key.length===2&&cleanPriceName(key[0])===key[0]&&key[0]!==''&&PRICE_UNITS.includes(key[1])&&materialPriceId(...key)===e.materialId;}catch(err){return false;}
+    })&&new Set(pricing.entries.map(e=>e.materialId)).size===pricing.entries.length;
+  }
+  let priceCatalog=emptyPriceCatalog(),jobPricing=emptyJobPricing(),pricingLoadError='';
+  function providerName(id,catalog=priceCatalog){return catalog.providers.find(p=>p.id===id)?.name||'Proveedor de una copia anterior';}
+  function catalogMaterial(id,catalog=priceCatalog){return catalog.materials.find(m=>m.id===id);}
+  function catalogMaterialRate(id,providerId,catalog=priceCatalog){return catalogMaterial(id,catalog)?.rates.find(r=>r.providerId===providerId)||null;}
+  function registerPriceMaterial(catalog,name,unit){
+    name=cleanPriceName(name);unit=priceUnit(unit);
+    if(!name||name.length>500||!unit)throw Error('Indica el nombre del material y una unidad válida.');
+    const id=materialPriceId(name,unit);
+    let material=catalogMaterial(id,catalog);
+    if(!material){material={id,name,unit,rates:[]};catalog.materials.push(material);}
+    return material;
+  }
+  function upsertMaterialRate(catalog,name,unit,rate){
+    if(!catalog.providers.some(p=>p.id===rate.providerId)||!validMaterialRate(rate))throw Error('Precio o proveedor no válido.');
+    const material=registerPriceMaterial(catalog,name,unit),index=material.rates.findIndex(r=>r.providerId===rate.providerId);
+    if(index<0)material.rates.push(rate);else material.rates[index]=rate;
+    return material;
+  }
+  function ensureProvider(catalog,name){
+    name=cleanPriceName(name);if(!name||name.length>160)throw Error('Introduce un nombre de proveedor de hasta 160 caracteres.');
+    const existing=catalog.providers.find(p=>p.name.toLocaleLowerCase('es-ES')===name.toLocaleLowerCase('es-ES'));if(existing)return existing;
+    let id;do{id='p-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);}while(catalog.providers.some(p=>p.id===id));
+    const provider={id,name};catalog.providers.push(provider);return provider;
+  }
+  function legacyLinePrice(line,book=priceBook){
+    const candidates=[line.name+' ['+line.unit+']',line.key];
+    if(line.legacyName&&line.legacyUnique)candidates.push(line.legacyName+' ['+line.unit+']',line.legacyName);
+    for(const key of candidates){
+      if(!Object.prototype.hasOwnProperty.call(book,key))continue;
+      const raw=book[key],price=typeof raw==='number'?raw:NaN;
+      if(Number.isFinite(price)&&price>=0)return {key,price};
+    }
+    return null;
+  }
+  function catalogFromLegacy(book,knownLines){
+    const catalog=emptyPriceCatalog();
+    Object.entries(book).sort(([a],[b])=>Number(/ \[[^\]]+\]$/.test(a))-Number(/ \[[^\]]+\]$/.test(b))).forEach(([key,amount])=>{
+      if(typeof amount!=='number'||!Number.isFinite(amount)||amount<0)return;
+      const scoped=key.match(/^(.*) \[([^\]]+)\]$/),sourceName=scoped?scoped[1]:key;
+      const matches=knownLines.filter(line=>!line.labor&&(line.name===sourceName||line.legacyName===sourceName)&&(!scoped||line.unit===priceUnit(scoped[2])));
+      const identities=[...new Set(matches.map(line=>materialPriceId(line.name,line.unit)))];
+      const rate=makeMaterialRate('general',amount,{updatedAt:null});
+      if(scoped&&priceUnit(scoped[2]))upsertMaterialRate(catalog,identities.length===1?matches[0].name:scoped[1],priceUnit(scoped[2]),rate);
+      else if(identities.length===1){const line=matches[0];upsertMaterialRate(catalog,line.name,line.unit,rate);}
+      else catalog.pendingRates.push({name:cleanPriceName(key),rate});
+    });
+    return catalog;
+  }
+  function pricingEntry(line,providerId,rate=null,catalog=priceCatalog){
+    return {materialId:materialPriceId(line.name,line.unit),providerId,providerName:providerName(providerId,catalog),price:rate?.price??null,updatedAt:rate?.updatedAt??null,reference:rate?.reference||''};
+  }
+  function pricingForLines(lines,pricing,catalog,{legacy=false,book=priceBook}={}){
+    const next=clonePricing(pricing);
+    if(!catalog.providers.some(p=>p.id===next.defaultProviderId))next.defaultProviderId='general';
+    lines.filter(line=>!line.labor).forEach(line=>{
+      const material=registerPriceMaterial(catalog,line.name,line.unit);
+      if(next.entries.some(e=>e.materialId===material.id))return;
+      const old=legacy?legacyLinePrice(line,book):null;
+      const rate=legacy?(old?{price:old.price}:null):catalogMaterialRate(material.id,next.defaultProviderId,catalog);
+      next.entries.push(pricingEntry(line,legacy?'general':next.defaultProviderId,rate,catalog));
+    });
+    return next;
+  }
+  function pricingStatus(message,isError=false){
+    for(const id of ['catalogStatus','jobPriceStatus']){const node=el(id);if(node){node.textContent=message;node.setAttribute('role',isError?'alert':'status');}}
+  }
+  function commitPricing(catalog,pricing,{restoring=false}={}){
+    if(pricingLoadError&&!restoring)throw Error(pricingLoadError);
+    if(!validPriceCatalog(catalog)||!validJobPricing(pricing))throw Error('Datos de tarifas no válidos.');
+    try{localStorage.setItem(PRICING_KEY,JSON.stringify({version:1,catalog,active:pricing}));}
+    catch(err){throw Error('No se pudo guardar. Se conserva el último precio guardado. Descarga una copia y revisa el espacio del dispositivo.');}
+    priceCatalog=catalog;jobPricing=pricing;pricingLoadError='';
+  }
+  function freezeJobPrices({legacy=false,book=priceBook}={}){
+    const catalog=clonePricing(priceCatalog),pricing=pricingForLines(mergedLines(),jobPricing,catalog,{legacy,book});
+    if(JSON.stringify(catalog)===JSON.stringify(priceCatalog)&&JSON.stringify(pricing)===JSON.stringify(jobPricing))return true;
+    try{commitPricing(catalog,pricing);return true;}catch(err){pricingStatus(err.message,true);return false;}
+  }
+  function initializePricing(){
+    try{
+      const raw=localStorage.getItem(PRICING_KEY);
+      if(raw){
+        const stored=JSON.parse(raw);
+        if(!plainObject(stored)||stored.version!==1||!validPriceCatalog(stored.catalog)||!validJobPricing(stored.active))throw Error('Formato de tarifas no válido');
+        priceCatalog=stored.catalog;jobPricing=stored.active;freezeJobPrices();
+      }else{
+        priceCatalog=catalogFromLegacy(priceBook,mergedLines(work.concat(savedJobs.flatMap(j=>j.work))));
+        jobPricing=pricingForLines(mergedLines(),emptyJobPricing(),priceCatalog,{legacy:true});
+        if(work.length||Object.keys(priceBook).length){try{commitPricing(priceCatalog,jobPricing);}catch(err){pricingStatus(err.message,true);}}
+      }
+    }catch(err){pricingLoadError='No se pudieron cargar las tarifas. Los datos originales se conservan; restaura una copia válida antes de modificarlas.';pricingStatus(pricingLoadError,true);}
+  }
+  function saveBudgetMaterialPrice(line,text){
+    const id=materialPriceId(line.name,line.unit),catalog=clonePricing(priceCatalog),pricing=clonePricing(jobPricing);
+    const previous=pricing.entries.find(e=>e.materialId===id)||pricingEntry(line,pricing.defaultProviderId,null,catalog);
+    let entry;
+    if(String(text).trim()===''){entry=Object.assign({},previous,{price:null,updatedAt:null,reference:''});}
+    else{
+      if(!catalog.providers.some(p=>p.id===previous.providerId))throw Error('Selecciona un proveedor actual para guardar este precio.');
+      const rate=makeMaterialRate(previous.providerId,text,{reference:previous.reference});
+      upsertMaterialRate(catalog,line.name,line.unit,rate);entry=pricingEntry(line,previous.providerId,rate,catalog);
+    }
+    const index=pricing.entries.findIndex(e=>e.materialId===id);if(index<0)pricing.entries.push(entry);else pricing.entries[index]=entry;
+    commitPricing(catalog,pricing);
+    const scoped=line.name+' ['+line.unit+']';
+    if(entry.price===null){delete priceBook[scoped];delete priceBook[line.key];}else priceBook[scoped]=entry.price;
+    savePrices();return entry;
+  }
+  function selectBudgetProvider(line,providerId){
+    if(!priceCatalog.providers.some(p=>p.id===providerId))throw Error('Proveedor no válido.');
+    const pricing=clonePricing(jobPricing),entry=pricingEntry(line,providerId,catalogMaterialRate(materialPriceId(line.name,line.unit),providerId));
+    const index=pricing.entries.findIndex(e=>e.materialId===entry.materialId);if(index<0)pricing.entries.push(entry);else pricing.entries[index]=entry;
+    commitPricing(priceCatalog,pricing);return entry;
+  }
+  function proposeTariff(providerId){
+    if(providerId!=='current'&&!priceCatalog.providers.some(p=>p.id===providerId))throw Error('Selecciona un proveedor válido.');
+    const pricing=clonePricing(jobPricing),changes=[],unavailable=[];
+    mergedLines().filter(line=>!line.labor).forEach(line=>{
+      const id=materialPriceId(line.name,line.unit),target=providerId==='current'?(pricing.entries.find(e=>e.materialId===id)?.providerId||jobPricing.defaultProviderId):providerId;
+      const rate=catalogMaterialRate(id,target);
+      if(!rate){unavailable.push(line);return;}
+      const index=pricing.entries.findIndex(e=>e.materialId===id),old=index>=0?pricing.entries[index]:pricingEntry(line,jobPricing.defaultProviderId);
+      const entry=pricingEntry(line,target,rate);
+      if(JSON.stringify(old)!==JSON.stringify(entry)){changes.push({line,old,entry});if(index<0)pricing.entries.push(entry);else pricing.entries[index]=entry;}
+    });
+    return {pricing,changes,unavailable};
+  }
+  function restorePricingBackup(backup,catalog,pricing){
+    if(!validPriceCatalog(catalog)||!validJobPricing(pricing))throw Error('Datos de tarifas no válidos');
+    const meta=normalizeJobMeta(backup.jobMeta),jobs=backup.savedJobs.map(j=>Object.assign({},j,{meta:normalizeJobMeta(j.meta)}));
+    const values=[[PRICING_KEY,{version:1,catalog,active:pricing}],[WORK_KEY,backup.work],[PRICE_KEY,backup.priceBook],[JOB_KEY,meta],[CO_KEY,backup.company],[SNAP_KEY,jobs]];
+    const previous=values.map(([key])=>[key,localStorage.getItem(key)]),written=[];
+    try{for(const [key,value]of values){localStorage.setItem(key,JSON.stringify(value));written.push(key);}}
+    catch(err){
+      try{written.forEach(key=>localStorage.removeItem(key));for(const [key,value]of previous)if(written.includes(key)&&value!==null)localStorage.setItem(key,value);}
+      catch(rollback){throw Error('La restauración falló y no pudo recuperar todo el almacenamiento anterior. Conserva la copia descargada antes de cerrar.');}
+      throw Error('No hay espacio o acceso al almacenamiento. No se han sustituido los datos anteriores.');
+    }
+    priceCatalog=catalog;jobPricing=pricing;pricingLoadError='';work=backup.work;priceBook=backup.priceBook;jobMeta=meta;company=backup.company;savedJobs=jobs;editingPart=null;
+  }
+  function parseProviderTariff(text,providerId,catalog=priceCatalog){
+    const rows=parseCsvRecords(text).filter(row=>row.some(cell=>cell.trim()!=='')),next=clonePricing(catalog);
+    if(!next.providers.some(p=>p.id===providerId))throw Error('Selecciona el proveedor de importación.');
+    if(!rows.length)throw Error('El archivo no contiene precios.');
+    const field=value=>cleanPriceName(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const aliases={concepto:'material',nombre:'material',producto:'material',material:'material',unidad:'unidad',precio:'precio',proveedor:'proveedor',referencia:'referencia',fecha:'fecha',iva_incluido:'iva_incluido',iva:'iva'};
+    const header=rows[0].map(v=>aliases[field(v)]||'');
+    const hasHeader=header.includes('material')&&header.includes('precio');
+    if(hasHeader&&(header.some(v=>!v)||new Set(header).size!==header.length))throw Error('Cabecera CSV no válida o columnas repetidas.');
+    let imported=0,pending=0,omitted=0;const seen=new Set();
+    rows.slice(hasHeader?1:0).forEach((cells,index)=>{
+      try{
+        const columns=hasHeader?header:cells.length===2?['material','precio']:cells.length===3?['material','unidad','precio']:[];
+        if(!columns.length||cells.length!==columns.length)throw Error('Número de columnas no válido.');
+        const values=Object.fromEntries(columns.map((key,i)=>[key,cells[i].trim()]));
+        if(values.precio===''){omitted++;return;}
+        const name=cleanPriceName(values.material);if(!name||name.length>500)throw Error('Nombre de material no válido.');
+        const provider=values.proveedor?ensureProvider(next,values.proveedor):next.providers.find(p=>p.id===providerId);
+        const inclusion=field(values.iva_incluido||'no');if(!['no','si','true','false','1','0'].includes(inclusion))throw Error('IVA incluido debe ser sí o no.');
+        const included=['si','true','1'].includes(inclusion);
+        const rate=makeMaterialRate(provider.id,values.precio,{included,vat:values.iva,reference:values.referencia||'',updatedAt:Object.hasOwn(values,'fecha')?(values.fecha?csvPriceDate(values.fecha):null):priceToday()});
+        let unit='';
+        if(values.unidad){unit=priceUnit(values.unidad);if(!unit)throw Error('Unidad no reconocida.');}
+        else{const units=[...new Set(next.materials.filter(m=>m.name===name).map(m=>m.unit))];if(units.length===1)unit=units[0];}
+        const duplicate=JSON.stringify([name,unit,provider.id]);if(seen.has(duplicate))throw Error('Precio duplicado para el mismo material, unidad y proveedor.');seen.add(duplicate);
+        if(unit)upsertMaterialRate(next,name,unit,rate);
+        else{
+          const item={name,rate},at=next.pendingRates.findIndex(p=>p.name===name&&p.rate.providerId===provider.id);
+          if(at<0)next.pendingRates.push(item);else next.pendingRates[at]=item;pending++;
+        }
+        imported++;
+      }catch(err){throw Error('Fila '+(index+(hasHeader?2:1))+': '+err.message);}
+    });
+    if(!imported)throw Error('El archivo no contiene precios.');
+    return {catalog:next,imported,pending,omitted};
+  }
+  initializePricing();
 
   const screens = $all('.screen');
   const nav = $all('[data-nav]');
@@ -230,10 +563,11 @@
     if(id!==currentScreen&&!fromHistory)history.pushState({screen:id},'', '#'+id);
     currentScreen=id;
     screens.forEach(x => x.classList.toggle('active', x.id === id));
-    nav.forEach(b => b.classList.toggle('active', b.dataset.nav === (['wall','lining','roof','wet','ceramic'].includes(id) ? 'home' : id)));
+    nav.forEach(b => b.classList.toggle('active', b.dataset.nav === (id==='prices'?'help':['wall','lining','roof','wet','ceramic'].includes(id)?'home':id)));
     if(editingPart!==null&&id!==work[editingPart]?.editor?.screen)editingPart=null;
     if(id === 'work') renderWork();
     if(id === 'list') renderList();
+    if(id === 'prices')renderPriceCatalog();
     if(id === 'wet'){ renderProducts(); calcWet(); }
     else if(id === 'wall' && !primed.wall){ calcWall(); primed.wall = 1; }
     else if(id === 'lining' && !primed.lining){ calcLining(); primed.lining = 1; }
@@ -266,7 +600,7 @@
   function mmRow(area, kind){
     const mm = mmScrews(area, kind);
     const src = kind === 'roof' ? 'techo 5 ud/m² de estructura' : 'tabique 3 ud/m² de estructura';
-    return ['Tornillos metal-metal 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', 'UNE 102043 y UNE-EN 14566 · ' + src + ' · +10% merma · caja 500 ud'];
+    return ['Tornillos metal-metal 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', 'Estimación orientativa pendiente de verificar con el sistema · ' + src + ' · +10% merma · caja 500 ud'];
   }
   function woolThick(profile, kind){
     if(kind === 'semi') return 40;
@@ -280,13 +614,13 @@
     const panel = 1.2 * 0.6;
     const uds = Math.ceil(need / panel);
     const where = kind === 'semi' ? 'entre perfiles omega' : 'relleno de cámara entre montantes';
-    return ['Lana mineral ' + thickMm + ' mm', need.toFixed(1) + ' m² · ' + uds + ' panel(es) 1200 × 600', 'UNE 102043 · ' + where + ' · 1 m²/m² · merma corte 8 % · panel 0,72 m² · UNE-EN 13162'];
+    return ['Lana mineral ' + thickMm + ' mm', need.toFixed(1) + ' m² · ' + uds + ' panel(es) 1200 × 600', 'Estimación orientativa · ' + where + ' · 1 m²/m² · merma corte 8 % · panel 0,72 m² · UNE-EN 13162'];
   }
   function tacoRow(lengthM, runs, kind){
     const n = Math.max(0, runs) * (Math.ceil(Math.max(0, lengthM) / 0.6) + 1);
     const detail = kind === 'omega'
-      ? 'UNE 102043 §16.6 · anclaje de omega al paramento · ala del perfil · paso máx. 600 mm · primer y último cerca del extremo'
-      : 'UNE 102043 §16.6 · anclaje de canales al soporte · paso máx. 600 mm · primer y último cerca del extremo';
+      ? 'Estimación de fijaciones pendiente de contraste · anclaje de omega al paramento · ala del perfil · paso máx. 600 mm · primer y último cerca del extremo'
+      : 'Estimación de fijaciones pendiente de contraste · anclaje de canales al soporte · paso máx. 600 mm · primer y último cerca del extremo';
     return ['Tacos de golpeo', n + ' uds · ' + Math.ceil(n / 100) + ' caja(s) de 100', detail];
   }
   function screwBoxes(n){ return Math.ceil(Math.max(0, n) / 1000); }
@@ -301,7 +635,7 @@
     const inner = Math.max(0, n - 1), visible = n > 0 ? 1 : 0;
     const firstRate = n >= 2 ? 8 : (n === 1 ? 15 : 0), secondRate = n >= 2 ? 15 : 0;
     const firstLen = pylScrewLength(t), secondLen = n >= 2 ? pylScrewLength(t*n) : 0;
-    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'3,5 × '+firstLen, secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?('3,5 × '+secondLen):'', tapeInner:Math.ceil(inner*A*1.6*waste), tapeVisible:Math.ceil(visible*A*1.6*waste), pasteInner:Math.ceil(inner*A*0.20*waste), pasteVisible:Math.ceil(visible*A*0.40*waste)};
+    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'3,5 × '+firstLen, secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?('3,5 × '+secondLen):'', tapeInner:inner*A*1.6*waste, tapeVisible:visible*A*1.6*waste, pasteInner:inner*A*0.20*waste, pasteVisible:visible*A*0.40*waste};
   }
   function mergeFaceWork(list){
     return list.reduce((acc, x) => {
@@ -317,12 +651,12 @@
   }
   function pylJoinRows(w){
     const rows = [];
-    if(w.firstNeed) rows.push([w.hasSecond ? 'Tornillos 1.ª placa ' + w.firstType : 'Tornillos placa-metal ' + w.firstType, w.firstNeed + ' uds · ' + screwBoxes(w.firstNeed) + ' caja(s) de 1.000', w.hasSecond ? 'UNE 102043 · capa interior · ≈8 ud/m²·cara · paso amplio · +10% merma · UNE-EN 14566' : 'UNE 102043 · cara vista · 15 ud/m² · paso máx. 250 mm · largo = espesor + 10 mm · +10% merma']);
-    if(w.hasSecond && w.secondNeed) rows.push(['Tornillos 2.ª placa ' + w.secondType, w.secondNeed + ' uds · ' + screwBoxes(w.secondNeed) + ' caja(s) de 1.000', 'UNE 102043 · cara vista · 15 ud/m² · paso máx. 250 mm · largo = 2 placas + 10 mm · UNE-EN 14566 · +10% merma']);
-    if(w.hasInner && w.tapeInner) rows.push(['Cinta de papel 1.ª capa', w.tapeInner + ' m · ' + Math.ceil(w.tapeInner / 150) + ' rollo(s) de 150 m', 'UNE 102043 §18 · juntas de todas las capas · 1,6 m/m² · UNE-EN 13963']);
-    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'UNE 102043 · acabado Q1 interior · ≈0,20 kg/m² · UNE-EN 13963']);
-    if(w.hasVisible && w.tapeVisible) rows.push(['Cinta de papel cara vista', w.tapeVisible + ' m · ' + Math.ceil(w.tapeVisible / 150) + ' rollo(s) de 150 m', 'UNE 102043 §18 · junta de última placa · 1,6 m/m² · +10% merma · UNE-EN 13963']);
-    if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'UNE 102043 · acabado Q2 · juntas + cabezas · ≈0,40 kg/m² · +10% merma']);
+    if(w.firstNeed) rows.push([w.hasSecond ? 'Tornillos 1.ª placa ' + w.firstType : 'Tornillos placa-metal ' + w.firstType, w.firstNeed + ' uds · ' + screwBoxes(w.firstNeed) + ' caja(s) de 1.000', w.hasSecond ? 'Estimación orientativa · capa interior · ≈8 ud/m²·cara · paso amplio · +10% merma · UNE-EN 14566' : 'Estimación orientativa · cara vista · 15 ud/m² · paso orientativo de pared 250 mm; comprobar el sistema y el uso en techo · largo = espesor + 10 mm · +10% merma']);
+    if(w.hasSecond && w.secondNeed) rows.push(['Tornillos 2.ª placa ' + w.secondType, w.secondNeed + ' uds · ' + screwBoxes(w.secondNeed) + ' caja(s) de 1.000', 'Estimación orientativa · cara vista · 15 ud/m² · paso orientativo de pared 250 mm; comprobar el sistema y el uso en techo · largo = 2 placas + 10 mm · UNE-EN 14566 · +10% merma']);
+    if(w.hasInner && w.tapeInner) rows.push(['Cinta de papel 1.ª capa', w.tapeInner.toFixed(2) + ' m · ' + Math.ceil(w.tapeInner / 150) + ' rollo(s) de 150 m', 'Estimación orientativa · juntas de todas las capas · 1,6 m/m² · UNE-EN 13963']);
+    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner.toFixed(2) + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'Estimación orientativa · acabado Q1 interior · ≈0,20 kg/m² · UNE-EN 13963']);
+    if(w.hasVisible && w.tapeVisible) rows.push(['Cinta de papel cara vista', w.tapeVisible.toFixed(2) + ' m · ' + Math.ceil(w.tapeVisible / 150) + ' rollo(s) de 150 m', 'Estimación orientativa · junta de última placa · 1,6 m/m² · +10% merma · UNE-EN 13963']);
+    if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible.toFixed(2) + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'Estimación orientativa · acabado Q2 · juntas + cabezas · ≈0,40 kg/m² · +10% merma']);
     return rows;
   }
   // Controles estáticos: listeners directos para evitar fallos táctiles en Android/WebView.

@@ -11,7 +11,7 @@
         <button type="button" class="sysFam" data-roof-fam="tradicional" aria-pressed="false">Tradicional</button>
       </div>
       <div class="sysgrid" id="roofSys">
-        <button type="button" class="sysBtn active" data-roof-sys="double" data-fam="continuo" aria-pressed="true"><span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria 1,00 m + secundaria 0,50 m</small></button>
+        <button type="button" class="sysBtn active" data-roof-sys="double" data-fam="continuo" aria-pressed="true"><span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria 0,90 m + secundaria 0,50 m</small></button>
         <button type="button" class="sysBtn" data-roof-sys="simple" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>TC47 simple</strong><small>Una estructura 47/500</small></button>
         <button type="button" class="sysBtn" data-roof-sys="sierra" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>Sierra + TC47</strong><small>Rastrel y secundario TC47</small></button>
         <button type="button" class="sysBtn" data-roof-sys="cm70" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>Canal + M70</strong><small>Autoportante perimetral</small></button>
@@ -79,6 +79,9 @@
         <label class="hidden" id="wetHWrap">Alto (m)<input id="wetH" value="2.5" inputmode="decimal"></label>
         <label id="wetThicknessWrap" class="hidden">Espesor (mm)<input id="wetThickness" value="10" inputmode="decimal"></label>
         <label id="wetSupportWrap" class="hidden">Soporte<select id="wetSupport"><option value="sin_absorcion">Sin absorción</option><option value="poco_poroso">Poco poroso</option><option value="poroso">Poroso</option></select></label>
+        <label id="wetConsumptionWrap" class="hidden">Consumo por capa (kg/m²)<input id="wetConsumption" value="0.35" inputmode="decimal"><small id="wetConsumptionHint">Selecciona el consumo según soporte y ficha.</small></label>
+        <label id="wetCoatsWrap" class="hidden">Número de capas<input id="wetCoats" value="1" inputmode="numeric"></label>
+        <label id="wetBlockMortarWrap" class="hidden">Mortero para bloque (kg/m²)<input id="wetBlockMortar" value="30" inputmode="decimal"><small>Valor orientativo: verifica o introduce el rendimiento del bloque y mortero elegidos.</small></label>
         <div id="wetBrickDimsWrap" class="grid brickDims">
           <label>Largo ladrillo (cm)<input id="wetBrickL" value="33" inputmode="decimal"></label>
           <label>Alto ladrillo (cm)<input id="wetBrickH" value="16.5" inputmode="decimal"></label>
@@ -86,7 +89,8 @@
           <label>Junta de mortero (mm)<input id="wetJoint" value="5" inputmode="decimal"></label>
         </div>
                 <label id="wetMortarWrap">Mortero<select id="wetMortar"><option value="predosificado">Predosificado · 25 kg</option><option value="obra">Hecho en obra</option></select></label>
-        <label id="wetMortarYieldWrap">Rendimiento saco 25 kg (L)<input id="wetMortarYield" value="14" inputmode="decimal"><small>Editable según el mortero utilizado</small></label>
+        <label id="wetMortarYieldWrap">Rendimiento configurado saco 25 kg (L)<input id="wetMortarYield" value="14" inputmode="decimal"><small>Editable según el mortero utilizado</small></label>
+        <label id="wetMortarWasteWrap">Merma de mortero (%)<input id="wetMortarWaste" value="8" inputmode="decimal"><small>Independiente de la merma de ladrillos o bloques.</small></label>
         <label>Merma<select id="wetWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option></select></label>
       </div>
       <div class="info" id="wetInfo"></div>

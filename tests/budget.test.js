@@ -17,6 +17,7 @@ function calculator(){
     globalThis.budget = {
       totals:budgetTotals, summary:budgetSummary, percentage:percentageValue,
       normalize:normalizeJobMeta,
+      csv:parseTariffCsv,safeCell:csvSafeCell,
       set:(parts, prices, meta)=>{work=parts;priceBook=prices;jobMeta=meta;}
     };
   })();`, context);
@@ -37,6 +38,31 @@ test('Ejemplo: coste de 1.000 €, beneficio del 15 % e IVA del 21 %', ()=>{
   assert.equal(t.subtotal,1150);
   assert.equal(t.vat,241.50);
   assert.equal(t.grand,1391.50);
+});
+
+test('Filas informativas, cantidad cero y referencia de mortero no piden precio',()=>{
+  const c=calculator();c.set([{title:'Cerámica',items:[['Tipo de baldosa','Porcelánico',''],['Encolado','Doble encolado',''],['Baldosas','0 uds','']]},{title:'Ladrillo',items:[['Mortero de colocación','14 L',''],['Mortero predosificado','1 sacos de 25 kg','']]}],{'Mortero predosificado':4},{vat:0});
+  const t=c.totals();assert.equal(t.rows.length,1);assert.equal(t.missing,0);assert.equal(t.grand,4);
+});
+test('Material con igual nombre y distinta unidad no mezcla cantidades ni hereda el precio ambiguo',()=>{
+  const c=calculator();c.set([{title:'Unidades',items:[['Mortero','10 kg',''],['Mortero','2 sacos','']]}],{Mortero:100,'Mortero [kg]':1,'Mortero [saco]':5},{vat:0});
+  const t=c.totals();assert.equal(t.rows.length,2);assert.equal(t.grand,20);assert.deepEqual(Array.from(t.rows,r=>r.qty),[10,2]);
+});
+test('Un despiece incompleto sigue provisional aunque todos los materiales tengan precio',()=>{
+  const c=calculator();c.set([{title:'Fuera de tabla',items:[['Placas','2 ud',''],['Montantes','No dimensionados','']]}],{Placas:10},{vat:21});
+  const t=c.totals();assert.equal(t.missing,0);assert.equal(t.incomplete,1);assert.equal(t.provisional,true);assert.equal(c.summary(t).at(-1).label,'TOTAL PROVISIONAL');
+});
+test('Los precios no finitos o negativos se consideran pendientes y no generan Infinity',()=>{
+  const c=calculator();for(const price of [Infinity,-1,'abc']){c.set([{title:'A',items:[['A','1 ud','']]}],{A:price},{vat:'Infinity',extra:'Infinity',laborExtra:-10});const t=c.totals();assert.equal(t.missing,1);assert.equal(t.grand,0);}
+});
+test('CSV: comillas, coma decimal, separador dentro de nombre y cabecera',()=>{
+  const c=calculator();const comma=c.csv('Material,Precio\r\n"Perfil, especial","1,25"\r\n"Placa ""H""",2.50');
+  assert.equal(comma[0][0],'Perfil, especial');assert.equal(comma[0][1],1.25);assert.equal(comma[1][0],'Placa "H"');
+  assert.equal(c.csv('\ufeffNombre;Precio\n"Mortero; 25 kg";"3,75"')[0][1],3.75);
+  for(const bad of ['A;abc','A;-1','A;Infinity','"A;1.2'])assert.throws(()=>c.csv(bad));
+});
+test('CSV: protege texto interpretado como fórmula y mantiene los descuentos numéricos',()=>{
+  const c=calculator();assert.equal(c.safeCell('=SUM(A1)'),"'=SUM(A1)");assert.equal(c.safeCell('+CMD'),"'+CMD");assert.equal(c.safeCell('-115,00'),'-115,00');assert.equal(c.safeCell('Material'),'Material');
 });
 
 test('Ejemplo: descuento del 10 % después del beneficio', ()=>{
@@ -141,4 +167,15 @@ test('Un porcentaje decimal pequeño no se pierde al guardarlo como número',()=
   const c=thousand({profitPct:0.0000001});
   assert.equal(c.totals().profitPct,0.0000001);
   assert.equal(c.summary(c.totals()).find(x=>x.label.startsWith('Beneficio')).label,'Beneficio industrial 0,0000001 %');
+});
+
+test('Formatos distintos de ladrillo en obras anteriores requieren precios separados',()=>{
+  const c=calculator();c.set([{title:'A',items:[['Ladrillo cerámico','10 uds','formato 33 × 16,5 × 4 cm · junta 5 mm']]},{title:'B',items:[['Ladrillo cerámico','20 uds','formato 33 × 20 × 7 cm · junta 5 mm']]}],{'Ladrillo cerámico':1},{vat:0});
+  assert.equal(c.totals().rows.length,2);assert.equal(c.totals().missing,2);
+});
+
+test('El precio por unidad permanece al eliminar la otra unidad con el mismo nombre',()=>{
+  const c=calculator(),prices={Mortero:100,'Mortero [kg]':1,'Mortero [saco]':5};
+  c.set([{title:'Mezcla',items:[['Mortero','10 kg',''],['Mortero','2 sacos','']]}],prices,{vat:0});assert.equal(c.totals().grand,20);
+  c.set([{title:'Restante',items:[['Mortero','10 kg','']]}],prices,{vat:0});assert.equal(c.totals().grand,10);assert.equal(c.totals().rows[0].key,'Mortero [kg]');
 });

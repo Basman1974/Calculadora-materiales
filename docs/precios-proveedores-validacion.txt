@@ -1,0 +1,240 @@
+Comprobar archivos
+index.html 904 bytes
+style.css 34844 bytes
+data.js 5734 bytes
+app.js 1222 bytes
+app-a1.js 53878 bytes
+app-a2.js 43396 bytes
+app-b.js 54009 bytes
+ui-a.html 15375 bytes
+ui-b.html 14094 bytes
+ui-c.html 28632 bytes
+manifest.json 410 bytes
+service-worker.js 2521 bytes
+
+
+Comprobar interfaz y funciones
+OK: navegación, formularios y botones críticos enlazados
+
+
+Sintaxis JavaScript
+
+
+Pruebas de materiales, proveedores, presupuestos, fuentes y PWA
+✔ tests/budget-flows.test.js (218.680567ms)
+✔ tests/budget.test.js (127.266746ms)
+✔ tests/materials.test.js (628.272013ms)
+✔ tests/prices.test.js (928.983503ms)
+✔ tests/pwa.test.js (136.378326ms)
+✔ tests/sources.test.js (59.670584ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2111.626948
+
+
+tests/budget-flows.test.js
+✔ Entrada decimal: recálculo inmediato y guardado automático (32.53467ms)
+✔ Porcentaje no válido: mantiene el anterior e impide exportar (7.972358ms)
+✔ Descuento fuera de rango no produce importes negativos (4.37381ms)
+✔ Pantalla, CSV, impresión/PDF, WhatsApp y Compartir usan el mismo desglose (12.18302ms)
+✔ Partidas pendientes identifican como provisional todas las salidas (4.980323ms)
+✔ Obra nueva restablece el recargo y una copia recupera su porcentaje (6.849373ms)
+✔ Abrir una copia anterior no hereda el porcentaje de la obra activa (4.905907ms)
+✔ Copias JSON guardan y restauran beneficio en obra activa e historial (8.561524ms)
+✔ Restaurar una copia antigua usa el 0 %; una copia inválida no sustituye datos (6.581742ms)
+✔ Añadir a Obra conserva todas las líneas de material y las medidas (8.023233ms)
+✔ Duplicar, eliminar y deshacer partidas mantienen el beneficio industrial (5.286665ms)
+✔ Los precios unitarios conservan sus decimales en todas las exportaciones (5.073604ms)
+✔ Cálculo incompleto con precios completos: provisional en todas las exportaciones (4.434842ms)
+✔ Importe adicional no válido: se conserva el anterior y se bloquea la exportación (4.205991ms)
+✔ Una copia con editor mal formado o IVA no válido no sustituye la obra (4.654068ms)
+✔ CSV exportado protege nombres de cliente que empiezan por fórmula (3.860156ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 133.685722
+
+
+tests/budget.test.js
+✔ Ejemplo: coste de 1.000 €, beneficio del 15 % e IVA del 21 % (7.281714ms)
+✔ Filas informativas, cantidad cero y referencia de mortero no piden precio (2.512291ms)
+✔ Material con igual nombre y distinta unidad no mezcla cantidades ni hereda el precio ambiguo (1.89003ms)
+✔ Un despiece incompleto sigue provisional aunque todos los materiales tengan precio (16.654721ms)
+✔ Los precios no finitos o negativos se consideran pendientes y no generan Infinity (1.790964ms)
+✔ CSV: comillas, coma decimal, separador dentro de nombre y cabecera (2.04082ms)
+✔ CSV: protege texto interpretado como fórmula y mantiene los descuentos numéricos (1.394317ms)
+✔ Ejemplo: descuento del 10 % después del beneficio (1.456434ms)
+✔ IVA 0 % con beneficio y descuento (2.294219ms)
+✔ IVA 10 % con beneficio y descuento (4.732618ms)
+✔ IVA 21 % con beneficio y descuento (1.350792ms)
+✔ Presupuestos anteriores y porcentaje ausente conservan el 0 % (2.380206ms)
+✔ Porcentajes decimales con coma y punto; son recargo sobre el coste (4.199645ms)
+✔ Validación: vacío, extremos y números no válidos (1.681359ms)
+✔ Descuento del 100 % y máximo técnico de recargo (2.619605ms)
+✔ Los materiales sin precio siguen pendientes; precio explícito 0 es válido (1.487343ms)
+✔ Obra vacía no genera importes (1.099924ms)
+✔ Cantidades precisas y redondeo a céntimos de líneas e importes sucesivos (1.288341ms)
+✔ El desglose común incluye extras, porcentaje, descuento y total (2.1812ms)
+✔ Un porcentaje decimal pequeño no se pierde al guardarlo como número (1.543876ms)
+✔ Formatos distintos de ladrillo en obras anteriores requieren precios separados (1.362877ms)
+✔ El precio por unidad permanece al eliminar la otra unidad con el mismo nombre (1.29465ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73.195831
+
+
+tests/materials.test.js
+✔ Ladrillo: geometría 33×16,5×4, junta 5 mm, sin merma y sin doble mortero (46.302818ms)
+✔ Volver a obra húmeda conserva dimensiones editadas (13.273997ms)
+✔ Un ladrillo sin dimensiones exige introducirlas (13.998074ms)
+✔ Puente: SikaTop-50 mantiene consumo en kg y envases correctos (11.792077ms)
+✔ Puente: SikaTop-30 mantiene consumo en kg y envases correctos (9.977591ms)
+✔ Puente: Puente de Unión Morteros Henares (PTU-20) mantiene consumo en kg y envases correctos (13.213019ms)
+✔ Puente: Aplica primer TOP 5KG mantiene consumo en kg y envases correctos (16.720312ms)
+✔ SikaTop-10: consumo configurable por capa y dos capas (14.374286ms)
+✔ Level Primer: concentrado según las dos diluciones del soporte poroso (25.056458ms)
+✔ PRISMA utiliza la ficha de 2026 y advierte capas; fino rechaza 10 mm (9.553231ms)
+✔ Cerámica: respeta merma cero y las cuñas dependen de la tanda (11.516577ms)
+✔ T24 60×120: 50 placas exactas y solo secundarios de 1200 (10.50442ms)
+✔ Varillas: 21 suspensiones de 70 cm necesitan 21 barras de 1 m (13.289048ms)
+✔ Doble TC47: crucetas coinciden con las intersecciones de los perfiles (23.054386ms)
+✔ Trasdosado directo: pasta aproximada configurable y sin estructura (22.537522ms)
+✔ Tabique de dos caras, guardavivos medidos y presupuesto fuera de tabla provisional (24.494091ms)
+✔ Validación wall {"wL":0} (8.460052ms)
+✔ Validación lining {"lH":"Infinity"} (10.32218ms)
+✔ Validación roof {"rHoles":21} (10.314544ms)
+✔ Validación wall {"wDoors":0.5} (14.037534ms)
+✔ Validación wet {"wetArea":-2} (8.614399ms)
+✔ Validación ceramic {"cJoint":0} (9.912059ms)
+✔ Todos los sistemas de techo y trasdosado generan resultados sin errores JS (29.849549ms)
+✔ Cerámica: junta de 0,2 mm y tanda de 0,1 m² se respetan sin mínimos ocultos (27.031626ms)
+✔ Pasta y cinta conservan cantidades decimales antes del redondeo de envases (27.339455ms)
+✔ El arranque soporta almacenamiento de tipos erróneos sin sobrescribirlo (24.636481ms)
+✔ Navegación lógica: las nueve secciones existen y se activan al seleccionar (17.45675ms)
+✔ Las mermas de ladrillos y mortero se calculan de forma independiente (8.801876ms)
+✔ Bloques: el consumo de mortero configurado se calcula sin usar geometría de ladrillo (17.704016ms)
+✔ Editar una partida recupera el sistema de techo y sus tarjetas (15.971284ms)
+✔ Caravista: no se interpreta el orden de dimensiones del nombre como alto/espesor verificados (11.417839ms)
+✔ Cambiar sistema elimina errores de controles que quedan ocultos (19.383217ms)
+✔ Alturas condicionales y techo incompleto muestran su advertencia antes del detalle (8.92805ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 560.529981
+
+
+tests/prices.test.js
+✔ Migra precio anterior a tarifa general sin cambiar importes ni inventar fecha (48.255399ms)
+✔ Precio anterior sin unidad permanece pendiente, conservado y sin asignación automática (11.831845ms)
+✔ La migración utiliza unidades inequívocas del historial sin tomar sus precios antiguos (11.839626ms)
+✔ Al migrar se prioriza el precio con unidad frente al ambiguo, independientemente del orden (11.849348ms)
+✔ Crear proveedor y escribir precio en Presupuesto guarda obra y catálogo sin IVA (17.086256ms)
+✔ Se conservan los decimales de un precio unitario y el precio cero es válido (17.081522ms)
+✔ Vaciar precio deja la obra pendiente y conserva el precio del catálogo (16.430226ms)
+✔ Tarifa con IVA 21 %: conserva el neto 10 (9.479684ms)
+✔ Tarifa con IVA 10 %: conserva el neto 10 (12.592546ms)
+✔ Tarifa con IVA 0 %: conserva el neto 10 (9.494203ms)
+✔ IVA incluido exige porcentaje y una tarifa inválida no sustituye la anterior (11.944929ms)
+✔ Actualizar catálogo no modifica obra y la propuesta usa los totales centrales (24.952895ms)
+✔ Una propuesta conserva los materiales sin tarifa del proveedor elegido (12.356774ms)
+✔ Cambiar proveedor sin oferta deja la línea pendiente y no copia otro precio (11.59985ms)
+✔ Nueva obra reutiliza catálogo y proveedor seleccionado sin heredar precios congelados (13.89856ms)
+✔ Obra guardada recupera su precio y proveedor aunque cambie el catálogo (17.061403ms)
+✔ Una copia antigua sin precio no adopta el precio del catálogo actual (13.389407ms)
+✔ Una propuesta obsoleta se vuelve a mostrar y no se aplica a ciegas (10.986702ms)
+✔ Igual nombre en kg y sacos mantiene tarifas distintas (15.42883ms)
+✔ Dos formatos cerámicos del mismo tipo no comparten identificación ni precio (8.544293ms)
+✔ CSV con proveedores, unidades, referencias y fecha española conserva neto y obra (9.744575ms)
+✔ CSV de dos columnas asigna solo unidad inequívoca; desconocido queda pendiente (9.596342ms)
+✔ CSV completo maneja comillas y no importa parcialmente tras error o duplicado (10.249156ms)
+✔ Plantillas omiten precios vacíos, conservan cero y rechazan una importación sin precios (9.433041ms)
+✔ CSV con fecha vacía explícita no inventa la fecha de una tarifa anterior (9.573702ms)
+✔ Completar unidad de un precio anterior lo mueve al catálogo sin cambiar la obra (12.006123ms)
+✔ Catálogo muestra nombres escapados y no ejecuta contenido de un CSV (15.776049ms)
+✔ Error de almacenamiento mantiene catálogo y precio de obra anteriores (10.518818ms)
+✔ Recargar el dispositivo conserva proveedores, tarifas y precios de la obra (22.407225ms)
+✔ JSON v2 conserva y restaura tarifas, proveedores y precios congelados del historial (18.057201ms)
+✔ Copia v1 migra a tarifa general y proveedores mal formados no sustituyen datos (21.339746ms)
+✔ Restauración con falta de espacio revierte todas las escrituras parciales (10.320185ms)
+✔ Tarifas exportadas CSV conservan precisión y protegen fórmulas de texto (9.723985ms)
+✔ Ayuda y navegación incluyen catálogo, proveedores, recuperación e IVA (8.526946ms)
+✔ Bandas para distinto perfil y calzos de distinta junta no comparten tarifa (9.224197ms)
+✔ El filtro por proveedor sigue mostrando materiales pendientes de tarifar (8.692318ms)
+✔ Quitar una tarifa conserva precio de obra y no deja una oferta activa (9.487873ms)
+✔ Un precio de Presupuesto no válido mantiene el último y bloquea las exportaciones (23.532756ms)
+✔ Importar CSV mediante el formulario guarda proveedores sin cambiar la valoración activa (9.230368ms)
+✔ Tras convertir IVA de tarifa, pantalla y exportaciones usan el mismo neto y un solo IVA final (16.969272ms)
+✔ La entrada manual y el código de referencia se escapan también en el presupuesto (10.422667ms)
+✔ Un fallo al cambiar proveedor restaura la selección anterior y conserva su precio (10.108956ms)
+✔ Catálogo dañado no se sobrescribe y su contenido original se adjunta a la copia (11.684281ms)
+✔ Las fechas inválidas y las tarifas sin unidad inequívoca no se aplican por error (9.253991ms)
+✔ No se crean proveedores duplicados por mayúsculas o espacios de más (10.331977ms)
+✔ CSV con líneas iniciales vacías y comillas correctas se lee sin modificar precios por error (11.192273ms)
+✔ Teclear un precio lo guarda y actualiza importes sin sustituir el campo ni perder el texto decimal (12.374523ms)
+✔ Volver al último precio válido elimina el error sin exigir un precio distinto (11.936765ms)
+✔ Un precio anterior con unidad se migra al formato conocido y se reutiliza en una obra nueva (11.355586ms)
+✔ Actualizar tarifas respeta por defecto los distintos proveedores de cada línea (18.131023ms)
+✔ Se puede proponer expresamente un proveedor para toda la obra (12.116197ms)
+ℹ tests 51
+ℹ suites 0
+ℹ pass 51
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 723.088947
+
+
+tests/pwa.test.js
+✔ La caché completa se descarga antes de activar la actualización (27.849268ms)
+✔ Una descarga incompleta impide activar la nueva versión (1.405744ms)
+✔ Activación: conserva otras aplicaciones y espera a asumir el control (1.50487ms)
+✔ Sin conexión, recupera recursos versionados ignorando los parámetros (1.453908ms)
+✔ Un JS ausente sin conexión recibe 503 y nunca una página HTML (3.435679ms)
+✔ La navegación sin conexión puede recuperar el inicio (1.030509ms)
+✔ HTTP 404: solo se cachean respuestas correctas y se espera la escritura (0.923249ms)
+✔ HTTP 500: solo se cachean respuestas correctas y se espera la escritura (0.738937ms)
+✔ HTTP 200: solo se cachean respuestas correctas y se espera la escritura (1.028527ms)
+✔ Registro del service worker con documento loading (2.649779ms)
+✔ Registro del service worker con documento complete (1.23514ms)
+✔ Las dimensiones declaradas del logo corresponden a las del PNG real (0.698653ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52.5647
+
+
+tests/sources.test.js
+✔ Cada producto del catálogo tiene un estado documental explícito (1.01566ms)
+✔ Parámetros documentados del catálogo coinciden con el registro de fuentes (1.237514ms)
+✔ Los parámetros sin ficha identificada permanecen marcados como pendientes (0.196474ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8.486457

@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Calculadora Construcción">
-  <link rel="stylesheet" href="style.css?v=20261012-beneficio-industrial">
+  <link rel="stylesheet" href="style.css?v=20261015-precios-proveedores">
   <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
@@ -40,11 +40,11 @@
   </div>
   <section class="screen active" id="home">
     <aside class="updateNotice" id="updateNotice" aria-labelledby="updateNoticeTitle">
-      <div class="updateNoticeTop"><span>NOVEDADES · 12 OCT 2026</span><button class="btn" id="closeUpdateNotice" type="button">Cerrar aviso <span aria-hidden="true">×</span></button></div>
-      <h2 id="updateNoticeTitle">Beneficio industrial en tus presupuestos</h2>
-      <p>Añade un recargo porcentual sobre materiales, mano de obra y extras desde <strong>Presupuesto</strong>. Se calcula antes del descuento y del IVA; el valor inicial es 0 %.</p>
-      <ul><li>El beneficio se conserva en la obra y sus copias de seguridad.</li><li>PDF, CSV, WhatsApp y Compartir incluyen el mismo desglose de importes.</li><li>Si tus precios ya incluyen margen comercial, evita duplicarlo.</li></ul>
-      <p class="updateNoticeNote">Las partidas antiguas sin medidas guardadas se pueden duplicar; para cambiar sus medidas debes recalcularlas.</p>
+      <div class="updateNoticeTop"><span>NOVEDADES · 15 OCT 2026</span><button class="btn" id="closeUpdateNotice" type="button">Cerrar aviso <span aria-hidden="true">×</span></button></div>
+      <h2 id="updateNoticeTitle">Precios guardados por proveedor</h2>
+      <p>Escribe precios en <strong>Presupuesto</strong> para conservarlos en tu catálogo, o registra e importa tarifas en <strong>Precios y proveedores</strong>.</p>
+      <ul><li>Compara precios del mismo material y unidad, con su proveedor, referencia y fecha.</li><li>Revisa una propuesta antes de actualizar una obra. Las copias guardadas conservan sus precios.</li><li>La ayuda explica tarifas CSV, precios con IVA, copias y las correcciones de cálculo.</li></ul>
+      <p class="updateNoticeNote">Revisa los avisos técnicos de las partidas y descarga una copia JSON para conservar obras, precios y proveedores fuera del navegador.</p>
     </aside>
     <div class="hero"><h2>¿Qué vas a calcular?</h2><p>Toca un trabajo. Luego solo pides las medidas del paño.</p></div>
     <button class="btn" data-nav="work" type="button">Continuar mi obra</button><div class="tiles">
@@ -88,6 +88,7 @@
         <summary>Huecos, tipo de placa y mano de obra</summary>
         <div class="grid">
           <label>Tipo de placa<select id="wBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
+          <label>Aristas expuestas para guardavivos (m)<input id="wEdges" value="0" inputmode="decimal"><small>Mide únicamente las aristas que necesitan protección.</small></label>
           <label>Puertas<input id="wDoors" value="0" inputmode="numeric"></label>
           <label>Ventanas<input id="wWins" value="0" inputmode="numeric"></label>
           <label>Mano de obra (€/m²)<input id="wLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
@@ -125,6 +126,7 @@
           <label id="lMembraneWasteWrap" class="hidden">Merma de lámina (%)<input id="lMembraneWaste" value="0" inputmode="decimal" aria-describedby="lMembraneHint"></label>
           <div class="info" id="lMembraneHint" aria-live="polite">Disponible con doble placa PYL.</div>
           <label id="lSpacingWrap">Separación<select id="lS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
+          <label id="lPasteRateWrap" class="hidden">Pasta de agarre (kg/m²)<input id="lPasteRate" value="5" inputmode="decimal"><small>Referencia aproximada: 5 kg/m². Ajustar según producto y soporte.</small></label>
           <label id="lProfileWrap">Perfil<select id="lP"><option value="48">48 mm</option><option value="70" selected>70 mm</option><option value="90">90 mm</option></select></label>
           <label>Espesor placa<select id="lBoardThick"><option value="12.5">12,5 mm</option><option value="15" selected>15 mm</option><option value="18">18 mm</option></select></label>
           <label id="lWoolWrap">Lana mineral<select id="lWool"><option value="1" selected>Sí</option><option value="0">No</option></select></label><label>Merma placas / pasta<select id="lWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option><option value="12">12 %</option><option value="15">15 %</option></select></label>
@@ -134,6 +136,7 @@
         <summary>Huecos, tipo de placa y mano de obra</summary>
         <div class="grid">
           <label>Tipo de placa<select id="lBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
+          <label>Aristas expuestas para guardavivos (m)<input id="lEdges" value="0" inputmode="decimal"><small>Mide únicamente las aristas que necesitan protección.</small></label>
           <label>Puertas<input id="lDoors" value="0" inputmode="numeric"></label>
           <label>Ventanas<input id="lWins" value="0" inputmode="numeric"></label>
           <label>Mano de obra (€/m²)<input id="lLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>

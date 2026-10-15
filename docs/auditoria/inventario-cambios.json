@@ -1,0 +1,132 @@
+[
+  {
+    "path": ".github/workflows/ci.yml",
+    "status": "modificado",
+    "sha256": "2f5ada90a3e70ed28c6f16e118cde4a1b6409ff812938741d2d833b3c7b29904"
+  },
+  {
+    "path": "app-a1.js",
+    "status": "modificado",
+    "sha256": "ef2d061724aed8eeb88cfa76fd7063accabd0411815f1911246a0f512c92bcb0"
+  },
+  {
+    "path": "app-a2.js",
+    "status": "modificado",
+    "sha256": "d0a59105f692ea834637bc4c0b3d287f1b03b8af00f7ac085f5b404babb2be07"
+  },
+  {
+    "path": "app-b.js",
+    "status": "modificado",
+    "sha256": "a1130e9ef045f5982be9c393b09dfdec8a7169bf0b0f2322482e3e350dfb8f84"
+  },
+  {
+    "path": "app.js",
+    "status": "modificado",
+    "sha256": "5b0fb5197c4e2e8d1fe47d2690d6b3f8b9be655616168c4c37c4862ebfa2f3c5"
+  },
+  {
+    "path": "data.js",
+    "status": "modificado",
+    "sha256": "b55ede841972f1df0da403661958bb88cbeaa93062fc878ac5660f9d24dc8aa0"
+  },
+  {
+    "path": "docs/auditoria/cambios.patch",
+    "status": "nuevo",
+    "sha256": "77b633aa05c37c778d6287a8264a225503214d836210b32010a5a3b4344fca03"
+  },
+  {
+    "path": "docs/auditoria/fuentes-tecnicas.json",
+    "status": "nuevo",
+    "sha256": "b26af2367f8b40d24eac3c6150ef1e911341e369994dd3d51556f39f80663c7d"
+  },
+  {
+    "path": "docs/auditoria/hallazgos-finales.json",
+    "status": "nuevo",
+    "sha256": "83f03d93f02f369579d5d4cbcfdc61a0624e68d70379767a9b3c366a53f8bd7b"
+  },
+  {
+    "path": "docs/auditoria/hallazgos-iniciales.json",
+    "status": "nuevo",
+    "sha256": "27345cfee9e5a8a5a2606223697d0298c656c87ea1572f9804ef69f7b045b501"
+  },
+  {
+    "path": "docs/auditoria/informe-completo.md",
+    "status": "nuevo",
+    "sha256": "2e2159cb41ce87c04160e11c5b1226fc1d6d37c1e6ba4824164583ae283a267d"
+  },
+  {
+    "path": "docs/auditoria/validacion.json",
+    "status": "nuevo",
+    "sha256": "2de4a5f555b94327a165055319f4f9b03bb6fe9461a82180ec48cfc3c3c783de"
+  },
+  {
+    "path": "docs/auditoria/validacion.txt",
+    "status": "nuevo",
+    "sha256": "4bc79187f18f29b71485efd08ec16a2643191704a1724245b75671fcad2cb6f7"
+  },
+  {
+    "path": "index.html",
+    "status": "modificado",
+    "sha256": "c45dc90980f2b0cb34826a143a9dbb7e3eec5cfa53a06ac835460b5ed4a4a5cd"
+  },
+  {
+    "path": "manifest.json",
+    "status": "modificado",
+    "sha256": "3402a798a057669b931538980730c733b3802421f622df2f61480a8577849670"
+  },
+  {
+    "path": "service-worker.js",
+    "status": "modificado",
+    "sha256": "11f04ed04d7298d4e8027c8a2d7580817b52ecc45648f20a78ce9f91176c510c"
+  },
+  {
+    "path": "style.css",
+    "status": "modificado",
+    "sha256": "7aac836a2433a631b68c4c00d8dcc2e9a8906dfe794f899c34c56698a2c11eb3"
+  },
+  {
+    "path": "tests/budget-flows.test.js",
+    "status": "modificado",
+    "sha256": "951f6b78eb13f6661fafc95a65546c424f68200c9073e5a102f02082bfc35c23"
+  },
+  {
+    "path": "tests/budget.test.js",
+    "status": "modificado",
+    "sha256": "7316fd3e0069dbe7bccd75101b2421c691ce5933b986719cb921877db7ea5b44"
+  },
+  {
+    "path": "tests/material-fixture.cjs",
+    "status": "nuevo",
+    "sha256": "3a4f88926d375259916c6e5abedaa4f94a47fef3c926ef33fd8cbaea71bbb121"
+  },
+  {
+    "path": "tests/materials.test.js",
+    "status": "nuevo",
+    "sha256": "bed163391cafd8754de91bfd6ec117306aaf5e342553801a4d585f7a418eac4f"
+  },
+  {
+    "path": "tests/pwa.test.js",
+    "status": "modificado",
+    "sha256": "ac9194b1a06d0dbd674a721cc0ceb3f2ac56c4810bca66de78fee8136d4a6630"
+  },
+  {
+    "path": "tests/sources.test.js",
+    "status": "nuevo",
+    "sha256": "830b3146687ec0c1b617bd82389c44f950956544398844475e652d9e2ea01917"
+  },
+  {
+    "path": "ui-a.html",
+    "status": "modificado",
+    "sha256": "de6703c4c4e271ac21f3e8e05cb2710d628e374f469666d2bd499d542f7d6502"
+  },
+  {
+    "path": "ui-b.html",
+    "status": "modificado",
+    "sha256": "7d4d8cba7ff3c4ebe0f0c8acb26f5d9a904d0e9274e8540e959e7c1859919803"
+  },
+  {
+    "path": "ui-c.html",
+    "status": "modificado",
+    "sha256": "a6d02ad6dc3ff27086512594422c179c20e4a9dfc6f489a5c1e2d1bb774856bb"
+  }
+]

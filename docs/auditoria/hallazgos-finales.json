@@ -1,0 +1,219 @@
+{
+  "base_commit": "cdc20a230cf8b925ea7963ba128e247316614d99",
+  "date": "2026-10-12",
+  "findings": [
+    {
+      "id": "CAL-01",
+      "module": "presupuesto",
+      "severity": "alta",
+      "description": "Filas informativas de cerámica se valoran como materiales; mortero geométrico y sacos se pueden duplicar.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "CAL-02",
+      "module": "presupuesto",
+      "severity": "alta",
+      "description": "Se agrupan materiales por nombre sin unidad; Ladrillo cerámico no distingue formatos.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "CAL-03",
+      "module": "presupuesto",
+      "severity": "alta",
+      "description": "Una partida fuera de tabla puede producir presupuesto definitivo con materiales sin dimensionar.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-01",
+      "module": "tabique/trasdosado",
+      "severity": "media",
+      "description": "Tablas 12,5/15 agrupadas en tabique son correctas según fuente; falta documentar condiciones de perfil y no garantizar sistemas genéricos.",
+      "status": "mitigado",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-02",
+      "module": "trasdosado directo",
+      "severity": "media",
+      "description": "5 kg/m² está documentado como aproximado en Perlfix K465.es 09/2025, no rendimiento universal exacto.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-03",
+      "module": "techos",
+      "severity": "alta",
+      "description": "T24 60x120 invierte secundarios de 1200/600: no corresponde al esquema documentado.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-04",
+      "module": "techos",
+      "severity": "alta",
+      "description": "Varillas de 1 m calculadas por longitud agregada no sirven para cortes de 0,70 m: faltan piezas.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-05",
+      "module": "techos",
+      "severity": "alta",
+      "description": "Crucetas no coinciden con intersecciones del despiece de perfiles; perimetrales, anclajes y consumos faltan o carecen de documentación.",
+      "status": "mitigado",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-06",
+      "module": "techos",
+      "severity": "alta",
+      "description": "Techo canal+M70 entrega barras por ratio sin validar luz; escayola >25 cm sigue sin despiece de varilla.",
+      "status": "mitigado",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-07",
+      "module": "puentes",
+      "severity": "alta",
+      "description": "SikaTop-50 está en litros y su ficha expresa kg/m².",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-08",
+      "module": "puentes",
+      "severity": "media",
+      "description": "Rangos se convierten a media fija; no existe consumo según soporte editable ni capas para SikaTop-10.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-09",
+      "module": "revestimientos",
+      "severity": "media",
+      "description": "Se controla solo espesor máximo; varios máximos y mínimos carecen de trazabilidad.",
+      "status": "mitigado",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-10",
+      "module": "obra húmeda",
+      "severity": "alta",
+      "description": "Productos sin dimensiones heredan las del ladrillo anterior; al volver a la pantalla se pierden dimensiones editadas.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-11",
+      "module": "obra húmeda",
+      "severity": "media",
+      "description": "Mortero de bloques es kg/m² de catálogo sin fuente ni control editable.",
+      "status": "mitigado",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-12",
+      "module": "cerámica",
+      "severity": "media",
+      "description": "Merma 0 no se respeta; consumo de cola y densidad de junta son orientativos sin producto identificado.",
+      "status": "mitigado",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-13",
+      "module": "tabique/trasdosado",
+      "severity": "media",
+      "description": "Guardavivos se calculan siempre con dos cantos y jambas a altura completa, sin geometría de cantos expuestos.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "VAL-01",
+      "module": "formularios",
+      "severity": "alta",
+      "description": "Infinity/valores vacíos o negativos se silencian o se fuerzan a mínimos; huecos y unidades enteras no se validan.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "DAT-01",
+      "module": "datos",
+      "severity": "alta",
+      "description": "localStorage de tipo erróneo o copia con editor mal formado puede romper la aplicación; IVA/costes no finitos no se rechazan.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "DAT-02",
+      "module": "tarifas/CSV",
+      "severity": "alta",
+      "description": "CSV con coma decimal entre comillas se importa con precio incorrecto; datos de texto pueden iniciar fórmulas.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "UX-01",
+      "module": "navegación",
+      "severity": "media",
+      "description": "Recuperar borradores y editar partidas no sincroniza familias y tarjetas de sistema con los valores guardados.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "PWA-01",
+      "module": "PWA",
+      "severity": "alta",
+      "description": "logo.png es 175x59, pero manifiesto declara 192x192 y 512x512; no hay icono apto declarado correctamente.",
+      "status": "pendiente",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "PWA-02",
+      "module": "PWA",
+      "severity": "alta",
+      "description": "Se cachean errores HTTP y se devuelve HTML como fallback de JS/CSS; búsquedas offline recorren todas las cachés.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "PWA-03",
+      "module": "PWA",
+      "severity": "media",
+      "description": "Imágenes locales de productos no están en la precarga; las externas requieren visita previa o conexión.",
+      "status": "mitigado",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "CAL-04",
+      "module": "cantidades/envases",
+      "severity": "media",
+      "description": "Pasta y cinta se redondeaban antes del envase comercial.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "TEC-14",
+      "module": "obra húmeda",
+      "severity": "media",
+      "description": "Merma única para ladrillo/bloque y mortero.",
+      "status": "corregido",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    },
+    {
+      "id": "UX-02",
+      "module": "interfaz móvil/temas",
+      "severity": "media",
+      "description": "Contraste de texto en oscuro, altura de precios y persistencia de apariencia.",
+      "status": "mitigado",
+      "resolution_reference": "informe-completo.md#hallazgos-y-correcciones"
+    }
+  ],
+  "summary": {
+    "corregido": 17,
+    "mitigado": 8,
+    "pendiente": 1
+  }
+}

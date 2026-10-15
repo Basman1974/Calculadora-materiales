@@ -1,5 +1,6 @@
-const CACHE='calculadora-construccion-20261012-beneficio-industrial';
+const CACHE='calculadora-construccion-20261015-precios-proveedores';
 const CORE=[
+  'SikaTop-50.jpg','aplica-primer-top-5kg.jpg','aplicarev-cal-nature-pro.jpg','mortero-cal-base-aplicarev-25kg-bco.jpg','puente-de-union-morteros-henares-ptu-20.jpg','puente-union-plus.jpg','sikatop-10.jpg','sikatop-30.jpg','weberev-hidro-plus.jpg','weberpral-prisma.jpg','weberrev-fino.jpg',
   './','index.html','style.css','data.js','app.js','app-a1.js','app-a2.js','app-b.js',
   'ui-a.html','ui-b.html','ui-c.html','manifest.json','logo.png','assets/mount-sprite-01.js','assets/mount-sprite-02.js','assets/mount-sprite-03.js','assets/mount-sprite-04.js','assets/mount-sprite-05.js','assets/mount-sprite-06.js','assets/mount-sprite-07.js','assets/mount-sprite-08.js',
   'assets/montaje-tabique.svg','assets/montaje-directo.svg','assets/montaje-semidirecto.svg','assets/montaje-autoportante.svg','assets/montaje-techo.svg','assets/montaje-techo-simple.svg','assets/montaje-techo-doble.svg','assets/montaje-techo-sierra.svg','assets/montaje-techo-biapoyado.svg','assets/montaje-registrable-60.svg','assets/montaje-registrable-120.svg','assets/montaje-escayola.svg'
@@ -21,10 +22,20 @@ self.addEventListener('fetch',event=>{
   if(url.origin!==location.origin) return;
   event.respondWith(
     fetch(event.request).then(res=>{
-      const copy=res.clone();
-      caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});
+      if(res.ok){
+        const copy=res.clone();
+        event.waitUntil(caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{}));
+      }
       return res;
-    }).catch(()=>caches.match(event.request,{ignoreSearch:true}).then(r=>r||caches.match('./')))
+    }).catch(async()=>{
+      const cache=await caches.open(CACHE);
+      const resource=await cache.match(event.request,{ignoreSearch:true});
+      if(resource)return resource;
+      if(event.request.mode==='navigate'){
+        const page=await cache.match('./');if(page)return page;
+      }
+      return new Response('Recurso no disponible sin conexión',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
+    })
   );
 });
 

@@ -1,5 +1,5 @@
 (() => {
-  const v = '20261012-beneficio-industrial';
+  const v = '20261015-precios-proveedores';
   const base = ['app-a1.js', 'app-a2.js', 'app-b.js'];
 
   async function getPart(name){

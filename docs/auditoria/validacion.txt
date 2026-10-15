@@ -1,0 +1,177 @@
+Comprobar archivos
+index.html 874 bytes
+style.css 33119 bytes
+data.js 5734 bytes
+app.js 1212 bytes
+app-a1.js 33041 bytes
+app-a2.js 43378 bytes
+app-b.js 34355 bytes
+ui-a.html 15405 bytes
+ui-b.html 14094 bytes
+ui-c.html 14306 bytes
+manifest.json 410 bytes
+service-worker.js 2511 bytes
+
+
+Comprobar interfaz y funciones
+OK: navegación, formularios y botones críticos enlazados
+
+
+Sintaxis JavaScript
+
+
+Pruebas de materiales, presupuestos, fuentes y PWA
+✔ tests/budget-flows.test.js (197.829882ms)
+✔ tests/budget.test.js (334.541426ms)
+✔ tests/materials.test.js (1241.52993ms)
+✔ tests/pwa.test.js (285.716127ms)
+✔ tests/sources.test.js (103.755095ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2175.667399
+
+
+tests/budget-flows.test.js
+✔ Entrada decimal: recálculo inmediato y guardado automático (45.733824ms)
+✔ Porcentaje no válido: mantiene el anterior e impide exportar (7.750997ms)
+✔ Descuento fuera de rango no produce importes negativos (4.53734ms)
+✔ Pantalla, CSV, impresión/PDF, WhatsApp y Compartir usan el mismo desglose (14.183501ms)
+✔ Partidas pendientes identifican como provisional todas las salidas (4.097354ms)
+✔ Obra nueva restablece el recargo y una copia recupera su porcentaje (6.203112ms)
+✔ Abrir una copia anterior no hereda el porcentaje de la obra activa (3.717275ms)
+✔ Copias JSON guardan y restauran beneficio en obra activa e historial (5.370562ms)
+✔ Restaurar una copia antigua usa el 0 %; una copia inválida no sustituye datos (6.560007ms)
+✔ Añadir a Obra conserva todas las líneas de material y las medidas (7.310717ms)
+✔ Duplicar, eliminar y deshacer partidas mantienen el beneficio industrial (23.698629ms)
+✔ Los precios unitarios conservan sus decimales en todas las exportaciones (23.883141ms)
+✔ Cálculo incompleto con precios completos: provisional en todas las exportaciones (112.549344ms)
+✔ Importe adicional no válido: se conserva el anterior y se bloquea la exportación (8.358303ms)
+✔ Una copia con editor mal formado o IVA no válido no sustituye la obra (7.564993ms)
+✔ CSV exportado protege nombres de cliente que empiezan por fórmula (5.954043ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 304.8195
+
+
+tests/budget.test.js
+✔ Ejemplo: coste de 1.000 €, beneficio del 15 % e IVA del 21 % (10.992778ms)
+✔ Filas informativas, cantidad cero y referencia de mortero no piden precio (1.70493ms)
+✔ Material con igual nombre y distinta unidad no mezcla cantidades ni hereda el precio ambiguo (3.058244ms)
+✔ Un despiece incompleto sigue provisional aunque todos los materiales tengan precio (17.027597ms)
+✔ Los precios no finitos o negativos se consideran pendientes y no generan Infinity (2.541621ms)
+✔ CSV: comillas, coma decimal, separador dentro de nombre y cabecera (1.938506ms)
+✔ CSV: protege texto interpretado como fórmula y mantiene los descuentos numéricos (1.352155ms)
+✔ Ejemplo: descuento del 10 % después del beneficio (1.162257ms)
+✔ IVA 0 % con beneficio y descuento (1.590426ms)
+✔ IVA 10 % con beneficio y descuento (1.476935ms)
+✔ IVA 21 % con beneficio y descuento (1.14773ms)
+✔ Presupuestos anteriores y porcentaje ausente conservan el 0 % (2.958731ms)
+✔ Porcentajes decimales con coma y punto; son recargo sobre el coste (18.259945ms)
+✔ Validación: vacío, extremos y números no válidos (2.220107ms)
+✔ Descuento del 100 % y máximo técnico de recargo (2.862221ms)
+✔ Los materiales sin precio siguen pendientes; precio explícito 0 es válido (5.912854ms)
+✔ Obra vacía no genera importes (2.887261ms)
+✔ Cantidades precisas y redondeo a céntimos de líneas e importes sucesivos (1.652181ms)
+✔ El desglose común incluye extras, porcentaje, descuento y total (2.012857ms)
+✔ Un porcentaje decimal pequeño no se pierde al guardarlo como número (1.512793ms)
+✔ Formatos distintos de ladrillo en obras anteriores requieren precios separados (2.241156ms)
+✔ El precio por unidad permanece al eliminar la otra unidad con el mismo nombre (1.474512ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101.986148
+
+
+tests/materials.test.js
+✔ Ladrillo: geometría 33×16,5×4, junta 5 mm, sin merma y sin doble mortero (382.375318ms)
+✔ Volver a obra húmeda conserva dimensiones editadas (85.04155ms)
+✔ Un ladrillo sin dimensiones exige introducirlas (15.267422ms)
+✔ Puente: SikaTop-50 mantiene consumo en kg y envases correctos (148.432172ms)
+✔ Puente: SikaTop-30 mantiene consumo en kg y envases correctos (9.64627ms)
+✔ Puente: Puente de Unión Morteros Henares (PTU-20) mantiene consumo en kg y envases correctos (92.998794ms)
+✔ Puente: Aplica primer TOP 5KG mantiene consumo en kg y envases correctos (81.667258ms)
+✔ SikaTop-10: consumo configurable por capa y dos capas (18.721233ms)
+✔ Level Primer: concentrado según las dos diluciones del soporte poroso (8.749337ms)
+✔ PRISMA utiliza la ficha de 2026 y advierte capas; fino rechaza 10 mm (76.895566ms)
+✔ Cerámica: respeta merma cero y las cuñas dependen de la tanda (16.501513ms)
+✔ T24 60×120: 50 placas exactas y solo secundarios de 1200 (8.808527ms)
+✔ Varillas: 21 suspensiones de 70 cm necesitan 21 barras de 1 m (86.960291ms)
+✔ Doble TC47: crucetas coinciden con las intersecciones de los perfiles (128.777257ms)
+✔ Trasdosado directo: pasta aproximada configurable y sin estructura (14.438422ms)
+✔ Tabique de dos caras, guardavivos medidos y presupuesto fuera de tabla provisional (13.782112ms)
+✔ Validación wall {"wL":0} (200.135902ms)
+✔ Validación lining {"lH":"Infinity"} (58.197459ms)
+✔ Validación roof {"rHoles":21} (53.700025ms)
+✔ Validación wall {"wDoors":0.5} (9.837502ms)
+✔ Validación wet {"wetArea":-2} (13.322572ms)
+✔ Validación ceramic {"cJoint":0} (10.765486ms)
+✔ Todos los sistemas de techo y trasdosado generan resultados sin errores JS (13.099806ms)
+✔ Cerámica: junta de 0,2 mm y tanda de 0,1 m² se respetan sin mínimos ocultos (10.913827ms)
+✔ Pasta y cinta conservan cantidades decimales antes del redondeo de envases (8.290483ms)
+✔ El arranque soporta almacenamiento de tipos erróneos sin sobrescribirlo (18.746296ms)
+✔ Navegación lógica: las nueve secciones existen y se activan al seleccionar (17.003646ms)
+✔ Las mermas de ladrillos y mortero se calculan de forma independiente (103.86255ms)
+✔ Bloques: el consumo de mortero configurado se calcula sin usar geometría de ladrillo (12.651654ms)
+✔ Editar una partida recupera el sistema de techo y sus tarjetas (10.488604ms)
+✔ Caravista: no se interpreta el orden de dimensiones del nombre como alto/espesor verificados (18.510321ms)
+✔ Cambiar sistema elimina errores de controles que quedan ocultos (10.389456ms)
+✔ Alturas condicionales y techo incompleto muestran su advertencia antes del detalle (8.059266ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1792.683829
+
+
+tests/pwa.test.js
+✔ La caché completa se descarga antes de activar la actualización (127.246994ms)
+✔ Una descarga incompleta impide activar la nueva versión (1.408861ms)
+✔ Activación: conserva otras aplicaciones y espera a asumir el control (3.472966ms)
+✔ Sin conexión, recupera recursos versionados ignorando los parámetros (1.376761ms)
+✔ Un JS ausente sin conexión recibe 503 y nunca una página HTML (4.106719ms)
+✔ La navegación sin conexión puede recuperar el inicio (1.02391ms)
+✔ HTTP 404: solo se cachean respuestas correctas y se espera la escritura (1.045794ms)
+✔ HTTP 500: solo se cachean respuestas correctas y se espera la escritura (0.91453ms)
+✔ HTTP 200: solo se cachean respuestas correctas y se espera la escritura (0.998512ms)
+✔ Registro del service worker con documento loading (2.967526ms)
+✔ Registro del service worker con documento complete (0.883075ms)
+✔ Las dimensiones declaradas del logo corresponden a las del PNG real (0.432839ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 161.671887
+
+
+tests/sources.test.js
+✔ Cada producto del catálogo tiene un estado documental explícito (1.15942ms)
+✔ Parámetros documentados del catálogo coinciden con el registro de fuentes (1.252466ms)
+✔ Los parámetros sin ficha identificada permanecen marcados como pendientes (0.183027ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9.070847

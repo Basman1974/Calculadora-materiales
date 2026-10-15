@@ -1,0 +1,1078 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -113,5 +113,5 @@
+           node --check /tmp/app-full.js
+           python3 -m json.tool manifest.json >/dev/null
+ 
+-      - name: Pruebas de presupuesto y beneficio industrial
++      - name: Pruebas de materiales, presupuestos, fuentes y PWA
+         run: node --test tests/*.test.js
+--- a/app-a1.js
++++ b/app-a1.js
+@@ -3,15 +3,32 @@
+   const $all = s => [...document.querySelectorAll(s)];
+   const cache = Object.create(null);
+   function el(id){ if(cache[id] === undefined) cache[id] = document.getElementById(id); return cache[id]; }
+-  function num(id){ const n = el(id); if(!n) return 0; return Math.max(0, Number(String(n.value).replace(',','.')) || 0); }
++  function finiteAmount(value){ const n=Number(String(value ?? '').replace(',','.')); return Number.isFinite(n)&&n>=0?n:0; }
++  function num(id){ const n = el(id); return n?finiteAmount(n.value):0; }
++  function validCalculation(resultId, rules, message=''){
++    const errors=[];
++    const section=el(resultId)?.closest('.screen');
++    if(section)section.querySelectorAll('input,select').forEach(input=>{input.setCustomValidity('');input.setAttribute('aria-invalid','false');});
++    rules.forEach(([id,min=0,integer=false])=>{
++      const input=el(id);if(!input)return;
++      const text=String(input.value).trim(),value=Number(text.replace(',','.'));
++      const valid=text!==''&&Number.isFinite(value)&&value>=min&&(!integer||Number.isInteger(value));
++      const error=valid?'':'Introduce un número '+(integer?'entero ':'')+(min===0.000001?'mayor que 0':'igual o mayor que '+min)+'.';
++      input.setCustomValidity(error);input.setAttribute('aria-invalid',String(!valid));
++      if(!valid)errors.push(error);
++    });
++    if(message)errors.push(message);
++    if(errors.length){const box=el(resultId);if(box)box.innerHTML='<div class="info" role="alert">'+esc(message||errors[0])+'</div>';return false;}
++    return true;
++  }
+   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
+   on(el('closeUpdateNotice'),'click',()=>{
+     el('updateNotice').hidden=true;
+-    try{localStorage.setItem('calc-notice-seen','20261012-beneficio-industrial');}catch(e){}
++    try{localStorage.setItem('calc-notice-seen','20261012-auditoria');}catch(e){}
+     const heading=document.querySelector('#home .hero h2');
+     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
+   });
+-  try{if(localStorage.getItem('calc-notice-seen')==='20261012-beneficio-industrial')el('updateNotice').hidden=true;}catch(e){}
++  try{if(localStorage.getItem('calc-notice-seen')==='20261012-auditoria')el('updateNotice').hidden=true;}catch(e){}
+   let editingPart=null;
+   let currentCat = 'ladrillos';
+   let currentCerBody = 'porcelanico';
+@@ -31,6 +48,15 @@
+   try { jobMeta = Object.assign(jobMeta, normalizeJobMeta(JSON.parse(localStorage.getItem(JOB_KEY) || '{}') || {})); } catch(e){}
+   try { company = Object.assign(company, JSON.parse(localStorage.getItem(CO_KEY) || '{}') || {}); } catch(e){}
+   try { savedJobs = JSON.parse(localStorage.getItem(SNAP_KEY) || '[]') || []; } catch(e){ savedJobs = []; }
++  // No sobrescribir datos dañados al arrancar: una copia aún puede recuperarlos.
++  if(!Array.isArray(work))work=[];
++  const validPart=part=>part&&typeof part==='object'&&typeof part.title==='string'&&Array.isArray(part.items)&&part.items.every(row=>Array.isArray(row)&&row.length>=2&&row.every(value=>typeof value==='string'));
++  const validEditor=cfg=>cfg&&typeof cfg==='object'&&['wall','lining','roof','wet','ceramic'].includes(cfg.screen)&&cfg.values&&typeof cfg.values==='object'&&!Array.isArray(cfg.values)&&Object.values(cfg.values).every(value=>typeof value==='string');
++  work=work.filter(validPart).map(part=>{if(part.editor&&!validEditor(part.editor))delete part.editor;return part;});
++  if(!priceBook||typeof priceBook!=='object'||Array.isArray(priceBook))priceBook={};
++  if(!Array.isArray(savedJobs))savedJobs=[];
++  savedJobs=savedJobs.filter(job=>job&&typeof job==='object'&&Array.isArray(job.work)&&job.work.every(validPart)&&job.meta&&typeof job.meta==='object'&&!Array.isArray(job.meta));
++  savedJobs.forEach(job=>job.work.forEach(part=>{if(part.editor&&!validEditor(part.editor))delete part.editor;}));
+ 
+   function money(n){ return (Math.round((Number(n)||0)*100)/100).toFixed(2).replace('.', ','); }
+   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+@@ -39,12 +65,8 @@
+   function jambStuds(doors, wins){
+     return Math.max(0, Math.round(Number(doors)||0)) * 2 + Math.max(0, Math.round(Number(wins)||0)) * 2;
+   }
+-  function cornerBeadRow(H, doors){
+-    const h = Math.max(0, Number(H)||0);
+-    const d = Math.max(0, Math.round(Number(doors)||0));
+-    const runs = 2 + d * 2;
+-    const m = runs * h;
+-    return ['Guardavivos metálico', m.toFixed(1) + ' m · ' + Math.ceil(m / 3) + ' barras de 3 m', '2 cantos del paño + 2 jambas por puerta · ' + runs + ' verticales × ' + h.toFixed(2) + ' m · no sustituye rincones de proyecto'];
++  function cornerBeadRow(m){
++    return ['Guardavivos metálico', m.toFixed(2) + ' m · ' + Math.ceil(m / 3) + ' barras de 3 m', 'Longitud de aristas expuestas medida por el usuario; no presupone cantos libres ni jambas a toda altura.'];
+   }
+   function boardTypeLabel(id){
+     const v = el(id) ? el(id).value : 'normal';
+@@ -61,6 +83,8 @@
+     return m ? Math.abs(Number(m[0])) : 0;
+   }
+   function lineUnit(name, val){
++    const container=String(val||'').match(/^\s*\d+(?:[.,]\d+)?\s*(envase(?:\(s\)|s)?|bote(?:s)?)\b/i);
++    if(container)return container[1].toLowerCase().startsWith('bote')?'bote':'envase';
+     const explicit=String(val||'').match(/^\s*\d+(?:[.,]\d+)?\s*(m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|rollos?\b|cajas?\b|panel(?:es)?\b|L\b)/i);
+     if(explicit){const u=explicit[1].toLowerCase();return ({m2:'m²',uds:'ud',barras:'barra',sacos:'saco',rollos:'rollo',cajas:'caja',paneles:'panel',l:'L'})[u]||u;}
+ 
+@@ -93,7 +117,8 @@
+     return Number.isFinite(n) && n >= 0 && n <= max ? n : null;
+   }
+   function normalizeJobMeta(meta){
+-    return Object.assign({}, meta, {profitPct:percentageValue(meta.profitPct, 1000) ?? 0, disc:percentageValue(meta.disc, 100) ?? 0});
++    if(!meta||typeof meta!=='object'||Array.isArray(meta))meta={};
++    return Object.assign({}, meta, {profitPct:percentageValue(meta.profitPct, 1000) ?? 0, disc:percentageValue(meta.disc, 100) ?? 0,vat:percentageValue(meta.vat,100)??21,laborExtra:finiteAmount(meta.laborExtra),extra:finiteAmount(meta.extra)});
+   }
+   function decimalText(value){
+     return Number(value).toLocaleString('es-ES', {useGrouping:false, maximumSignificantDigits:21});
+@@ -115,21 +140,28 @@
+   }
+   function budgetInputValid(){
+     readJobFields();
+-    for(const id of ['jobProfitPct','jobDisc']){
++    for(const id of ['jobProfitPct','jobDisc','jobLaborExtra','jobExtra']){
+       const input = el(id);
+       if(input && !input.checkValidity()){ input.reportValidity(); input.focus(); return false; }
+     }
+     return true;
+   }
++  function readBudgetAmount(id,previous){
++    const input=el(id);if(!input)return finiteAmount(previous);
++    const value=percentageValue(input.value,Number.MAX_VALUE);
++    input.setCustomValidity(value===null?'Introduce un importe válido igual o mayor que 0. Se conserva el último importe válido.':'');
++    input.setAttribute('aria-invalid',String(value===null));
++    return value===null?finiteAmount(previous):value;
++  }
+   function readJobFields(){
+-    jobMeta.name = (el('jobName') && el('jobName').value) || jobMeta.name || '';
++    jobMeta.name = el('jobName') ? el('jobName').value : jobMeta.name || '';
+     jobMeta.client = (el('jobClient') && el('jobClient').value) || '';
+     jobMeta.addr = (el('jobAddr') && el('jobAddr').value) || '';
+     jobMeta.vat = (el('jobVat') && el('jobVat').value) || jobMeta.vat || '21';
+     jobMeta.disc = readPercentage('jobDisc', jobMeta.disc, 100);
+     jobMeta.profitPct = readPercentage('jobProfitPct', jobMeta.profitPct, 1000);
+-    jobMeta.laborExtra = num('jobLaborExtra');
+-    jobMeta.extra = num('jobExtra');
++    jobMeta.laborExtra = readBudgetAmount('jobLaborExtra',jobMeta.laborExtra);
++    jobMeta.extra = readBudgetAmount('jobExtra',jobMeta.extra);
+     jobMeta.valid = (el('jobValid') && el('jobValid').value) || jobMeta.valid || '30';
+     jobMeta.notes = (el('jobNotes') && el('jobNotes').value) || '';
+     jobMeta.num = (el('jobNum') && el('jobNum').value) || jobMeta.num || '';
+@@ -153,15 +185,19 @@
+   function nextQuoteNum(){
+     return 'P-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Date.now()).slice(-4);
+   }
+-  function isTechnicalRow(row){return /comprobación|huecos descontados|aviso|fuera de tabla/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]);}
++  function isTechnicalRow(row){return !Array.isArray(row)||/comprobación|huecos descontados|aviso|fuera de tabla|volumen geométrico/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]) || !/^\s*\d+(?:[.,]\d+)?\s*(?:m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|saco\(s\)|rollos?\b|cajas?\b|panel(?:es)?\b|botes?\b|envases?\b|envase\(s\)|L\b|€)/i.test(String(row[1]));}
+   function mergedLines(){
+     const map = Object.create(null);
++    const brickFormats=new Set(work.flatMap(part=>(part.items||[]).filter(row=>row[0]==='Ladrillo cerámico').map(row=>String(row[2]||'').match(/formato ([^·]+)/)?.[1].trim()||'')));
+     work.forEach(part => (part.items||[]).forEach(row => {
+-      if(isTechnicalRow(row)) return;
+-      const name = row[0], val = row[1], detail = row[2] || '';
++      if(isTechnicalRow(row)||(!/^Mano de obra/i.test(row[0])&&lineQty(row[1])===0)) return;
++      // Obras anteriores incluían el volumen de referencia y el mortero comprado.
++      if(row[0]==='Mortero de colocación'&&part.items.some(r=>/^Mortero (predosificado|hecho en obra)$/.test(r[0])))return;
++      const detail=row[2]||'',format=detail.match(/formato ([^·]+)/)?.[1].trim();
++      const name=row[0]==='Ladrillo cerámico'&&brickFormats.size>1?row[0]+' · '+(format||'formato sin documentar'):row[0],val=row[1];
+       const labor = /^Mano de obra/i.test(name);
+-      const key = name;
+-      if(!map[key]) map[key] = {name, qty:0, unit:lineUnit(name,val), detail, labor:labor, amount:0};
++      const unit=lineUnit(name,val),key=JSON.stringify([name,unit]);
++      if(!map[key]) map[key] = {name, qty:0, unit, detail, labor:labor, amount:0};
+       if(labor){
+         const euros = Number(String(val).replace(',','.').replace(/[^\d.]/g,'')) || 0;
+         map[key].amount += euros;
+@@ -172,25 +208,35 @@
+         if(detail && map[key].detail.indexOf(detail) < 0) map[key].detail = map[key].detail || detail;
+       }
+     }));
+-    return Object.keys(map).map(k => map[k]);
++    const lines=Object.values(map);
++    return lines.map(line=>Object.assign(line,{key:lines.some(other=>other.name===line.name&&other.unit!==line.unit)?line.name+' ['+line.unit+']':line.name}));
+   }
+   function budgetRows(){
+     return mergedLines().map(line => {
+-      const price = Number(priceBook[line.name]);
+-      const unitPrice = isFinite(price) ? price : 0;
++      const scopedKey=line.name+' ['+line.unit+']';
++      const key=Object.prototype.hasOwnProperty.call(priceBook,scopedKey)?scopedKey:line.key;
++      const price = Number(priceBook[key]);
++      const validPrice=Object.prototype.hasOwnProperty.call(priceBook,key)&&String(priceBook[key]).trim()!==''&&Number.isFinite(price)&&price>=0;
++      const unitPrice = validPrice ? price : 0;
+       const qty = line.labor ? 1 : line.qty;
+       const total = line.labor ? line.amount : qty * unitPrice;
+-      return Object.assign({}, line, {qty:qty, unitPrice:unitPrice, total:roundEuros(total), missing:!line.labor&&!Object.prototype.hasOwnProperty.call(priceBook,line.name)});
++      return Object.assign({}, line, {key,qty:qty, unitPrice:unitPrice, total:roundEuros(total), missing:!line.labor&&!validPrice});
+     });
+   }
+   function roundEuros(value){ return Math.round((value + Math.abs(value) * Number.EPSILON) * 100) / 100; }
++  function partNeedsReview(part){
++    const items=part.items||[];
++    if(part.incomplete||items.some(row=>/no dimensionados|fuera de tabla|verificar tabla técnica|usar varilla|despiece pendiente|pendiente de dimensionar/i.test(row.join(' '))))return true;
++    // No recalcular ni sustituir precios de copias antiguas de forma silenciosa.
++    return part.calculationVersion!=='20261012-auditoria'&&(/techo|caravista 24x12x5/i.test(part.title)||items.some(row=>/^SikaTop-(10|30|50)$|^Puente de unión PLUS \(MH\)$|^Puente de Unión Morteros Henares \(PTU-20\)$|^Aplica primer TOP 5KG$|^weberpral prisma$|^Guardavivos metálico$/.test(row[0])));
++  }
+   function budgetTotals(){
+     const rows = budgetRows();
+     let mat = 0, labor = 0;
+     rows.forEach(r => { if(r.labor) labor += r.total; else mat += r.total; });
+     mat = roundEuros(mat);
+-    labor = roundEuros(labor + (Number(jobMeta.laborExtra)||0));
+-    const extra = roundEuros(Number(jobMeta.extra)||0);
++    labor = roundEuros(labor + finiteAmount(jobMeta.laborExtra));
++    const extra = roundEuros(finiteAmount(jobMeta.extra));
+     const discPct = percentageValue(jobMeta.disc, 100) ?? 0;
+     const base = roundEuros(Math.max(0, mat + labor + extra));
+     const profitPct = percentageValue(jobMeta.profitPct, 1000) ?? 0;
+@@ -198,9 +244,42 @@
+     const subtotal = roundEuros(base + profit);
+     const disc = roundEuros(subtotal * discPct / 100);
+     const taxable = roundEuros(subtotal - disc);
+-    const vatPct = Number(jobMeta.vat)||0;
++    const vatPct = percentageValue(jobMeta.vat,100)??0;
+     const vat = roundEuros(taxable * vatPct / 100);
+-    return {missing:rows.filter(r=>r.missing).length, rows, mat, labor, extra, base, profitPct, profit, subtotal, disc, discPct, taxable, vat, vatPct, grand:roundEuros(taxable + vat)};
++    const missing=rows.filter(r=>r.missing).length;
++    const incomplete=work.filter(partNeedsReview).length;
++    return {missing,incomplete,provisional:missing>0||incomplete>0, rows, mat, labor, extra, base, profitPct, profit, subtotal, disc, discPct, taxable, vat, vatPct, grand:roundEuros(taxable + vat)};
++  }
++  function provisionalText(tot){return [tot.missing?tot.missing+' materiales sin precio':'',tot.incomplete?tot.incomplete+' partidas con cálculo incompleto':''].filter(Boolean).join(' · ');}
++  function csvSafeCell(value){
++    const text=String(value);
++    return /^[\s]*[=+@-]/.test(text)&&!/^\s*-?\d+(?:[.,]\d+)?\s*$/.test(text)?"'"+text:text;
++  }
++  function parseTariffCsv(text){
++    text=String(text).replace(/^\ufeff/,'');
++    let quoted=false,semi=0,comma=0;
++    for(let i=0;i<text.length;i++){
++      const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){i++;continue;}quoted=!quoted;}
++      if(!quoted){if(c==='\n'||c==='\r')break;if(c===';')semi++;if(c===',')comma++;}
++    }
++    const separator=semi?';':',',rows=[];let row=[],cell='';quoted=false;
++    for(let i=0;i<text.length;i++){
++      const c=text[i];
++      if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}
++      else if(!quoted&&c===separator){row.push(cell);cell='';}
++      else if(!quoted&&(c==='\n'||c==='\r')){row.push(cell);rows.push(row);row=[];cell='';if(c==='\r'&&text[i+1]==='\n')i++;}
++      else cell+=c;
++    }
++    if(quoted)throw Error('CSV con comillas sin cerrar');
++    if(cell!==''||row.length){row.push(cell);rows.push(row);}
++    return rows.flatMap((fields,index)=>{
++      if(fields.every(value=>!value.trim()))return [];
++      const name=(fields[0]||'').trim(),raw=(fields[1]||'').trim();
++      if(index===0&&/^(concepto|material|nombre|producto)$/i.test(name)&&/precio/i.test(raw))return [];
++      const price=percentageValue(raw,Number.MAX_VALUE);
++      if(fields.length!==2||!name||raw===''||price===null)throw Error('Tarifa no válida en la fila '+(index+1));
++      return [[name,price]];
++    });
+   }
+   // Un mismo desglose para pantalla, impresión/PDF, CSV y texto compartido.
+   function budgetSummary(tot){
+@@ -215,7 +294,7 @@
+       ...(tot.discPct ? [{label:'Descuento ' + pct(tot.discPct), amount:-tot.disc}] : []),
+       {label:'Base imponible', amount:tot.taxable},
+       {label:'IVA ' + pct(tot.vatPct), amount:tot.vat},
+-      {label:tot.missing ? 'TOTAL PROVISIONAL' : 'TOTAL', amount:tot.grand, grand:true}
++      {label:tot.provisional ? 'TOTAL PROVISIONAL' : 'TOTAL', amount:tot.grand, grand:true}
+     ];
+   }
+ 
+@@ -266,7 +345,7 @@
+   function mmRow(area, kind){
+     const mm = mmScrews(area, kind);
+     const src = kind === 'roof' ? 'techo 5 ud/m² de estructura' : 'tabique 3 ud/m² de estructura';
+-    return ['Tornillos metal-metal 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', 'UNE 102043 y UNE-EN 14566 · ' + src + ' · +10% merma · caja 500 ud'];
++    return ['Tornillos metal-metal 3,5 × 9,5', mm.n + ' uds · ' + mm.boxes + ' caja(s) de 500', 'Estimación orientativa pendiente de verificar con el sistema · ' + src + ' · +10% merma · caja 500 ud'];
+   }
+   function woolThick(profile, kind){
+     if(kind === 'semi') return 40;
+@@ -280,13 +359,13 @@
+     const panel = 1.2 * 0.6;
+     const uds = Math.ceil(need / panel);
+     const where = kind === 'semi' ? 'entre perfiles omega' : 'relleno de cámara entre montantes';
+-    return ['Lana mineral ' + thickMm + ' mm', need.toFixed(1) + ' m² · ' + uds + ' panel(es) 1200 × 600', 'UNE 102043 · ' + where + ' · 1 m²/m² · merma corte 8 % · panel 0,72 m² · UNE-EN 13162'];
++    return ['Lana mineral ' + thickMm + ' mm', need.toFixed(1) + ' m² · ' + uds + ' panel(es) 1200 × 600', 'Estimación orientativa · ' + where + ' · 1 m²/m² · merma corte 8 % · panel 0,72 m² · UNE-EN 13162'];
+   }
+   function tacoRow(lengthM, runs, kind){
+     const n = Math.max(0, runs) * (Math.ceil(Math.max(0, lengthM) / 0.6) + 1);
+     const detail = kind === 'omega'
+-      ? 'UNE 102043 §16.6 · anclaje de omega al paramento · ala del perfil · paso máx. 600 mm · primer y último cerca del extremo'
+-      : 'UNE 102043 §16.6 · anclaje de canales al soporte · paso máx. 600 mm · primer y último cerca del extremo';
++      ? 'Estimación de fijaciones pendiente de contraste · anclaje de omega al paramento · ala del perfil · paso máx. 600 mm · primer y último cerca del extremo'
++      : 'Estimación de fijaciones pendiente de contraste · anclaje de canales al soporte · paso máx. 600 mm · primer y último cerca del extremo';
+     return ['Tacos de golpeo', n + ' uds · ' + Math.ceil(n / 100) + ' caja(s) de 100', detail];
+   }
+   function screwBoxes(n){ return Math.ceil(Math.max(0, n) / 1000); }
+@@ -301,7 +380,7 @@
+     const inner = Math.max(0, n - 1), visible = n > 0 ? 1 : 0;
+     const firstRate = n >= 2 ? 8 : (n === 1 ? 15 : 0), secondRate = n >= 2 ? 15 : 0;
+     const firstLen = pylScrewLength(t), secondLen = n >= 2 ? pylScrewLength(t*n) : 0;
+-    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'3,5 × '+firstLen, secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?('3,5 × '+secondLen):'', tapeInner:Math.ceil(inner*A*1.6*waste), tapeVisible:Math.ceil(visible*A*1.6*waste), pasteInner:Math.ceil(inner*A*0.20*waste), pasteVisible:Math.ceil(visible*A*0.40*waste)};
++    return {n:n, firstNeed:Math.ceil(A*firstRate*waste), firstType:'3,5 × '+firstLen, secondNeed:Math.ceil(A*secondRate*waste), secondType:n>=2?('3,5 × '+secondLen):'', tapeInner:inner*A*1.6*waste, tapeVisible:visible*A*1.6*waste, pasteInner:inner*A*0.20*waste, pasteVisible:visible*A*0.40*waste};
+   }
+   function mergeFaceWork(list){
+     return list.reduce((acc, x) => {
+@@ -317,12 +396,12 @@
+   }
+   function pylJoinRows(w){
+     const rows = [];
+-    if(w.firstNeed) rows.push([w.hasSecond ? 'Tornillos 1.ª placa ' + w.firstType : 'Tornillos placa-metal ' + w.firstType, w.firstNeed + ' uds · ' + screwBoxes(w.firstNeed) + ' caja(s) de 1.000', w.hasSecond ? 'UNE 102043 · capa interior · ≈8 ud/m²·cara · paso amplio · +10% merma · UNE-EN 14566' : 'UNE 102043 · cara vista · 15 ud/m² · paso máx. 250 mm · largo = espesor + 10 mm · +10% merma']);
+-    if(w.hasSecond && w.secondNeed) rows.push(['Tornillos 2.ª placa ' + w.secondType, w.secondNeed + ' uds · ' + screwBoxes(w.secondNeed) + ' caja(s) de 1.000', 'UNE 102043 · cara vista · 15 ud/m² · paso máx. 250 mm · largo = 2 placas + 10 mm · UNE-EN 14566 · +10% merma']);
+-    if(w.hasInner && w.tapeInner) rows.push(['Cinta de papel 1.ª capa', w.tapeInner + ' m · ' + Math.ceil(w.tapeInner / 150) + ' rollo(s) de 150 m', 'UNE 102043 §18 · juntas de todas las capas · 1,6 m/m² · UNE-EN 13963']);
+-    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'UNE 102043 · acabado Q1 interior · ≈0,20 kg/m² · UNE-EN 13963']);
+-    if(w.hasVisible && w.tapeVisible) rows.push(['Cinta de papel cara vista', w.tapeVisible + ' m · ' + Math.ceil(w.tapeVisible / 150) + ' rollo(s) de 150 m', 'UNE 102043 §18 · junta de última placa · 1,6 m/m² · +10% merma · UNE-EN 13963']);
+-    if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'UNE 102043 · acabado Q2 · juntas + cabezas · ≈0,40 kg/m² · +10% merma']);
++    if(w.firstNeed) rows.push([w.hasSecond ? 'Tornillos 1.ª placa ' + w.firstType : 'Tornillos placa-metal ' + w.firstType, w.firstNeed + ' uds · ' + screwBoxes(w.firstNeed) + ' caja(s) de 1.000', w.hasSecond ? 'Estimación orientativa · capa interior · ≈8 ud/m²·cara · paso amplio · +10% merma · UNE-EN 14566' : 'Estimación orientativa · cara vista · 15 ud/m² · paso orientativo de pared 250 mm; comprobar el sistema y el uso en techo · largo = espesor + 10 mm · +10% merma']);
++    if(w.hasSecond && w.secondNeed) rows.push(['Tornillos 2.ª placa ' + w.secondType, w.secondNeed + ' uds · ' + screwBoxes(w.secondNeed) + ' caja(s) de 1.000', 'Estimación orientativa · cara vista · 15 ud/m² · paso orientativo de pared 250 mm; comprobar el sistema y el uso en techo · largo = 2 placas + 10 mm · UNE-EN 14566 · +10% merma']);
++    if(w.hasInner && w.tapeInner) rows.push(['Cinta de papel 1.ª capa', w.tapeInner.toFixed(2) + ' m · ' + Math.ceil(w.tapeInner / 150) + ' rollo(s) de 150 m', 'Estimación orientativa · juntas de todas las capas · 1,6 m/m² · UNE-EN 13963']);
++    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner.toFixed(2) + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'Estimación orientativa · acabado Q1 interior · ≈0,20 kg/m² · UNE-EN 13963']);
++    if(w.hasVisible && w.tapeVisible) rows.push(['Cinta de papel cara vista', w.tapeVisible.toFixed(2) + ' m · ' + Math.ceil(w.tapeVisible / 150) + ' rollo(s) de 150 m', 'Estimación orientativa · junta de última placa · 1,6 m/m² · +10% merma · UNE-EN 13963']);
++    if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible.toFixed(2) + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'Estimación orientativa · acabado Q2 · juntas + cabezas · ≈0,40 kg/m² · +10% merma']);
+     return rows;
+   }
+   // Controles estáticos: listeners directos para evitar fallos táctiles en Android/WebView.
+--- a/app-a2.js
++++ b/app-a2.js
+@@ -42,11 +42,14 @@
+     return {c:'estimate',t:'ESTIMACIÓN'};
+   }
+   function resultHTML(title, meta, rows){
++    const pending=partNeedsReview({title,items:rows,calculationVersion:'20261012-auditoria'});
++    const conditionalHeight=rows.some(row=>row[0]==='Comprobación de altura');
++    const warning=pending?'Hay elementos sin dimensionar o un despiece pendiente. El presupuesto será provisional.':conditionalHeight?'Altura orientativa según tabla del sistema. Confirma perfiles, placas y condiciones: este cálculo no acredita la validez de perfiles genéricos.':'';
+     const quick=rows.filter(x=>!isTechnicalRow(x));
+     const quickHtml=quick.map(x=>'<div class="quickLine"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
+     const tech=rows.map(x=>{const q=rowConfidence(x);return '<div class="row"><div class="rowName">'+esc(x[0])+' <span class="trust '+q.c+'">'+q.t+'</span></div><div class="rowVal">'+esc(x[1])+'</div>'+(x[2]?'<div class="rowDetail">'+esc(x[2])+'</div>':'')+'</div>';}).join('');
+     return '<div class="resultHead"><div class="eyebrow">MATERIALES CALCULADOS</div><div class="resultTitle">'+esc(title)+'</div><div class="resultMeta">'+esc(meta)+'</div></div>'+
+-      '<div class="quickResult">'+quickHtml+'</div>'+
++      (warning?'<div class="info" role="status">'+esc(warning)+'</div>':'')+'<div class="quickResult">'+quickHtml+'</div>'+
+       '<details class="techDetails"><summary>Ver cálculo técnico, fórmulas y fuentes</summary><div class="groupHead">DETALLE TÉCNICO</div>'+tech+'</details>'+
+       '<div class="workZoneWrap"><label>Estancia / zona<input class="workZone" placeholder="Ej. Baño principal"></label></div>'+
+       '<div class="actions"><button class="btn addWork" type="button">Añadir a Obra</button></div>';
+@@ -58,7 +61,7 @@
+       const section=node.closest('.screen');
+       const values={}; section.querySelectorAll('input[id],select[id],textarea[id]').forEach(x=>values[x.id]=x.value);
+       const z=node.querySelector('.workZone');
+-      const copy=Object.assign({},obj,{zone:(z&&z.value.trim())||'General',editor:{screen:section.id,values,cat:currentCat,body:currentCerBody}});
++      const copy=Object.assign({},obj,{calculationVersion:'20261012-auditoria',zone:(z&&z.value.trim())||'General',editor:{screen:section.id,values,cat:currentCat,body:currentCerBody}});
+       if(editingPart!==null){work[editingPart]=copy;editingPart=null;}else work.push(copy);
+       saveWork(); b.textContent='Guardado en Obra';
+     };
+@@ -136,6 +139,7 @@
+   }
+ 
+   function calcWall(){
++    if(!validCalculation('wallResult',[['wL',0.000001],['wH',0.000001],['wA',1,true],['wB',1,true],['wDoors',0,true],['wWins',0,true],['wEdges'],['wLabor'],['wMembraneWaste']],openingsM2(num('wDoors'),num('wWins'))>num('wL')*num('wH')?'Los huecos superan la superficie del tabique.':''))return;
+     const L=num('wL'),H=num('wH'),A=L*H,a=num('wA'),b=num('wB'),sp=num('wS')||.6,p=num('wP'),thick=num('wBoardThick')||15;
+     const jambs=jambStuds(num('wDoors'),num('wWins')), holes=openingsM2(num('wDoors'),num('wWins')), net=netArea(A,holes);
+     const membrane=el('wMembrane');
+@@ -164,7 +168,7 @@
+     if(membraneFaces) rows.push(['Lámina acústica entre placas',membraneArea.toFixed(2)+' m²',net.toFixed(2)+' m² netos × '+membraneFaces+' cara(s) · '+(membrane.value==='both'?'ambas caras':'cara '+membrane.value)+' · merma '+membraneWaste+' % · precio por m² a introducir']);
+     if(structural){
+       const mode=doubled?'doble H/cajón':'simple';
+-      rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla técnica verificada · M'+useP+' · '+structural.spacing+' mm · '+mode+' · gobierna la cara menos revestida: '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
++      rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla condicional: perfiles del sistema de 0,60 mm, comprobar inercia y compatibilidad · M'+useP+' · '+structural.spacing+' mm · '+mode+' · gobierna la cara menos revestida: '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
+       rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),totalStudBars+' barras de 3 m',axes+' ejes/jambas × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
+     }else{
+       rows.push(['ALTURA FUERA DE TABLA','Requiere sistema de gran altura','No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm. Revisar documentación técnica específica del sistema.']);
+@@ -173,12 +177,12 @@
+     rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo · barra 3 m']);
+     rows.push.apply(rows,pylJoinRows(finish));
+     rows.push(mmRow(A,'wall'));
+-    rows.push(['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','UNE 102043 · perímetro de canales y arranques']);
++    rows.push(['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','Estimación orientativa · perímetro de canales y arranques']);
+     rows.push(tacoRow(L,2));
+     const useWool=el('wWool')?el('wWool').value!=='0':true;
+     if(useWool)rows.push(woolRow(net,woolThick(useP,'wall'),'wall'));
+     if(holes)rows.push(['Huecos descontados',holes.toFixed(2)+' m²',(num('wDoors')||0)+' puerta(s) 0,80×2,10 · '+(num('wWins')||0)+' ventana(s) 1,20×1,20 · restan placa, pasta, cinta y lana']);
+-    rows.push(cornerBeadRow(H,num('wDoors')));
++    if(num('wEdges'))rows.push(cornerBeadRow(num('wEdges')));
+     const lab=laborRow(net,num('wLabor'),'tabique');if(lab)rows.push(lab);
+     const obj={title:'Tabique PYL · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
+     renderWallSketch(a,b,useP,useSp,useWool);
+@@ -189,7 +193,7 @@
+   on(el('wallForm'),'submit',e=>{e.preventDefault();calcWall();});
+   ['wA','wB','wP','wS','wBoardThick','wWool','wBoardType','wDoors','wWins','wLabor'].forEach(id=>on(el(id),'change',calcWall));
+   on(el('wMembrane'),'change',calcWall);
+-  ['wL','wH','wMembraneWaste'].forEach(id=>on(el(id),'input',calcWall));
++  ['wL','wH','wEdges','wMembraneWaste'].forEach(id=>on(el(id),'input',calcWall));
+   document.addEventListener('change', e => {
+     const id=e.target && e.target.id;
+     if(['wA','wB','wP','wS','wBoardThick','wWool','wBoardType'].includes(id)) calcWall();
+@@ -218,6 +222,7 @@
+     return active?['Lámina acústica entre placas',area.toFixed(2)+' m²',net.toFixed(2)+' m² netos · una lámina entre dos placas · merma '+waste+' % · precio por m² a introducir']:null;
+   }
+   function calcLining(){
++    if(!validCalculation('liningResult',[['lL',0.000001],['lH',0.000001],['lLayers',1,true],['lDoors',0,true],['lWins',0,true],['lEdges'],['lWaste'],['lLabor'],['lMembraneWaste'],...(el('lType').value==='direct'?[['lPasteRate',0.000001]]:[])],openingsM2(num('lDoors'),num('lWins'))>num('lL')*num('lH')?'Los huecos superan la superficie del trasdosado.':''))return;
+     const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=t==='direct'?1:num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15,waste=Math.max(0,num('lWaste')||0),wf=1+waste/100;
+     const holes=openingsM2(num('lDoors'),num('lWins')),net=netArea(A,holes),board=bestPylBoard(H),kind=boardTypeLabel('lBoardType');
+     const liningPlates=Math.ceil(net*l/board.area*wf);
+@@ -226,14 +231,15 @@
+     const membraneRow=singleFaceMembrane('l',t!=='direct'&&l>=2,net);
+     if(membraneRow) rows.push(membraneRow);
+     if(el('lLayersWrap'))el('lLayersWrap').classList.toggle('hidden',t==='direct');
+-    if(el('lProfileWrap'))el('lProfileWrap').classList.toggle('hidden',t==='direct');
++    if(el('lProfileWrap'))el('lProfileWrap').classList.toggle('hidden',t!=='auto');
+     if(el('lSpacingWrap'))el('lSpacingWrap').classList.toggle('hidden',t==='direct');
+     if(el('lWoolWrap'))el('lWoolWrap').classList.toggle('hidden',t==='direct');
+     if(el('lWoolHint'))el('lWoolHint').classList.toggle('hidden',t==='direct');
++    if(el('lPasteRateWrap'))el('lPasteRateWrap').classList.toggle('hidden',t!=='direct');
+     const finish=mergeFaceWork([pylFaceWork(net,l,thick)]);
+     const useWool=t!=='direct'&&el('lWool')&&el('lWool').value!=='0';
+     if(t==='direct'){
+-      title='Trasdosado directo';const pasteKg=net*5*wf;rows.push(['Pasta de agarre',Math.ceil(pasteKg/20)+' saco(s) de 20 kg',pasteKg.toFixed(1)+' kg · 5,0 kg/m² base · merma '+waste+' % · rendimiento de ficha técnica · UNE-EN 14496']);
++      title='Trasdosado directo';const pasteRate=el('lPasteRate')?num('lPasteRate'):5,pasteKg=net*pasteRate*wf;rows.push(['Pasta de agarre',Math.ceil(pasteKg/20)+' saco(s) de 20 kg',pasteKg.toFixed(1)+' kg · '+pasteRate.toString().replace('.',',')+' kg/m² configurados · merma '+waste+' % · referencia aproximada, depende del soporte y producto']);
+     }else if(t==='semi'){
+       title='Trasdosado semidirecto';const o=Math.ceil(L/sp)+1;rows.push(['Perfil omega / auxiliar',o*Math.ceil(H/3)+' barras','UNE-EN 14195 · '+o+' ejes'],tacoRow(H,o,'omega'));if(useWool)rows.push(woolRow(net,woolThick(p,'semi'),'semi'));
+     }else{
+@@ -243,19 +249,19 @@
+       const jambs=jambStuds(num('lDoors'),num('lWins')),axes=Math.ceil(L/useSp)+1+jambs,bandNeed=2*L+2*H;
+       if(structural){
+         const mult=doubled?2:1,seg=profileSegments(H,useP),bars=axes*mult*seg.segments,mode=doubled?'doble H/cajón':'simple';
+-        rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla técnica verificada de trasdosado autoportante sin arriostrar · M'+useP+' · '+structural.spacing+' mm · '+mode+' · '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
++        rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla condicional de trasdosado sin arriostrar; perfiles del sistema de 0,60 mm, comprobar inercia y compatibilidad · M'+useP+' · '+structural.spacing+' mm · '+mode+' · '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
+         rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),bars+' barras de 3 m',axes+' ejes/jambas × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
+       }else{
+         const bad125=(l===1&&thick<14);
+         rows.push(['ALTURA / CONFIGURACIÓN FUERA DE TABLA','Revisar documentación técnica del sistema',bad125?'La tabla cargada no da valor para 1×12,5 mm en trasdosado autoportante.':'No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm.']);
+         rows.push(['Montantes','No dimensionados','No se genera una cantidad estructural falsa fuera de la tabla verificada.']);
+       }
+-      rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo'],['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','UNE 102043 · perímetro'],tacoRow(L,2));
++      rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo'],['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','Estimación orientativa · perímetro'],tacoRow(L,2));
+       if(useWool)rows.push(woolRow(net,woolThick(useP,'auto'),'auto'));
+     }
+     if(t!=='direct'){rows.push.apply(rows,pylJoinRows(finish));rows.push(mmRow(A,'lining'));}else rows.push.apply(rows,pylJoinRows(finish).filter(r=>r[0].indexOf('Tornillos')!==0));
+     if(holes)rows.push(['Huecos descontados',holes.toFixed(2)+' m²',(num('lDoors')||0)+' puerta(s) · '+(num('lWins')||0)+' ventana(s) · restan placa y acabado']);
+-    if(t!=='direct')rows.push(cornerBeadRow(H,num('lDoors')));
++    if(num('lEdges'))rows.push(cornerBeadRow(num('lEdges')));
+     const lab=laborRow(net,num('lLabor'),'trasdosado');if(lab)rows.push(lab);
+     const famNote=t==='direct'?'Familia Trasdosado directo':t==='semi'?'Familia Trasdosado semidirecto':'Familia Trasdosado autoportante';
+     const obj={title:title+' · '+kind+' · '+A.toFixed(2)+' m²',items:rows,area:A,net:net};
+@@ -290,7 +296,7 @@
+   on(el('liningForm'), 'submit', e => { e.preventDefault(); calcLining(); });
+   ['lType','lLayers','lS','lP','lBoardThick','lWool','lWaste','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
+   on(el('lMembrane'),'change',calcLining);
+-  ['lL','lH','lMembraneWaste'].forEach(id => on(el(id), 'input', calcLining));
++  ['lL','lH','lEdges','lPasteRate','lMembraneWaste'].forEach(id => on(el(id), 'input', calcLining));
+   const roofMeta = {
+     double:{fam:'continuo',famName:'Continuo PYL',name:'Doble TC47',hint:'Primaria + secundaria · 47/500'},
+     simple:{fam:'continuo',famName:'Continuo PYL',name:'TC47 simple',hint:'Una estructura 47/500 suspendida'},
+@@ -347,9 +353,16 @@
+   }
+   function empalmeRow(n){
+     const ud = Math.max(0, Math.ceil(n));
+-    return ['Empalme TC47', ud + ' uds · ' + Math.ceil(ud / 50) + ' caja(s) de 50', 'UNE 102043 · unión de barras de 3 m · 1 pieza por junta de perfil'];
++    return ['Empalme TC47', ud + ' uds · ' + Math.ceil(ud / 50) + ' caja(s) de 50', 'Estimación orientativa · unión de barras de 3 m · 1 pieza por junta de perfil'];
++  }
++  function rodRow(hangers,dropCm){
++    const length=dropCm/100;
++    if(length<=0||length>1)return ['Varilla M6','No dimensionados','Selecciona longitud comercial y margen de montaje: la varilla de 1 m no cubre este plenum.'];
++    const cuts=Math.floor(1/length+1e-10);
++    return ['Varilla M6 1 m',Math.ceil(hangers/cuts)+' uds',hangers+' suspensiones · '+cuts+' corte(s) de '+dropCm+' cm por varilla · añadir margen para fijación y regulación según montaje'];
+   }
+   function calcRoof(){
++    if(!validCalculation('roofResult',[['rL',0.000001],['rW',0.000001],['rLayers',1,true],['rDrop'],['rHoles'],['rWaste'],['rLabor'],['rMembraneWaste']],num('rHoles')>num('rL')*num('rW')?'Los huecos superan la superficie del techo.':''))return;
+     const L = num('rL'), W = num('rW'), A = L * W, l = num('rLayers'), waste=Math.max(0,num('rWaste')||0), wf=1+waste/100;
+     const holes = num('rHoles'), net = netArea(A, holes);
+     const kind = boardTypeLabel('rBoardType');
+@@ -363,33 +376,34 @@
+     let rows = [], title = 'Techo', meta = 'plenum ' + d + ' cm';
+     if(sys === 'desmontable60' || sys === 'desmontable120'){
+       const tile60 = sys === 'desmontable60';
+-      const tileUds = Math.ceil(net * (tile60 ? 2.78 : 1.39) * wf);
+-      const primM = A * 0.84, sec12M = A * (tile60 ? 1.67 : 0.84), sec6M = A * (tile60 ? 0.84 : 1.67);
++      const tileUds = Math.ceil(net / (tile60 ? 0.36 : 0.72) * wf - 1e-10);
++      const primM = A * 0.83, sec12M = A * 1.67, sec6M = tile60 ? A * 0.83 : 0;
+       const hang = Math.ceil(A * 0.70), peri = 2 * (L + W);
+       title = tile60 ? 'Techo desmontable 60 × 60' : 'Techo desmontable 60 × 120';
+       meta = 'Perfilería T24 vista · primarios cada 1,20 m';
+       rows = [
+         [tile60 ? 'Placa desmontable 600 × 600' : 'Placa desmontable 600 × 1200', tileUds + ' uds', (tile60 ? '2,78' : '1,39') + ' ud/m² · merma '+waste+' % · sistema T24'],
+-        ['Perfil T24 primario 3600', Math.ceil(primM / 3.6) + ' barras', primM.toFixed(1) + ' m · 0,84 m/m²'],
+-        ['Perfil T24 secundario 1200', Math.ceil(sec12M / 1.2) + ' barras', sec12M.toFixed(1) + ' m · ' + (tile60 ? '1,67' : '0,84') + ' m/m²'],
+-        ['Perfil T24 secundario 600', Math.ceil(sec6M / 0.6) + ' barras', sec6M.toFixed(1) + ' m · ' + (tile60 ? '0,84' : '1,67') + ' m/m²'],
++        ['Perfil T24 primario 3600', Math.ceil(primM / 3.6) + ' barras', primM.toFixed(2) + ' m · referencia de sistema T24: 0,83 m/m²'],
++        ['Perfil T24 secundario 1200', Math.ceil(sec12M / 1.2) + ' barras', sec12M.toFixed(2) + ' m · referencia de sistema T24: 1,67 m/m²'],
++        ['Perfil T24 secundario 600', Math.ceil(sec6M / 0.6) + ' barras', sec6M.toFixed(2) + ' m · referencia de sistema T24: 0,83 m/m²'],
+         ['Ángulo perimetral T24', Math.ceil(peri / 3) + ' barras', peri.toFixed(1) + ' m de perímetro · barra 3 m'],
+         ['Cuelgues / suspensiones', hang + ' uds', '0,70 ud/m² · primarios cada 1,20 m'],
+         ['Varilla o cuelgue', hang + ' uds', 'Plenum ' + d + ' cm · una por suspensión']
+       ];
++      if(!tile60)rows=rows.filter(row=>row[0]!=='Perfil T24 secundario 600');
+     } else if(sys === 'escayola'){
+-      const plates = Math.ceil(net * 1.67 * wf);
++      const plates = Math.ceil(net / 0.6 * wf - 1e-10);
+       const fix = Math.ceil(A * 3);
+       const estopa = A * 0.22;
+       const pasta = A * 6;
+       title = 'Techo fijo de escayola';
+-      meta = 'Fijación por estopa · mín. 3 puntos/m²';
++      meta = 'Estimación de fijación por estopa · comprobar el sistema';
+       rows = [
+         ['Placa de escayola 1000 × 600', plates + ' uds', '1,67 ud/m² · merma '+waste+' % · placa nervada habitual'],
+-        ['Fijaciones de estopa', fix + ' uds', 'NTE · mínimo 3 puntos/m² no alineados · solo si plenum ≤ 25 cm'],
++        ['Fijaciones de estopa', fix + ' uds', 'Estimación orientativa de 3 puntos/m²; validar fijación y plenum con documentación del sistema'],
+         ['Estopa / fibra vegetal', Math.ceil(estopa) + ' kg', '0,22 kg/m² · esparto o sisal amasado con pasta'],
+         ['Pasta de escayola UNE-EN 13279-1', Math.ceil(pasta / 20) + ' saco(s) de 20 kg', pasta.toFixed(1) + ' kg · estopadas + juntas + enlucido'],
+-        ['Aviso de plenum', d > 25 ? 'Plenum ' + d + ' cm: usar varilla, no solo estopa' : 'Plenum ' + d + ' cm válido para estopa', 'Estopa admisible hasta 25 cm de separación al forjado']
++        ['Aviso de plenum', d > 25 ? 'Plenum ' + d + ' cm: fijación pendiente de dimensionar' : 'Plenum ' + d + ' cm: verificar fijación', 'Límite histórico pendiente de contraste; comprobar la solución técnica']
+       ];
+     } else {
+       const plates = Math.ceil(net * l * wf / (fmt[0] * fmt[1]));
+@@ -397,23 +411,24 @@
+       if(sys === 'double'){
+         title = 'Techo doble TC47';
+         const prim = tc47Pack(L, W, 0.9, 3), sec = tc47Pack(W, L, 0.5, 3);
+-        rows.push(['TC47 primario 3000', prim.bars + ' barras', 'UNE 102043 · referencia conservadora 0,90 m · ' + prim.runs + ' recorridos · ' + prim.ml.toFixed(1) + ' m'], ['TC47 secundario 3000', sec.bars + ' barras', 'UNE 102043 · cada 0,50 m · ' + sec.runs + ' recorridos · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(prim.splices + sec.splices), ['Crucetas', Math.ceil(A / .475) + ' uds', 'Cruces primaria-secundaria'], ['Horquillas', Math.ceil(A / .99) + ' uds', '≈1,01 ud/m² · valor medio conservador contrastado entre varias tablas técnicas'], ['Varilla M6 1 m', Math.ceil(A / .99 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
++        rows.push(['TC47 primario 3000', prim.bars + ' barras', 'Estimación orientativa · referencia conservadora 0,90 m · ' + prim.runs + ' recorridos · ' + prim.ml.toFixed(1) + ' m'], ['TC47 secundario 3000', sec.bars + ' barras', 'Estimación orientativa · cada 0,50 m · ' + sec.runs + ' recorridos · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(prim.splices + sec.splices), ['Crucetas', prim.runs * sec.runs + ' uds', 'Cruces primaria-secundaria'], ['Horquillas', Math.ceil(A / .99) + ' uds', '≈1,01 ud/m² · estimación orientativa pendiente de verificar para el sistema'], rodRow(Math.ceil(A/.99),d));
+       } else if(sys === 'simple'){
+         title = 'Techo TC47 simple';
+         const pack = tc47Pack(Math.max(L, W), Math.min(L, W), 0.5, 3);
+-        rows.push(['TC47 portante 3000', pack.bars + ' barras', 'UNE 102043 · cada 0,50 m · ' + pack.runs + ' recorridos · ' + pack.ml.toFixed(1) + ' m'], empalmeRow(pack.splices), ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], ['Varilla M6 1 m', Math.ceil(A / 1.2 * Math.max(.05, d / 100)) + ' uds', 'Plenum ' + d + ' cm']);
++        rows.push(['TC47 portante 3000', pack.bars + ' barras', 'Estimación orientativa · cada 0,50 m · ' + pack.runs + ' recorridos · ' + pack.ml.toFixed(1) + ' m'], empalmeRow(pack.splices), ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], rodRow(Math.ceil(A/1.2),d));
+       } else if(sys === 'sierra'){
+         title = 'Techo perfil sierra';
+         const sec = tc47Pack(Math.max(L, W), Math.min(L, W), 0.5, 3);
+         rows.push(['Perfil sierra', Math.ceil(A / 2.7) + ' barras', 'Estimación 0,37 barra/m² · verificar despiece de forjado'], ['TC47 secundario 3000', sec.bars + ' barras', 'Secundario cada 0,50 m · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(sec.splices), ['Suspensiones', Math.ceil(A / .95) + ' uds', 'Puntos de suspensión']);
+       } else {
+         title = 'Techo canal + montante';
+-        rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'UNE-EN 14195 · apoyo perimetral'], ['Montante M70', Math.ceil(A / 1.8) + ' barras', 'UNE-EN 14195 · elemento portante biapoyado'], ['Comprobación de luz', 'Verificar tabla técnica D13', 'Sistema biapoyado: no lleva suspensiones. La luz admisible depende de perfil, modulación, placas y carga.']);
++        rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'UNE-EN 14195 · apoyo perimetral'], ['Montante M70', 'No dimensionados', 'Definir luz, sección, modulación, placas y cargas mediante la tabla del sistema; no se utiliza un ratio por m² para dimensionar el elemento portante'], ['Comprobación de luz', 'Verificar tabla técnica D13', 'Sistema biapoyado: no lleva suspensiones. La luz admisible depende de perfil, modulación, placas y carga.']);
+       }
+       rows.push.apply(rows, pylJoinRows(mergeFaceWork([pylFaceWork(net, l)])));
+       rows.push(mmRow(A, 'roof'));
+-      meta = 'UNE 102043 · plenum ' + d + ' cm';
+-    }
++      meta = 'Estimación de materiales · plenum ' + d + ' cm';
++    }
++    rows.push(['Aviso de despiece','Despiece pendiente de validar','Verificar sistema, carga, luz, disposición y anclajes al soporte. No equivale a una solución estructural aprobada.']);
+     if(membraneRow) rows.splice(1,0,membraneRow);
+     if(holes) rows.push(['Huecos descontados', holes.toFixed(2) + ' m²', 'Restan placa y acabado. La perfilería va a la superficie bruta.']);
+     const lab = laborRow(net, num('rLabor'), 'techo');
+@@ -458,7 +473,7 @@
+       title.textContent=name;spec.textContent=item.spec||'Consulta las características al seleccionarlo';state.className='wetChoiceState';state.textContent=name===selected?'✓ Seleccionado':'Seleccionar';text.append(title,spec,state);b.append(img,text);
+       b.onclick=()=>{
+         el('wetProduct').value=name;
+-        if(currentCat==='ladrillos'&&Array.isArray(item.dims))['wetBrickL','wetBrickH','wetBrickT'].forEach((id,i)=>el(id).value=String(item.dims[i]));
++        applyWetDefaults(item);
+         el('wetProduct').dispatchEvent(new Event('change',{bubbles:true}));closeWetPicker();
+       };
+       box.appendChild(b);
+@@ -488,15 +503,15 @@
+     Object.keys(group).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; s.appendChild(o); });
+     if(prev && group[prev]) s.value = prev;
+     else s.selectedIndex = 0;
+-    if(currentCat==='ladrillos'){
+-      const it=group[s.value];
+-      if(it && Array.isArray(it.dims)){
+-        if(el('wetBrickL')) el('wetBrickL').value=String(it.dims[0]);
+-        if(el('wetBrickH')) el('wetBrickH').value=String(it.dims[1]);
+-        if(el('wetBrickT')) el('wetBrickT').value=String(it.dims[2]);
+-      }
+-    }
++    if(s.value!==prev)applyWetDefaults(group[s.value]);
+     syncWet();
++  }
++  function applyWetDefaults(item){
++    if(!item)return;
++    if(currentCat==='ladrillos')['wetBrickL','wetBrickH','wetBrickT'].forEach((id,i)=>{if(el(id))el(id).value=Array.isArray(item.dims)?String(item.dims[i]):'';});
++    if(el('wetConsumption')&&item.k==='kg_range')el('wetConsumption').value=String((item.min+item.max)/2);
++    if(el('wetCoats'))el('wetCoats').value='1';
++    if(el('wetBlockMortar')&&item.m)el('wetBlockMortar').value=String(item.m);
+   }
+   function wetArea(){ return (el('wetMeasureMode') && el('wetMeasureMode').value === 'direct') ? num('wetArea') : num('wetL') * num('wetH'); }
+   function syncWet(){
+@@ -511,8 +526,13 @@
+     if(el('wetThicknessWrap')) el('wetThicknessWrap').classList.toggle('hidden', currentCat !== 'revestimientos');
+     if(el('wetBrickDimsWrap')) el('wetBrickDimsWrap').classList.toggle('hidden', currentCat !== 'ladrillos');
+     if(el('wetMortarWrap')) el('wetMortarWrap').classList.toggle('hidden', !(currentCat === 'ladrillos' || currentCat === 'bloques'));
++    if(el('wetMortarWasteWrap')) el('wetMortarWasteWrap').classList.toggle('hidden', !['ladrillos','bloques'].includes(currentCat));
+     if(el('wetMortarYieldWrap')) el('wetMortarYieldWrap').classList.toggle('hidden', !(currentCat === 'ladrillos' && el('wetMortar') && el('wetMortar').value === 'predosificado'));
+     if(el('wetSupportWrap')) el('wetSupportWrap').classList.toggle('hidden', !(currentCat === 'puentes' && it && it.k === 'level_primer'));
++    if(el('wetConsumptionWrap'))el('wetConsumptionWrap').classList.toggle('hidden',!(currentCat==='puentes'&&it?.k==='kg_range'));
++    if(el('wetCoatsWrap'))el('wetCoatsWrap').classList.toggle('hidden',!(currentCat==='puentes'&&it?.perCoat));
++    if(el('wetBlockMortarWrap'))el('wetBlockMortarWrap').classList.toggle('hidden',currentCat!=='bloques');
++    if(el('wetConsumptionHint')&&it?.k==='kg_range')el('wetConsumptionHint').textContent='Referencia aproximada '+it.min+'–'+it.max+' kg/m²'+(it.perCoat?'/capa':'')+'. El valor inicial es la media: ajústalo según el soporte.';
+     if(it){
+       if(el('productImg')){
+         el('productImg').onerror = function(){ this.onerror = null; this.src = productImgSrc({}); };
+@@ -523,7 +543,7 @@
+       const chips = [];
+       if(it.u && currentCat!=='ladrillos') chips.push(it.u + ' ud/m²');
+       if(it.kg) chips.push(it.kg + ' kg/m²·mm');
+-      if(it.min != null && it.max != null) chips.push(it.min === it.max ? it.min + ' consumo' : it.min + '–' + it.max + ' consumo');
++      if(it.min != null && it.max != null) chips.push(it.min+'–'+it.max+' '+(currentCat==='revestimientos'?'mm de espesor':it.k==='kg_range'?'kg/m²'+(it.perCoat?'/capa':''):'consumo'));
+       if(el('productChips')) el('productChips').innerHTML = chips.map(x => '<span class="chip">' + x + '</span>').join('');
+     }
+     if(el('wetInfo')) el('wetInfo').textContent = currentCat === 'ladrillos'
+--- a/app-b.js
++++ b/app-b.js
+@@ -7,6 +7,14 @@
+       if(box) box.innerHTML = resultHTML('Obra húmeda', currentCat, [['Aviso', 'Elige un producto', 'No hay ficha cargada para esta categoría']]);
+       return;
+     }
++    const rules=[['wetWaste'],...(['ladrillos','bloques'].includes(currentCat)?[['wetMortarWaste']]:[]),...(el('wetMeasureMode').value==='direct'?[['wetArea',0.000001]]:[['wetL',0.000001],['wetH',0.000001]])];
++    if(currentCat==='ladrillos')rules.push(['wetBrickL',0.000001],['wetBrickH',0.000001],['wetBrickT',0.000001],['wetJoint'],...(el('wetMortar').value==='predosificado'?[['wetMortarYield',0.000001]]:[]));
++    if(currentCat==='bloques')rules.push(['wetBlockMortar']);
++    if(currentCat==='revestimientos')rules.push(['wetThickness',0.000001]);
++    if(currentCat==='puentes'&&it.k==='kg_range')rules.push(['wetConsumption',0.000001],...(it.perCoat?[['wetCoats',1,true]]:[]));
++    const thickness=num('wetThickness');
++    const error=currentCat==='revestimientos'&&((it.min&&thickness<it.min)||thickness>it.max)?'Espesor fuera del intervalo del producto: '+(it.min||'mínimo pendiente de verificar')+'–'+it.max+' mm.':'';
++    if(!validCalculation('wetResult',rules,error))return;
+     const A = wetArea(), w = num('wetWaste'), f = 1 + w / 100, rows = [];
+     if(currentCat === 'ladrillos'){
+       const L=Math.max(1,num('wetBrickL')), H=Math.max(1,num('wetBrickH')), T=Math.max(1,num('wetBrickT')), jointMm=Math.max(0,num('wetJoint'));
+@@ -16,36 +24,42 @@
+       const wallVolM3=(T/100)*A;
+       const unitVolM3=(L/100)*(H/100)*(T/100);
+       const mortarM3=Math.max(0,wallVolM3-(base*unitVolM3));
+-      const mortarL=mortarM3*1000*f;
+-      rows.push(['Ladrillo cerámico',uds+' uds',unitsM2.toFixed(2)+' ud/m² · formato '+L.toString().replace('.',',')+' × '+H.toString().replace('.',',')+' × '+T.toString().replace('.',',')+' cm · junta '+jointMm.toFixed(0)+' mm · merma '+w+' %']);
+-      rows.push(['Mortero de colocación',mortarL.toFixed(1)+' L', 'Volumen geométrico de tendeles y llagas para '+A.toFixed(2)+' m² · antes de merma '+(mortarM3*1000).toFixed(1)+' L']);
++      const mortarL=mortarM3*1000*(1+num('wetMortarWaste')/100);
++      rows.push(['Ladrillo cerámico '+name+' · '+L+'×'+H+'×'+T+' cm',uds+' uds',unitsM2.toFixed(2)+' ud/m² · formato '+L.toString().replace('.',',')+' × '+H.toString().replace('.',',')+' × '+T.toString().replace('.',',')+' cm · junta '+jointMm.toFixed(0)+' mm · merma '+w+' %']);
++      rows.push(['Volumen geométrico de mortero',mortarL.toFixed(1)+' L', 'Volumen geométrico de tendeles y llagas para '+A.toFixed(2)+' m² · antes de merma '+(mortarM3*1000).toFixed(1)+' L']);
+       if(el('wetMortar') && el('wetMortar').value === 'predosificado'){
+-        const yieldL=Math.max(1,num('wetMortarYield')||14);
+-        rows.push(['Mortero predosificado',Math.ceil(mortarL/yieldL)+' sacos de 25 kg',mortarL.toFixed(1)+' L necesarios · rendimiento configurado '+yieldL.toFixed(1)+' L/saco']);
++        const yieldL=num('wetMortarYield');
++        rows.push(['Mortero predosificado',Math.ceil(mortarL/yieldL)+' sacos de 25 kg',mortarL.toFixed(1)+' L necesarios · rendimiento configurado '+yieldL.toFixed(1)+' L/saco · merma de mortero '+num('wetMortarWaste')+' %']);
+       }else{
+-        rows.push(['Mortero hecho en obra',mortarL.toFixed(1)+' L','Volumen fresco estimado; la dosificación cemento/arena se define aparte']);
++        rows.push(['Mortero hecho en obra',mortarL.toFixed(1)+' L','Volumen fresco estimado; merma de mortero '+num('wetMortarWaste')+' %; la dosificación cemento/arena se define aparte']);
+       }
+     } else if(currentCat === 'bloques'){
+       const base = it.u * A, uds = Math.ceil(base * f), kg = uds * it.w;
+       rows.push([name, uds + ' uds', it.u + ' ud/m² base · ' + Math.ceil(base) + ' uds sin merma · +' + w + '% merma · ' + kg.toFixed(2) + ' kg']);
+-      if(it.m){
+-        const mk = it.m * A * f;
+-        if(el('wetMortar') && el('wetMortar').value === 'predosificado') rows.push(['Mortero', Math.ceil(mk / 25) + ' sacos de 25 kg', mk.toFixed(2) + ' kg · consumo de tendel y llaga']);
++      if(num('wetBlockMortar')){
++        const mk = num('wetBlockMortar') * A * (1+num('wetMortarWaste')/100);
++        if(el('wetMortar') && el('wetMortar').value === 'predosificado') rows.push(['Mortero', Math.ceil(mk / 25) + ' sacos de 25 kg', mk.toFixed(2) + ' kg · consumo configurado '+num('wetBlockMortar')+' kg/m²; referencia orientativa pendiente de documentar']);
+         else rows.push(['Mortero hecho en obra', mk.toFixed(2) + ' kg', 'Dosificación a verificar en obra']);
+       }
+     } else if(currentCat === 'revestimientos'){
+       const th = Math.max(1, num('wetThickness')), kg = it.kg * th * A * f;
+       rows.push([name, Math.ceil(kg / 25) + ' sacos', kg.toFixed(2) + ' kg · espesor ' + th + ' mm · merma ' + w + ' %']);
+-      if(th > it.max) rows.push(['Aviso', 'Espesor excedido', 'Máximo almacenado: ' + it.max + ' mm']);
++      if(it.maxLayer&&th>it.maxLayer)rows.push(['Aviso de capas','Aplicar en varias capas','Máximo '+it.maxLayer+' mm por capa. Verificar preparación, espesores mínimos y acabado.']);
+     } else {
+       if(it.k === 'level_primer'){
+         const s = el('wetSupport') ? el('wetSupport').value : 'poroso';
+         const c = s === 'sin_absorcion' ? .075 : s === 'poco_poroso' ? .06 : .11;
+         const total = A * c * f;
+-        rows.push([name, Math.ceil(total / 5) + ' botes de 5 L', total.toFixed(2) + ' L · consumo según absorción del soporte']);
++        rows.push([name, Math.ceil(total / 5) + ' botes de 5 L', total.toFixed(2) + ' L de concentrado · estimación con 0,15 L/m²/capa de producto diluido · rango documentado 0,10–0,20 · '+(s==='poroso'?'dos capas: 1:2 y 1:1,5':s==='poco_poroso'?'una capa 1:1,5':'una capa 1:1')]);
+       } else if(it.k === 'kg_range'){
+-        const c = (it.min + it.max) / 2, kg = A * c * f, pack = it.packKg || 5;
+-        rows.push([name, Math.ceil(kg / pack) + ' envase(s) de ' + pack + ' kg', kg.toFixed(2) + ' kg · consumo medio ' + c.toFixed(3) + ' kg/m² · rango ficha ' + it.min.toFixed(3) + '–' + it.max.toFixed(3) + ' kg/m² · merma ' + w + ' %']);
++        const c=num('wetConsumption'),coats=it.perCoat?num('wetCoats'):1,kg=A*c*coats*f;
++        const detail=kg.toFixed(2)+' kg · consumo configurado '+c.toFixed(3)+' kg/m²'+(it.perCoat?'/capa × '+coats+' capas':'')+' · referencia '+it.min.toFixed(3)+'–'+it.max.toFixed(3)+' kg/m²'+(it.perCoat?'/capa':'')+' · merma '+w+' %';
++        if(it.packL){
++          const litres=kg/it.densityMin;
++          rows.push([name+' · envase '+it.packL+' L',Math.ceil(litres/it.packL)+' botes de '+it.packL+' L',detail+' · volumen conservador con densidad mínima documentada '+it.densityMin+' kg/L (intervalo '+it.densityMin+'–'+it.densityMax+')']);
++        }else{
++          rows.push([name+' · envase '+it.packKg+' kg',Math.ceil(kg/it.packKg)+' envase(s) de '+it.packKg+' kg',detail]);
++        }
+       } else if(it.k === 'rango_kilos'){
+         const c = (it.min + it.max) / 2, kg = A * c * f, L = kg / it.d;
+         rows.push([name, Math.ceil(L) + ' L', L.toFixed(2) + ' L · ' + kg.toFixed(2) + ' kg · ficha de consumo']);
+@@ -60,7 +74,7 @@
+   }
+   on(el('wetForm'), 'submit', e => { e.preventDefault(); calcWet(); });
+   ['wetProduct','wetMeasureMode','wetThickness','wetSupport','wetMortar','wetWaste'].forEach(id => on(el(id), 'change', calcWet));
+-  ['wetArea','wetL','wetH','wetBrickL','wetBrickH','wetBrickT','wetJoint','wetMortarYield'].forEach(id => on(el(id), 'input', calcWet));
++  ['wetArea','wetL','wetH','wetBrickL','wetBrickH','wetBrickT','wetJoint','wetMortarYield','wetConsumption','wetCoats','wetBlockMortar','wetMortarWaste'].forEach(id => on(el(id), 'input', calcWet));
+   function ceramicBodyLabel(k){ return {porcelanico:'Porcelánico',pasta_roja:'Pasta roja',pasta_blanca:'Pasta blanca'}[k] || 'Porcelánico'; }
+   function ceramicGlueKgM2(side, body, bond, trowel){
+     const t=Math.max(6, Number(trowel)||10);
+@@ -70,24 +84,26 @@
+     return bond==='doble' ? simple+1.8 : simple;
+   }
+   function groutKgM2(aCm,bCm,thickMm,jointMm,density){
+-    const A=Math.max(1,aCm*10),B=Math.max(1,bCm*10),T=Math.max(1,thickMm),J=Math.max(.5,jointMm),D=Math.max(1,Number(density)||1.6);
++    const A=aCm*10,B=bCm*10,T=thickMm,J=jointMm,D=Number(density);
++    if(![A,B,T,J,D].every(value=>Number.isFinite(value)&&value>0))return 0;
+     return ((A+B)/(A*B))*T*J*D;
+   }
+   function patternWaste(pattern, manual){
+     const base={recto:5,tercio:8,mitad:10,diagonal:15}[pattern]||5;
+-    return Math.max(Number(manual)||0,base);
++    return manual===undefined||manual===null||manual===''?base:finiteAmount(manual);
+   }
+   function calcLevel(){
+-    const A=Math.max(5,num('cA')),B=Math.max(5,num('cB')),area=num('cArea'),body=currentCerBody;
++    if(!validCalculation('levelResult',[['cA',0.000001],['cB',0.000001],['cArea',0.000001],['cThickness',0.000001],['cJoint',0.000001],['cBatchArea',0.000001],['cWaste']]))return;
++    const A=num('cA'),B=num('cB'),area=num('cArea'),body=currentCerBody;
+     const pattern=(el('cPattern')&&el('cPattern').value)||'recto';
+     const w=patternWaste(pattern,num('cWaste'));
+-    const thick=Math.max(3,num('cThickness')||10),joint=Math.max(1,num('cJoint')||3),trowel=num('cTrowel')||10;
++    const thick=num('cThickness'),joint=num('cJoint'),trowel=num('cTrowel')||10;
+     if(el('aSize')) el('aSize').value=Math.max(A,B);
+     const tileAreaM2=(A*B)/10000,tilesBase=tileAreaM2>0?area/tileAreaM2:0,tiles=Math.ceil(tilesBase*(1+w/100)),tilesM2=tileAreaM2>0?1/tileAreaM2:0;
+     const side=Math.max(A,B);
+     const edgesPerTile=(A>=60||B>=60)?4:2;
+     const clipsM2=Math.max(4,Math.ceil(tilesM2*edgesPerTile)),total=Math.ceil(clipsM2*area*(1+w/100));
+-    const requestedBatch=Math.max(.5,num('cBatchArea')||5),workingArea=Math.min(area,requestedBatch),wedges=Math.min(total,Math.ceil(clipsM2*workingArea));
++    const requestedBatch=num('cBatchArea'),workingArea=Math.min(area,requestedBatch),wedges=Math.min(total,Math.ceil(clipsM2*workingArea));
+     const bond=(el('cBond')&&el('cBond').value)||'doble',bondLabel=bond==='doble'?'Doble encolado':'Encolado simple';
+     const glueKgM2=ceramicGlueKgM2(side,body,bond,trowel),glueKg=glueKgM2*area*(1+w/100);
+     const groutRate=groutKgM2(A,B,thick,joint,1.6),groutKg=groutRate*area*1.10;
+@@ -98,7 +114,7 @@
+       ['Cuñas reutilizables',wedges+' uds','Dotación operativa para '+workingArea.toFixed(1)+' m² simultáneos · '+clipsM2+' cuñas/m² · se recuperan tras el fraguado y se reutilizan en la siguiente tanda'],
+       ['Encolado',bondLabel,'Llana '+trowel+' mm · consumo estimado '+glueKgM2.toFixed(1)+' kg/m² · verificar ficha del adhesivo'],
+       ['Cemento cola',Math.ceil(glueKg/25)+' saco(s) de 25 kg',glueKg.toFixed(1)+' kg · llana '+trowel+' mm · '+bondLabel+' · UNE-EN 12004'],
+-      ['Mortero de juntas',Math.ceil(groutKg/5)+' saco(s) de 5 kg',groutKg.toFixed(1)+' kg · '+groutRate.toFixed(3)+' kg/m² × 1,10 · fórmula geométrica: formato '+A+'×'+B+' cm · espesor '+thick+' mm · junta '+joint+' mm · densidad 1,6']
++      ['Mortero de juntas',Math.ceil(groutKg/5)+' saco(s) de 5 kg',groutKg.toFixed(1)+' kg · '+groutRate.toFixed(3)+' kg/m² × 1,10 · fórmula geométrica: formato '+A+'×'+B+' cm · espesor '+thick+' mm · junta '+joint+' mm · coeficiente orientativo 1,6; ajustar según ficha del mortero']
+     ];
+     const obj={title:ceramicBodyLabel(body)+' · '+area.toFixed(2)+' m²',items:rows};
+     const box=el('levelResult');
+@@ -172,11 +188,15 @@
+       const index=Number(b.dataset.edit),item=work[index],cfg=item.editor;if(!cfg)return;
+       editingPart=index;currentCat=cfg.cat||currentCat;currentCerBody=cfg.body||currentCerBody;
+       show(cfg.screen);
+-      Object.entries(cfg.values).forEach(([id,value])=>{if(el(id))el(id).value=value;});
++      for(const id of ['wEdges','lEdges'])if(el(id)&&!Object.hasOwn(cfg.values||{},id))el(id).value='0';
++      $all('[data-cer-body]').forEach(b=>b.classList.toggle('active',b.dataset.cerBody===currentCerBody));
++      $all('[data-cat]').forEach(b=>b.classList.toggle('active',b.dataset.cat===currentCat));
++      if(el('wetMortarWaste')&&!Object.hasOwn(cfg.values||{},'wetMortarWaste'))el('wetMortarWaste').value=cfg.values?.wetWaste||'8';
++      Object.entries(cfg.values||{}).forEach(([id,value])=>{if(el(id))el(id).value=value;});
+       if(cfg.screen==='wall')calcWall();
+-      if(cfg.screen==='lining')calcLining();
+-      if(cfg.screen==='roof')calcRoof();
+-      if(cfg.screen==='wet'){renderProducts();Object.entries(cfg.values).forEach(([id,v])=>{if(el(id))el(id).value=v;});calcWet();}
++      if(cfg.screen==='lining')setLiningType(el('lType').value);
++      if(cfg.screen==='roof')setRoofSys(el('rSys').value);
++      if(cfg.screen==='wet'){renderProducts();applyWetDefaults(data[currentCat]?.[cfg.values?.wetProduct]);Object.entries(cfg.values||{}).forEach(([id,v])=>{if(el(id))el(id).value=v;});calcWet();}
+       if(cfg.screen==='ceramic')calcLevel();
+     });
+     c.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { deletedPart={index:Number(b.dataset.del),part:work[Number(b.dataset.del)]};work.splice(deletedPart.index, 1); editingPart=null;el('undoWork').hidden=false; saveWork(); renderWork(); renderList(); });
+@@ -191,11 +211,11 @@
+     const head = '<div class="quoteHead"><div><div class="quoteBrand">' + esc(co) + '</div><div class="small">' + esc([company.nif, company.phone, company.mail].filter(Boolean).join(' · ')) + '</div><div class="small">' + esc(company.addr||'') + '</div></div><div class="quoteMeta"><div><b>' + esc(jobMeta.num || 'Presupuesto') + '</b></div><div>' + esc(jobMeta.name || 'Obra sin nombre') + '</div><div>' + esc(jobMeta.client ? ('Cliente: ' + jobMeta.client) : '') + '</div><div>' + esc(jobMeta.addr||'') + '</div></div></div>';
+     const parts = '<div class="groupHead">PARTIDAS POR ESTANCIA</div>' + work.map((x,i) => '<div class="listLine"><span><b>' + esc(x.zone||'General') + '</b> · ' + (i+1) + '. ' + esc(x.title) + '</span><strong>' + (x.items||[]).length + '</strong></div>').join('');
+     const table = '<div class="groupHead">MATERIALES Y PRECIOS</div><div class="budgetHead"><span>Concepto</span><span>Ud</span><span>€/ud</span><span>Importe</span></div>' +
+-      tot.rows.map(r => '<div class="budgetLine"><div>' + esc(r.name) + '<div class="rowDetail">' + esc((r.qty ? (String(r.qty).replace('.',',') + ' ' + r.unit) : '') + (r.detail ? ' · ' + r.detail : '')) + '</div></div><div class="money">' + esc(r.labor ? '—' : (String(r.qty).replace('.',',') + ' ' + r.unit)) + '</div><div>' + (r.labor ? '<span class="money">' + money(r.total) + '</span>' : '<input class="price" data-price-key="' + esc(r.name) + '" aria-label="Precio por '+esc(r.unit)+' de '+esc(r.name)+'" placeholder="Sin precio" inputmode="decimal" value="' + (r.missing?'':r.unitPrice) + '">') + '</div><div class="budgetAmt">' + (r.missing?'Sin precio':money(r.total)+' €') + '</div></div>').join('');
++      tot.rows.map(r => '<div class="budgetLine"><div>' + esc(r.name) + '<div class="rowDetail">' + esc((r.qty ? (String(r.qty).replace('.',',') + ' ' + r.unit) : '') + (r.detail ? ' · ' + r.detail : '')) + '</div></div><div class="money">' + esc(r.labor ? '—' : (String(r.qty).replace('.',',') + ' ' + r.unit)) + '</div><div>' + (r.labor ? '<span class="money">' + money(r.total) + '</span>' : '<input class="price" data-price-key="' + esc(r.key) + '" aria-label="Precio por '+esc(r.unit)+' de '+esc(r.name)+'" placeholder="Sin precio" inputmode="decimal" value="' + (r.missing?'':r.unitPrice) + '">') + '</div><div class="budgetAmt">' + (r.missing?'Sin precio':money(r.total)+' €') + '</div></div>').join('');
+     const sums = budgetSummary(tot).map(line => '<div class="budgetTot' + (line.grand ? ' grand' : '') + '"><span>' + esc(line.label) + '</span><span>' + money(line.amount) + ' €</span></div>').join('');
+     const notes = jobMeta.notes ? '<div class="info">' + esc(jobMeta.notes) + '</div>' : '';
+-    const valid = jobMeta.valid ? '<div class="small" style="margin-top:8px">Validez: ' + esc(jobMeta.valid) + ' días. Cantidades orientativas UNE 102043. Precios introducidos por el usuario.</div>' : '';
+-    c.innerHTML = (tot.missing?'<div class="info" role="status">Faltan '+tot.missing+' materiales por valorar. Total provisional.</div>':'') + head + parts + table + sums + notes + valid;
++    const valid = jobMeta.valid ? '<div class="small" style="margin-top:8px">Validez: ' + esc(jobMeta.valid) + ' días. Cantidades orientativas; verificar el sistema y la medición. Precios introducidos por el usuario.</div>' : '';
++    c.innerHTML = (tot.provisional?'<div class="info" role="status">Presupuesto provisional: '+esc(provisionalText(tot))+'.</div>':'') + head + parts + table + sums + notes + valid;
+     c.querySelectorAll('[data-price-key]').forEach(inp => {
+       inp.onchange = inp.onblur = () => {
+         const key = inp.dataset.priceKey;
+@@ -213,7 +233,7 @@
+     if(jobMeta.name) lines.push('Obra: ' + jobMeta.name);
+     if(jobMeta.client) lines.push('Cliente: ' + jobMeta.client);
+     if(jobMeta.addr) lines.push('Dirección: ' + jobMeta.addr);
+-    if(tot.missing)lines.push('PRESUPUESTO PROVISIONAL: '+tot.missing+' materiales sin precio');
++    if(tot.provisional)lines.push('PRESUPUESTO PROVISIONAL: '+provisionalText(tot));
+     lines.push('');
+     work.forEach((x,i) => lines.push((i+1) + '. [' + (x.zone||'General') + '] ' + x.title));
+     lines.push('');
+@@ -222,12 +242,12 @@
+     budgetSummary(tot).forEach(line => lines.push(line.label + ': ' + money(line.amount) + ' €'));
+     if(jobMeta.notes){ lines.push(''); lines.push(jobMeta.notes); }
+     lines.push('');
+-    lines.push('Estimación UNE 102043. Precios introducidos por el usuario.');
++    lines.push('Estimación de cantidades; verificar el sistema y la medición. Precios introducidos por el usuario.');
+     return lines.join('\n');
+   }
+   function exportPrint(){
+     if(!budgetInputValid()) return;
+-    if(budgetTotals().missing&&!confirm('Faltan precios. El documento será un presupuesto provisional. ¿Exportar?'))return;
++    if(budgetTotals().provisional&&!confirm('Faltan precios o hay cálculos incompletos. El documento será un presupuesto provisional. ¿Exportar?'))return;
+     readJobFields(); saveJob();
+     const tot = budgetTotals();
+     const w = window.open('', '_blank');
+@@ -235,27 +255,27 @@
+     const rows = tot.rows.map(r => '<tr><td>' + esc(r.name) + '</td><td style="text-align:right">' + (r.labor ? '—' : esc(String(r.qty).replace('.',',') + ' ' + r.unit)) + '</td><td style="text-align:right">' + (r.labor ? '—' : r.missing?'Sin precio':unitPriceText(r.unitPrice)) + '</td><td style="text-align:right">' + (r.missing?'Pendiente':money(r.total)+' €') + '</td></tr>').join('');
+     w.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>' + esc(jobMeta.num || 'Presupuesto') + '</title><style>body{font:14px/1.4 system-ui,Segoe UI,Arial;margin:24px;color:#111}h1{font-size:20px;margin:0}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border-bottom:1px solid #ccc;padding:6px 4px;text-align:left;vertical-align:top}th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#555}.tot{margin-top:14px}.tot div{display:flex;justify-content:space-between;padding:3px 0}.grand{font-weight:800;font-size:18px;border-top:2px solid #111;margin-top:8px;padding-top:8px}.muted{color:#555;font-size:12px}header{display:flex;justify-content:space-between;gap:16px;margin-bottom:18px}@media print{button{display:none}}</style></head><body>');
+     w.document.write('<header><div><h1>' + esc(company.name || 'Presupuesto de obra') + '</h1><div class="muted">' + esc([company.nif,company.phone,company.mail,company.addr].filter(Boolean).join(' · ')) + '</div></div><div class="muted"><b>' + esc(jobMeta.num||'') + '</b><br>' + esc(jobMeta.name||'') + '<br>' + esc(jobMeta.client?('Cliente: '+jobMeta.client):'') + '<br>' + esc(jobMeta.addr||'') + '<br>' + esc(new Date().toLocaleDateString('es-ES')) + '</div></header>');
+-    if(tot.missing)w.document.write('<p><b>PRESUPUESTO PROVISIONAL: '+tot.missing+' materiales sin precio.</b></p>');
++    if(tot.provisional)w.document.write('<p><b>PRESUPUESTO PROVISIONAL: '+esc(provisionalText(tot))+'.</b></p>');
+     w.document.write('<p class="muted">Partidas: ' + work.map(x => esc(x.title)).join(' · ') + '</p>');
+     w.document.write('<table><thead><tr><th>Concepto</th><th style="text-align:right">Cant.</th><th style="text-align:right">€/ud</th><th style="text-align:right">Importe</th></tr></thead><tbody>' + rows + '</tbody></table>');
+     w.document.write('<div class="tot">' + budgetSummary(tot).map(line => '<div' + (line.grand ? ' class="grand"' : '') + '><span>' + esc(line.label) + '</span><span>' + money(line.amount) + ' €</span></div>').join('') + '</div>');
+     if(jobMeta.notes) w.document.write('<p>' + esc(jobMeta.notes).replace(/\n/g,'<br>') + '</p>');
+-    w.document.write('<p class="muted">Validez ' + esc(jobMeta.valid||'30') + ' días. Estimación de cantidades UNE 102043. Los precios los introduce el usuario. No sustituye medición de proyecto.</p>');
++    w.document.write('<p class="muted">Validez ' + esc(jobMeta.valid||'30') + ' días. Estimación de cantidades; verificar el sistema y la medición. Los precios los introduce el usuario. No sustituye medición de proyecto.</p>');
+     w.document.write('<button onclick="window.print()">Imprimir / Guardar PDF</button></body></html>');
+     w.document.close();
+     setTimeout(function(){ try { w.focus(); w.print(); } catch(e){} }, 250);
+   }
+   function exportCsv(){
+     if(!budgetInputValid()) return;
+-    if(budgetTotals().missing&&!confirm('Faltan precios. El CSV será provisional. ¿Exportar?'))return;
++    if(budgetTotals().provisional&&!confirm('Faltan precios o hay cálculos incompletos. El CSV será provisional. ¿Exportar?'))return;
+     readJobFields();
+     const tot = budgetTotals();
+     const lines = [['Presupuesto', jobMeta.num||'', jobMeta.name||'', jobMeta.client||''],['Concepto','Cantidad','Unidad','Precio ud','Importe']];
+-    if(tot.missing) lines.splice(1, 0, ['PRESUPUESTO PROVISIONAL', String(tot.missing) + ' materiales sin precio']);
++    if(tot.provisional) lines.splice(1, 0, ['PRESUPUESTO PROVISIONAL', provisionalText(tot)]);
+     tot.rows.forEach(r => lines.push([r.name, String(r.qty).replace('.',','), r.unit, r.missing?'Sin precio':unitPriceText(r.unitPrice), r.missing?'Pendiente':money(r.total)]));
+     lines.push([]);
+     budgetSummary(tot).forEach(line => lines.push([line.label,'','','',money(line.amount)]));
+-    const csv = lines.map(row => row.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(';')).join('\r\n');
++    const csv = lines.map(row => row.map(c => '"' + csvSafeCell(c).replace(/"/g,'""') + '"').join(';')).join('\r\n');
+     const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+     const a = document.createElement('a');
+     a.href = URL.createObjectURL(blob);
+@@ -304,18 +324,9 @@
+     try{
+       const txt=await file.text();
+       let count=0;
+-      txt.split(/\r?\n/).forEach(line=>{
+-        if(!line.trim()) return;
+-        const sep=line.includes(';')?';':',';
+-        const parts=line.split(sep);
+-        if(parts.length<2) return;
+-        const name=parts[0].replace(/^"|"$/g,'').trim();
+-        const raw=parts[1].replace(/^"|"$/g,'').trim().replace(',','.');
+-        const price=Number(raw);
+-        if(name&&isFinite(price)&&price>=0){priceBook[name]=price;count++;}
+-      });
++      parseTariffCsv(txt).forEach(([name,price])=>{priceBook[name]=price;count++;});
+       savePrices(); if(status) status.textContent=count+' precios importados'; renderList();
+-    }catch(err){if(status)status.textContent='No se pudo leer el CSV';}
++    }catch(err){if(status)status.textContent='No se pudo leer el CSV: '+err.message;}
+     e.target.value='';
+   });
+   let deferredInstall=null;
+@@ -364,10 +375,11 @@
+       const file=e.target.files[0];if(!file)return;if(file.size>5000000)throw Error('Archivo demasiado grande');
+       const d=JSON.parse(await file.text());
+       const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
+-      const parts=x=>Array.isArray(x)&&x.every(p=>obj(p)&&typeof p.title==='string'&&Array.isArray(p.items)&&p.items.every(r=>Array.isArray(r)&&r.length>=2&&r.every(v=>typeof v==='string')));
++      const editor=x=>x===undefined||(obj(x)&&['wall','lining','roof','wet','ceramic'].includes(x.screen)&&obj(x.values)&&Object.values(x.values).every(v=>typeof v==='string'));
++      const parts=x=>Array.isArray(x)&&x.every(p=>obj(p)&&editor(p.editor)&&typeof p.title==='string'&&Array.isArray(p.items)&&p.items.every(r=>Array.isArray(r)&&r.length>=2&&r.every(v=>typeof v==='string')));
+       const prices=x=>obj(x)&&Object.values(x).every(v=>typeof v==='number'&&Number.isFinite(v)&&v>=0);
+       const fields=x=>obj(x)&&Object.values(x).every(v=>typeof v==='string'||typeof v==='number');
+-      const meta=x=>fields(x)&&(!Object.prototype.hasOwnProperty.call(x,'profitPct')||percentageValue(x.profitPct,1000)!==null);
++      const meta=x=>fields(x)&&['profitPct','disc','vat','laborExtra','extra'].every(key=>!Object.hasOwn(x,key)||percentageValue(x[key],key==='profitPct'?1000:key==='laborExtra'||key==='extra'?Number.MAX_VALUE:100)!==null);
+       if(d.format!=='calculadora-backup'||d.version!==1||!parts(d.work)||!prices(d.priceBook)||!meta(d.jobMeta)||!fields(d.company)||!Array.isArray(d.savedJobs)||!d.savedJobs.every(j=>obj(j)&&parts(j.work)&&meta(j.meta)&&(!j.prices||prices(j.prices))&&(!j.company||fields(j.company))))throw Error('Formato de copia no válido');
+       if(!confirm('Restaurar sustituirá las obras, tarifas y datos actuales. Descarga primero una copia si quieres conservarlos. ¿Continuar?'))return;
+       work=d.work;priceBook=d.priceBook;jobMeta=normalizeJobMeta(d.jobMeta);company=d.company;savedJobs=d.savedJobs.map(j=>Object.assign({},j,{meta:normalizeJobMeta(j.meta)}));editingPart=null;
+@@ -375,11 +387,15 @@
+     }catch(err){el('backupStatus').textContent='No se ha restaurado: '+err.message;}finally{e.target.value='';}
+   });
+   // Recuperar las medidas del último uso sin alterar los presupuestos guardados.
+-  try{const draft=JSON.parse(localStorage.getItem('calc-form-draft')||'{}');Object.entries(draft).forEach(([id,v])=>{const node=el(id);if(node&&node.closest('form')&&typeof v==='string')node.value=v;});}catch(e){}
++  try{const draft=JSON.parse(localStorage.getItem('calc-form-draft')||'{}');if(data[draft.__cat])currentCat=draft.__cat;else if(draft.wetProduct){const cat=Object.keys(data).find(k=>data[k][draft.wetProduct]);if(cat)currentCat=cat;}if(['porcelanico','pasta_roja','pasta_blanca'].includes(draft.__body))currentCerBody=draft.__body;if(el('wetProduct'))renderProducts();if(el('wetMortarWaste')&&!Object.hasOwn(draft,'wetMortarWaste')&&draft.wetWaste!==undefined)el('wetMortarWaste').value=draft.wetWaste;Object.entries(draft).forEach(([id,v])=>{const node=el(id);if(node&&node.closest('form')&&typeof v==='string')node.value=v;});}catch(e){}
+   document.addEventListener('input',saveDraft);
+   document.addEventListener('change',saveDraft);
+-  function saveDraft(e){if(!e.target.closest('form'))return;const draft={};$all('form input[id],form select[id]').forEach(n=>draft[n.id]=n.value);persist('calc-form-draft',draft);}
++  function saveDraft(e){if(!e.target.closest('form'))return;const draft={__cat:currentCat,__body:currentCerBody};$all('form input[id],form select[id]').forEach(n=>draft[n.id]=n.value);persist('calc-form-draft',draft);}
+ 
++  $all('[data-cat]').forEach(b=>b.classList.toggle('active',b.dataset.cat===currentCat));
++  $all('[data-cer-body]').forEach(b=>b.classList.toggle('active',b.dataset.cerBody===currentCerBody));
++  if(el('lType'))setLiningType(el('lType').value);
++  if(el('rSys'))setRoofSys(el('rSys').value);
+   fillJobFields();
+ })();
+ 
+--- a/app.js
++++ b/app.js
+@@ -1,5 +1,5 @@
+ (() => {
+-  const v = '20261012-beneficio-industrial';
++  const v = '20261012-auditoria';
+   const base = ['app-a1.js', 'app-a2.js', 'app-b.js'];
+ 
+   async function getPart(name){
+--- a/data.js
++++ b/data.js
+@@ -9,7 +9,7 @@
+       'Termocerámico 29 cm':{dims:[33,20,29],u:15,m:81,p:75,w:12.2,img:'https://media.adeo.com/media/4411230/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Termocerámico × 29 cm'},
+       'Perforado 10 cm':{u:40,m:60,p:360,w:2.3,img:'https://media.adeo.com/media/4405832/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Ladrillo perforado · 10 cm'},
+       'Perforado 20 cm':{u:20,m:35,p:180,w:4.2,img:'',spec:'Ladrillo macizo perforado · Ref. 10942085'},
+-      'Rojo liso caravista 24x12x5':{dims:[24,12,5],u:67,m:32,p:578,w:1.15,img:'https://media.adeo.com/media/4421256/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Caravista rojo · 24 × 12 × 5 cm'}
++      'Rojo liso caravista 24x12x5':{needsDimensionCheck:true,u:67,m:32,p:578,w:1.15,img:'https://media.adeo.com/media/4421256/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Caravista rojo · 24 × 12 × 5 cm · confirmar alto y espesor'}
+     },
+     bloques:{
+       'Bloque ligero gris 39x19x19':{u:12.5,m:30,p:90,w:14.1,img:'https://media.adeo.com/media/4413313/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Hormigón ligero · gris'},
+@@ -20,20 +20,20 @@
+       'Bloque gris 39x19x10':{u:12.5,m:18,p:132,w:9,img:'https://media.adeo.com/media/4398369/media.jpg?fit=bounds&format=jpg&height=700&quality=88&width=700',spec:'Hormigón · 39 × 19 × 10 cm'}
+     },
+     revestimientos:{
+-      'weber.rev fino':{kg:1.7,max:5,p:48,img:'weberrev-fino.jpg',spec:'WEBER · saco 25 kg'},
+-      'weberpral prisma':{kg:1.7,max:30,p:48,img:'weberpral-prisma.jpg',spec:'WEBER · monocapa · guía técnica 2025/26: 1,7 kg/m²/mm',url:'https://www.es.weber/files/es/2025-01/GUIA%20WEBER%202025_26_web_12%2C5mb_0.pdf'},
+-      'weberev hidro PLUS':{kg:1.8,max:20,p:48,img:'weberev-hidro-plus.jpg',spec:'WEBER · revoco hidrófugo'},
+-      'APLICAREV Cal Nature Pro':{kg:1.9,max:20,p:64,img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · Nature Pro'},
+-      'Mortero Cal base Aplicarev 25kg BCO':{kg:1.4,max:50,p:48,img:'mortero-cal-base-aplicarev-25kg-bco.jpg',spec:'CAPA · base cal'},
+-      'Mortero Cal revoco Aplicarev 25kg BCO':{kg:1.4,max:9,p:48,img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · revoco cal'}
++      'weber.rev fino':{kg:1.7,min:2,max:5,sourceId:'weber-fino-2025',p:48,img:'weberrev-fino.jpg',spec:'WEBER · saco 25 kg'},
++      'weberpral prisma':{kg:1.5,min:12,max:30,maxLayer:15,sourceId:'weber-prisma-2026',p:48,img:'weberpral-prisma.jpg',spec:'WEBER · monocapa · ficha 12/01/2026: 1,5 kg/m²/mm',url:'https://www.es.weber/files/es/2025-01/GUIA%20WEBER%202025_26_web_12%2C5mb_0.pdf'},
++      'weberev hidro PLUS':{kg:1.8,min:10,max:20,maxLayer:10,sourceId:'weber-hidro-2026',p:48,img:'weberev-hidro-plus.jpg',spec:'WEBER · revoco hidrófugo'},
++      'APLICAREV Cal Nature Pro':{kg:1.9,max:20,maxLayer:20,p:42,sourceId:'capa-nature-2024',img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · Nature Pro'},
++      'Mortero Cal base Aplicarev 25kg BCO':{kg:1.4,min:10,max:50,maxLayer:15,sourceId:'capa-base-2025',p:48,img:'mortero-cal-base-aplicarev-25kg-bco.jpg',spec:'CAPA · base cal'},
++      'Mortero Cal revoco Aplicarev 25kg BCO':{kg:1.4,min:7,max:9,maxLayer:9,sourceId:'capa-revoco-2023',p:48,img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · revoco cal'}
+     },
+     puentes:{
+-      'Puente de unión PLUS (MH)':{min:.2,max:.25,k:'litros',img:'puente-union-plus.jpg',spec:'Morteros Henares'},
+-      'SikaTop-30':{min:.15,max:.175,k:'kg_range',packKg:5,img:'sikatop-30.jpg',spec:'SIKA · 5 kg · 0,150–0,175 kg/m²',url:'https://esp.sika.com/es/construccion/construir/Aditivos-hormigon-mortero/sikatop-30.html'},
+-      'SikaTop-50':{min:.125,max:.15,k:'litros',img:'SikaTop-50.jpg',spec:'SIKA · resina de unión'},
+-      'SikaTop-10':{min:.2,max:.5,k:'kg_range',packKg:5,img:'sikatop-10.jpg',spec:'SIKA · 5 kg · 0,20–0,50 kg/m²/capa',url:'https://esp.sika.com/es/repara-tu-casa/salon/sikatop-10.html'},
+-      'Puente de Unión Morteros Henares (PTU-20)':{min:.4,max:.45,d:1.4,k:'rango_kilos',img:'puente-de-union-morteros-henares-ptu-20.jpg',spec:'Morteros Henares · PTU-20'},
+-      'Aplica primer TOP 5KG':{min:.125,max:.175,d:1.43,k:'rango_kilos',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 kg'},
+-      'Imprimacion Aplica Level Primer 5 L':{k:'level_primer',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 L'}
++      'Puente de unión PLUS (MH)':{min:.2,max:.25,k:'kg_range',packL:5,densityMin:1,densityMax:1.05,sourceId:'mh-plus-2023',img:'puente-union-plus.jpg',spec:'Morteros Henares'},
++      'SikaTop-30':{min:.15,max:.175,k:'kg_range',packKg:5,sourceId:'sika-top30-2018',img:'sikatop-30.jpg',spec:'SIKA · 5 kg · 0,150–0,175 kg/m²',url:'https://esp.sika.com/es/construccion/construir/Aditivos-hormigon-mortero/sikatop-30.html'},
++      'SikaTop-50':{min:.125,max:.15,k:'kg_range',packKg:5,sourceId:'sika-top50-2018',img:'SikaTop-50.jpg',spec:'SIKA · resina de unión'},
++      'SikaTop-10':{min:.2,max:.5,k:'kg_range',packKg:5,perCoat:true,sourceId:'sika-top10-2024',img:'sikatop-10.jpg',spec:'SIKA · 5 kg · 0,20–0,50 kg/m²/capa',url:'https://esp.sika.com/es/repara-tu-casa/salon/sikatop-10.html'},
++      'Puente de Unión Morteros Henares (PTU-20)':{min:.4,max:.45,k:'kg_range',packKg:5,sourceId:'mh-ptu20-2024',img:'puente-de-union-morteros-henares-ptu-20.jpg',spec:'Morteros Henares · PTU-20'},
++      'Aplica primer TOP 5KG':{min:.125,max:.175,k:'kg_range',packKg:5,sourceId:'capa-top-2025',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 kg'},
++      'Imprimacion Aplica Level Primer 5 L':{k:'level_primer',sourceId:'capa-level-2023',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 L'}
+     }
+   };
+--- a/index.html
++++ b/index.html
+@@ -11,7 +11,7 @@
+ <script>
+ (async function () {
+   try {
+-    var files = ['ui-a.html?v=20261012-beneficio-industrial', 'ui-b.html?v=20261012-beneficio-industrial', 'ui-c.html?v=20261012-beneficio-industrial'];
++    var files = ['ui-a.html?v=20261012-auditoria', 'ui-b.html?v=20261012-auditoria', 'ui-c.html?v=20261012-auditoria'];
+     var parts = await Promise.all(files.map(function (f) { return fetch(f).then(function (r) { if (!r.ok) throw new Error(f); return r.text(); }); }));
+     document.open();
+     document.write(parts.join(''));
+--- a/manifest.json
++++ b/manifest.json
+@@ -10,15 +10,9 @@
+   "icons": [
+     {
+       "src": "logo.png",
+-      "sizes": "192x192",
++      "sizes": "175x59",
+       "type": "image/png",
+-      "purpose": "any maskable"
+-    },
+-    {
+-      "src": "logo.png",
+-      "sizes": "512x512",
+-      "type": "image/png",
+-      "purpose": "any maskable"
++      "purpose": "any"
+     }
+   ]
+-}+}
+--- a/service-worker.js
++++ b/service-worker.js
+@@ -1,5 +1,6 @@
+-const CACHE='calculadora-construccion-20261012-beneficio-industrial';
++const CACHE='calculadora-construccion-20261012-auditoria';
+ const CORE=[
++  'SikaTop-50.jpg','aplica-primer-top-5kg.jpg','aplicarev-cal-nature-pro.jpg','mortero-cal-base-aplicarev-25kg-bco.jpg','puente-de-union-morteros-henares-ptu-20.jpg','puente-union-plus.jpg','sikatop-10.jpg','sikatop-30.jpg','weberev-hidro-plus.jpg','weberpral-prisma.jpg','weberrev-fino.jpg',
+   './','index.html','style.css','data.js','app.js','app-a1.js','app-a2.js','app-b.js',
+   'ui-a.html','ui-b.html','ui-c.html','manifest.json','logo.png','assets/mount-sprite-01.js','assets/mount-sprite-02.js','assets/mount-sprite-03.js','assets/mount-sprite-04.js','assets/mount-sprite-05.js','assets/mount-sprite-06.js','assets/mount-sprite-07.js','assets/mount-sprite-08.js',
+   'assets/montaje-tabique.svg','assets/montaje-directo.svg','assets/montaje-semidirecto.svg','assets/montaje-autoportante.svg','assets/montaje-techo.svg','assets/montaje-techo-simple.svg','assets/montaje-techo-doble.svg','assets/montaje-techo-sierra.svg','assets/montaje-techo-biapoyado.svg','assets/montaje-registrable-60.svg','assets/montaje-registrable-120.svg','assets/montaje-escayola.svg'
+@@ -21,10 +22,20 @@
+   if(url.origin!==location.origin) return;
+   event.respondWith(
+     fetch(event.request).then(res=>{
+-      const copy=res.clone();
+-      caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});
++      if(res.ok){
++        const copy=res.clone();
++        event.waitUntil(caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{}));
++      }
+       return res;
+-    }).catch(()=>caches.match(event.request,{ignoreSearch:true}).then(r=>r||caches.match('./')))
++    }).catch(async()=>{
++      const cache=await caches.open(CACHE);
++      const resource=await cache.match(event.request,{ignoreSearch:true});
++      if(resource)return resource;
++      if(event.request.mode==='navigate'){
++        const page=await cache.match('./');if(page)return page;
++      }
++      return new Response('Recurso no disponible sin conexión',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
++    })
+   );
+ });
+ 
+--- a/style.css
++++ b/style.css
+@@ -66,7 +66,7 @@
+ .sysNow strong{font-size:.95rem;font-weight:950}
+ .sysNow span:last-child{font-size:.72rem;font-weight:700;opacity:.85}
+ .budgetLine{display:grid;grid-template-columns:minmax(0,1.3fr) 64px 72px 70px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:.76rem}
+-.budgetLine input{min-height:36px;margin-top:0;padding:6px 7px;font-size:.78rem}
++.budgetLine input{min-height:47px;margin-top:0;padding:6px 7px;font-size:.78rem}
+ .budgetHead{display:grid;grid-template-columns:minmax(0,1.3fr) 64px 72px 70px;gap:6px;font-size:.65rem;font-weight:950;letter-spacing:.04em;color:var(--muted);padding-bottom:6px}
+ .budgetTot{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-weight:950}
+ .budgetTot.grand{font-size:1.05rem;color:var(--accent);border-top:2px solid var(--accent);margin-top:6px;padding-top:10px}
+@@ -328,3 +328,8 @@
+ 
+ /* Selección visual de productos de obra húmeda */
+ .wetPicker{margin:12px 0}.wetPickerToggle{width:100%;text-align:left;display:grid;gap:6px;border:2px solid var(--text);background:var(--accentSoft);padding:14px}.wetPickerToggle>span:first-child{font-size:.75rem}.wetPickerToggle strong{font-size:1rem}.wetPickerAction{font-weight:900;text-decoration:underline}.wetProductOptions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.wetProductChoice{display:flex;gap:12px;align-items:center;text-align:left;padding:12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);min-width:0}.wetProductChoice[aria-pressed="true"]{border-color:var(--text);background:var(--accentSoft)}.wetProductChoice img{width:64px;height:76px;object-fit:contain;background:#fff;border-radius:8px}.wetProductChoice strong,.wetProductChoice small,.wetChoiceState{display:block;overflow-wrap:anywhere}.wetProductChoice strong{font-size:.9rem}.wetProductChoice small{font-size:.75rem;margin:5px 0}.wetChoiceState{font-weight:850;font-size:.8rem}.wetProductChoice:focus-visible,.wetPickerToggle:focus-visible{outline:3px solid var(--text);outline-offset:3px}#wetPickerPanel{padding:12px 0}#wetPickerPanel[hidden]{display:none!important}@media(max-width:600px){.wetProductOptions{grid-template-columns:1fr}}
++
++/* Los importes y controles activos deben conservar contraste en tema oscuro. */
++body[data-mode="dark"] :is(.rowVal,.quickLine strong,.groupHead,.eyebrow,.budgetTot.grand,.back,.cat.active,.sysBtn.active,.sysBtn.active small,.sysNow,.mode[aria-pressed="true"],.color[aria-pressed="true"]){color:var(--text)}
++.budgetLine>div{min-width:0;overflow-wrap:anywhere}
++@media(max-width:380px){.budgetLine,.budgetHead{grid-template-columns:minmax(0,1fr) 46px 68px 68px}}
+--- a/ui-a.html
++++ b/ui-a.html
+@@ -9,7 +9,7 @@
+   <link rel="manifest" href="manifest.json">
+   <meta name="apple-mobile-web-app-capable" content="yes">
+   <meta name="apple-mobile-web-app-title" content="Calculadora Construcción">
+-  <link rel="stylesheet" href="style.css?v=20261012-beneficio-industrial">
++  <link rel="stylesheet" href="style.css?v=20261012-auditoria">
+   <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
+   <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
+   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
+@@ -41,9 +41,9 @@
+   <section class="screen active" id="home">
+     <aside class="updateNotice" id="updateNotice" aria-labelledby="updateNoticeTitle">
+       <div class="updateNoticeTop"><span>NOVEDADES · 12 OCT 2026</span><button class="btn" id="closeUpdateNotice" type="button">Cerrar aviso <span aria-hidden="true">×</span></button></div>
+-      <h2 id="updateNoticeTitle">Beneficio industrial en tus presupuestos</h2>
+-      <p>Añade un recargo porcentual sobre materiales, mano de obra y extras desde <strong>Presupuesto</strong>. Se calcula antes del descuento y del IVA; el valor inicial es 0 %.</p>
+-      <ul><li>El beneficio se conserva en la obra y sus copias de seguridad.</li><li>PDF, CSV, WhatsApp y Compartir incluyen el mismo desglose de importes.</li><li>Si tus precios ya incluyen margen comercial, evita duplicarlo.</li></ul>
++      <h2 id="updateNoticeTitle">Revisión de cálculos y presupuestos</h2>
++      <p>Hemos revisado consumos, unidades y guardado de medidas. Comprueba las partidas nuevas antes de pedir materiales.</p>
++      <ul><li>Consumo y capas configurables en puentes de unión; guardavivos según aristas medidas.</li><li>Corrección de la perfilería registrable 60 × 120 y de los cortes de varilla.</li><li>Los despieces pendientes se identifican como provisionales en presupuesto y exportaciones.</li><li>Se mantiene el beneficio industrial: recargo antes del descuento y del IVA, inicialmente al 0 %.</li></ul>
+       <p class="updateNoticeNote">Las partidas antiguas sin medidas guardadas se pueden duplicar; para cambiar sus medidas debes recalcularlas.</p>
+     </aside>
+     <div class="hero"><h2>¿Qué vas a calcular?</h2><p>Toca un trabajo. Luego solo pides las medidas del paño.</p></div>
+@@ -88,6 +88,7 @@
+         <summary>Huecos, tipo de placa y mano de obra</summary>
+         <div class="grid">
+           <label>Tipo de placa<select id="wBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
++          <label>Aristas expuestas para guardavivos (m)<input id="wEdges" value="0" inputmode="decimal"><small>Mide únicamente las aristas que necesitan protección.</small></label>
+           <label>Puertas<input id="wDoors" value="0" inputmode="numeric"></label>
+           <label>Ventanas<input id="wWins" value="0" inputmode="numeric"></label>
+           <label>Mano de obra (€/m²)<input id="wLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
+@@ -125,6 +126,7 @@
+           <label id="lMembraneWasteWrap" class="hidden">Merma de lámina (%)<input id="lMembraneWaste" value="0" inputmode="decimal" aria-describedby="lMembraneHint"></label>
+           <div class="info" id="lMembraneHint" aria-live="polite">Disponible con doble placa PYL.</div>
+           <label id="lSpacingWrap">Separación<select id="lS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
++          <label id="lPasteRateWrap" class="hidden">Pasta de agarre (kg/m²)<input id="lPasteRate" value="5" inputmode="decimal"><small>Referencia aproximada: 5 kg/m². Ajustar según producto y soporte.</small></label>
+           <label id="lProfileWrap">Perfil<select id="lP"><option value="48">48 mm</option><option value="70" selected>70 mm</option><option value="90">90 mm</option></select></label>
+           <label>Espesor placa<select id="lBoardThick"><option value="12.5">12,5 mm</option><option value="15" selected>15 mm</option><option value="18">18 mm</option></select></label>
+           <label id="lWoolWrap">Lana mineral<select id="lWool"><option value="1" selected>Sí</option><option value="0">No</option></select></label><label>Merma placas / pasta<select id="lWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option><option value="12">12 %</option><option value="15">15 %</option></select></label>
+@@ -134,6 +136,7 @@
+         <summary>Huecos, tipo de placa y mano de obra</summary>
+         <div class="grid">
+           <label>Tipo de placa<select id="lBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
++          <label>Aristas expuestas para guardavivos (m)<input id="lEdges" value="0" inputmode="decimal"><small>Mide únicamente las aristas que necesitan protección.</small></label>
+           <label>Puertas<input id="lDoors" value="0" inputmode="numeric"></label>
+           <label>Ventanas<input id="lWins" value="0" inputmode="numeric"></label>
+           <label>Mano de obra (€/m²)<input id="lLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
+--- a/ui-b.html
++++ b/ui-b.html
+@@ -11,7 +11,7 @@
+         <button type="button" class="sysFam" data-roof-fam="tradicional" aria-pressed="false">Tradicional</button>
+       </div>
+       <div class="sysgrid" id="roofSys">
+-        <button type="button" class="sysBtn active" data-roof-sys="double" data-fam="continuo" aria-pressed="true"><span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria 1,00 m + secundaria 0,50 m</small></button>
++        <button type="button" class="sysBtn active" data-roof-sys="double" data-fam="continuo" aria-pressed="true"><span class="sysTag">Continuo</span><strong>Doble TC47</strong><small>Primaria 0,90 m + secundaria 0,50 m</small></button>
+         <button type="button" class="sysBtn" data-roof-sys="simple" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>TC47 simple</strong><small>Una estructura 47/500</small></button>
+         <button type="button" class="sysBtn" data-roof-sys="sierra" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>Sierra + TC47</strong><small>Rastrel y secundario TC47</small></button>
+         <button type="button" class="sysBtn" data-roof-sys="cm70" data-fam="continuo" aria-pressed="false"><span class="sysTag">Continuo</span><strong>Canal + M70</strong><small>Autoportante perimetral</small></button>
+@@ -79,6 +79,9 @@
+         <label class="hidden" id="wetHWrap">Alto (m)<input id="wetH" value="2.5" inputmode="decimal"></label>
+         <label id="wetThicknessWrap" class="hidden">Espesor (mm)<input id="wetThickness" value="10" inputmode="decimal"></label>
+         <label id="wetSupportWrap" class="hidden">Soporte<select id="wetSupport"><option value="sin_absorcion">Sin absorción</option><option value="poco_poroso">Poco poroso</option><option value="poroso">Poroso</option></select></label>
++        <label id="wetConsumptionWrap" class="hidden">Consumo por capa (kg/m²)<input id="wetConsumption" value="0.35" inputmode="decimal"><small id="wetConsumptionHint">Selecciona el consumo según soporte y ficha.</small></label>
++        <label id="wetCoatsWrap" class="hidden">Número de capas<input id="wetCoats" value="1" inputmode="numeric"></label>
++        <label id="wetBlockMortarWrap" class="hidden">Mortero para bloque (kg/m²)<input id="wetBlockMortar" value="30" inputmode="decimal"><small>Valor orientativo: verifica o introduce el rendimiento del bloque y mortero elegidos.</small></label>
+         <div id="wetBrickDimsWrap" class="grid brickDims">
+           <label>Largo ladrillo (cm)<input id="wetBrickL" value="33" inputmode="decimal"></label>
+           <label>Alto ladrillo (cm)<input id="wetBrickH" value="16.5" inputmode="decimal"></label>
+@@ -86,7 +89,8 @@
+           <label>Junta de mortero (mm)<input id="wetJoint" value="5" inputmode="decimal"></label>
+         </div>
+                 <label id="wetMortarWrap">Mortero<select id="wetMortar"><option value="predosificado">Predosificado · 25 kg</option><option value="obra">Hecho en obra</option></select></label>
+-        <label id="wetMortarYieldWrap">Rendimiento saco 25 kg (L)<input id="wetMortarYield" value="14" inputmode="decimal"><small>Editable según el mortero utilizado</small></label>
++        <label id="wetMortarYieldWrap">Rendimiento configurado saco 25 kg (L)<input id="wetMortarYield" value="14" inputmode="decimal"><small>Editable según el mortero utilizado</small></label>
++        <label id="wetMortarWasteWrap">Merma de mortero (%)<input id="wetMortarWaste" value="8" inputmode="decimal"><small>Independiente de la merma de ladrillos o bloques.</small></label>
+         <label>Merma<select id="wetWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option></select></label>
+       </div>
+       <div class="info" id="wetInfo"></div>
+--- a/ui-c.html
++++ b/ui-c.html
+@@ -165,8 +165,8 @@
+ <script src="assets/mount-sprite-06.js?v=20260927-fiximg1"></script>
+ <script src="assets/mount-sprite-07.js?v=20260927-fiximg1"></script>
+ <script src="assets/mount-sprite-08.js?v=20260927-fiximg1"></script>
+-<script src="data.js?v=20261012-beneficio-industrial" defer></script>
+-<script src="app.js?v=20261012-beneficio-industrial" defer></script>
++<script src="data.js?v=20261012-auditoria" defer></script>
++<script src="app.js?v=20261012-auditoria" defer></script>
+ </body>
+ </html>
+ 
