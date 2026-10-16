@@ -17,9 +17,9 @@ function fixture({oldSnapshot=false,missing=false,unitPrice=50,quantity='10 ud',
     focus(){this.focused=true;}
     set innerHTML(html){
       this.html=html;this.children=[];
-      for(const match of html.matchAll(/<(?:button|input)\b[^>]*>/g)){
+      for(const match of html.matchAll(/<(?:button|input|div|span|strong)\b[^>]*>/g)){
         const node=new Node();
-        for(const attr of match[0].matchAll(/([\w-]+)="([^"]*)"/g)){
+        for(const attr of match[0].matchAll(/([\w-]+)(?:="([^"]*)")?/g)){
           if(attr[1].startsWith('data-'))node.dataset[attr[1].slice(5).replace(/-([a-z])/g,(_,x)=>x.toUpperCase())]=attr[2];
           if(attr[1]==='value')node.value=attr[2];
         }
@@ -84,8 +84,9 @@ test('Entrada decimal: recálculo inmediato y guardado automático',async()=>{
   await f.input('jobProfitPct','15,0');
   assert.equal(f.totals().grand,1391.50);
   assert.equal(JSON.parse(f.storage.get('calculadora-job-v1')).profitPct,15);
-  assert.match(f.nodes.listContent.innerHTML,/Beneficio industrial 15 %/);
-  assert.match(f.nodes.listContent.innerHTML,/150,00 €/);
+  const summary=f.nodes.listContent.querySelectorAll('[data-budget-totals]')[0].innerHTML;
+  assert.match(summary,/Beneficio industrial 15 %/);
+  assert.match(summary,/150,00 €/);
   await f.input('jobDisc','10');
   assert.equal(f.totals().grand,1252.35);
 });
@@ -129,7 +130,7 @@ test('Pantalla, CSV, impresión/PDF, WhatsApp y Compartir usan el mismo desglose
   assert.match(whatsapp,/Beneficio industrial 15 %: 150,00 €/);
   assert.match(whatsapp,/TOTAL: 1252,35 €/);
   await f.fire('shareBudget');assert.equal(f.shared[0].text,whatsapp);
-  assert.match(f.nodes.listContent.innerHTML,/1252,35 €/);
+  assert.match(f.nodes.listContent.querySelectorAll('[data-budget-totals]')[0].innerHTML,/1252,35 €/);
 });
 
 test('Partidas pendientes identifican como provisional todas las salidas',async()=>{

@@ -1,0 +1,55 @@
+{
+  "date_utc": "2026-10-16T12:18:05.712647+00:00",
+  "base_remote_commit": "b33f1fcb68cc4dec822aca084db0bb2368001ccd",
+  "local_base": "Primera fase local de interfaz del 15/10/2026",
+  "version": "20261016-interfaz-completa",
+  "node": "v24.19.0",
+  "ci_steps_executed_locally": [
+    {
+      "name": "Comprobar archivos",
+      "exit_code": 0
+    },
+    {
+      "name": "Comprobar interfaz y funciones",
+      "exit_code": 0
+    },
+    {
+      "name": "Sintaxis JavaScript",
+      "exit_code": 0
+    },
+    {
+      "name": "Pruebas de materiales, proveedores, presupuestos, fuentes y PWA",
+      "exit_code": 0
+    }
+  ],
+  "test_cases": {
+    "tests/budget-flows.test.js": 16,
+    "tests/budget.test.js": 22,
+    "tests/interface-modules.test.js": 28,
+    "tests/interface.test.js": 15,
+    "tests/materials.test.js": 33,
+    "tests/prices.test.js": 51,
+    "tests/pwa.test.js": 13,
+    "tests/sources.test.js": 3
+  },
+  "total_tests": 181,
+  "compatibility_checks": {
+    "preserved_form_controls": 110,
+    "duplicate_html_ids": false,
+    "aria_references_valid": true,
+    "material_comparisons": {
+      "comparison_base": "Copia local anterior a la ampliación del 16/10/2026",
+      "cases": {
+        "lining": 9,
+        "roof": 14,
+        "wet": 29,
+        "ceramic": 24
+      },
+      "total": 76,
+      "all_material_rows_identical": true
+    }
+  },
+  "browser_check": "Intentado Chromium con Playwright: setsockopt: Operation not permitted, SIGTRAP al arrancar. Sin comprobación visual.",
+  "android_check": "No ejecutada",
+  "published": false
+}

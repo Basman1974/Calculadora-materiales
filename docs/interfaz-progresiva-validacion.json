@@ -1,0 +1,42 @@
+{
+  "date_utc": "2026-10-15T17:33:51.051638+00:00",
+  "base_remote_commit": "b33f1fcb68cc4dec822aca084db0bb2368001ccd",
+  "version": "20261015-interfaz-progresiva",
+  "node": "v24.19.0",
+  "ci_steps_executed_locally": [
+    {
+      "name": "Comprobar archivos",
+      "exit_code": 0
+    },
+    {
+      "name": "Comprobar interfaz y funciones",
+      "exit_code": 0
+    },
+    {
+      "name": "Sintaxis JavaScript",
+      "exit_code": 0
+    },
+    {
+      "name": "Pruebas de materiales, proveedores, presupuestos, fuentes y PWA",
+      "exit_code": 0
+    }
+  ],
+  "test_cases": {
+    "tests/budget-flows.test.js": 16,
+    "tests/budget.test.js": 22,
+    "tests/interface.test.js": 15,
+    "tests/materials.test.js": 33,
+    "tests/prices.test.js": 51,
+    "tests/pwa.test.js": 13,
+    "tests/sources.test.js": 3
+  },
+  "total_tests": 153,
+  "browser_check": "Intentado Chromium con Playwright; el proceso se cierra al arrancar. Sin comprobación visual.",
+  "android_check": "No ejecutada",
+  "published": false,
+  "compatibility_checks": {
+    "preserved_form_controls": 110,
+    "wall_configurations_compared_to_production": 7,
+    "material_rows_identical": true
+  }
+}

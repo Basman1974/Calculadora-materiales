@@ -3,6 +3,7 @@
     const name = el('wetProduct') ? el('wetProduct').value : '';
     const it = data[currentCat] && data[currentCat][name];
     if(!it){
+      updateWetOverview(false);
       const box = el('wetResult');
       if(box) box.innerHTML = resultHTML('Obra húmeda', currentCat, [['Aviso', 'Elige un producto', 'No hay ficha cargada para esta categoría']]);
       return;
@@ -14,7 +15,7 @@
     if(currentCat==='puentes'&&it.k==='kg_range')rules.push(['wetConsumption',0.000001],...(it.perCoat?[['wetCoats',1,true]]:[]));
     const thickness=num('wetThickness');
     const error=currentCat==='revestimientos'&&((it.min&&thickness<it.min)||thickness>it.max)?'Espesor fuera del intervalo del producto: '+(it.min||'mínimo pendiente de verificar')+'–'+it.max+' mm.':'';
-    if(!validCalculation('wetResult',rules,error))return;
+    const valid=validCalculation('wetResult',rules,error,'wetThickness');updateWetOverview(valid);if(!valid)return;
     const A = wetArea(), w = num('wetWaste'), f = 1 + w / 100, rows = [];
     if(currentCat === 'ladrillos'){
       const L=Math.max(1,num('wetBrickL')), H=Math.max(1,num('wetBrickH')), T=Math.max(1,num('wetBrickT')), jointMm=Math.max(0,num('wetJoint'));
@@ -72,9 +73,9 @@
     const box = el('wetResult');
     if(box){ box.innerHTML = resultHTML(obj.title, 'Merma ' + w + ' %', rows); bindAdd(box, obj); }
   }
-  on(el('wetForm'), 'submit', e => { e.preventDefault(); calcWet(); });
+  on(el('wetForm'), 'submit', e => submitProgressiveCalculation(e,'wetForm','wetResult',calcWet));
   ['wetProduct','wetMeasureMode','wetThickness','wetSupport','wetMortar','wetWaste'].forEach(id => on(el(id), 'change', calcWet));
-  ['wetArea','wetL','wetH','wetBrickL','wetBrickH','wetBrickT','wetJoint','wetMortarYield','wetConsumption','wetCoats','wetBlockMortar','wetMortarWaste'].forEach(id => on(el(id), 'input', calcWet));
+  ['wetArea','wetL','wetH','wetThickness','wetBrickL','wetBrickH','wetBrickT','wetJoint','wetMortarYield','wetConsumption','wetCoats','wetBlockMortar','wetMortarWaste'].forEach(id => on(el(id), 'input', calcWet));
   function ceramicBodyLabel(k){ return {porcelanico:'Porcelánico',pasta_roja:'Pasta roja',pasta_blanca:'Pasta blanca'}[k] || 'Porcelánico'; }
   function ceramicGlueKgM2(side, body, bond, trowel){
     const t=Math.max(6, Number(trowel)||10);
@@ -92,8 +93,27 @@
     const base={recto:5,tercio:8,mitad:10,diagonal:15}[pattern]||5;
     return manual===undefined||manual===null||manual===''?base:finiteAmount(manual);
   }
+  function ceramicAdhesiveMode(){return el('adhForm')&&!el('adhForm').classList.contains('hidden');}
+  function recalcCeramic(){if(ceramicAdhesiveMode())adhesiveClass();else calcLevel();}
+  function setCeramicTab(tab){
+    const level=tab!=='adhesive';
+    $all('[data-cer-tab]').forEach(button=>{button.classList.toggle('active',(button.dataset.cerTab==='level')===level);button.setAttribute('aria-pressed',String((button.dataset.cerTab==='level')===level));});
+    el('levelForm')?.classList.remove('hidden');
+    for(const id of ['ceramicFormatFields','ceramicJointOptions','ceramicBatchOptions','levelActionBar','levelResult'])el(id)?.classList.toggle('hidden',!level);
+    el('adhForm')?.classList.toggle('hidden',level);el('adhResult')?.classList.toggle('hidden',level);
+    recalcCeramic();
+  }
+  function updateCeramicOverview(valid,adhesive=false){
+    const area=num('cArea'),working=Math.min(area,num('cBatchArea'));
+    const surface=adhesive&&area===0?'Consumo por m²':inputNumberText('cArea')+' m²';
+    setOverview('ceramicMeasureSummary',valid?surface+(adhesive?' · lado mayor '+inputNumberText('aSize')+' cm':' · formato '+inputNumberText('cA')+' × '+inputNumberText('cB')+' cm'):'Revisa los datos señalados antes de calcular.');
+    setOverview('ceramicSystemSummary',ceramicBodyLabel(currentCerBody)+' · '+surface+' · '+selectText('cBond')+' · llana '+inputNumberText('cTrowel')+' mm'+(adhesive?' · lado mayor '+inputNumberText('aSize')+' cm · '+selectText('aZone')+' · '+selectText('aPlace')+' · soporte '+selectText('aSupport'):' · junta '+inputNumberText('cJoint')+' mm · espesor '+inputNumberText('cThickness')+' mm · patrón '+selectText('cPattern')+' · merma '+inputNumberText('cWaste')+' %'));
+    setOverview('ceramicJointSummary','Junta '+inputNumberText('cJoint')+' mm · espesor '+inputNumberText('cThickness')+' mm · '+selectText('cPattern')+' · merma '+inputNumberText('cWaste')+' %');
+    setOverview('ceramicBatchSummary',inputNumberText('cBatchArea')+' m² solicitados · '+money(working)+' m² simultáneos'+(num('cBatchArea')>area?' (limitados a la superficie total)':''));
+    setOverview('ceramicTechnicalNotice',adhesive?'La clasificación y el consumo de adhesivo son orientativos. Confirma compatibilidad, rendimiento y condiciones en la ficha técnica.':'Los consumos de adhesivo y juntas y los clips son orientativos. Las cuñas se calculan para la superficie simultánea y se reutilizan.');
+  }
   function calcLevel(){
-    if(!validCalculation('levelResult',[['cA',0.000001],['cB',0.000001],['cArea',0.000001],['cThickness',0.000001],['cJoint',0.000001],['cBatchArea',0.000001],['cWaste']]))return;
+    const valid=validCalculation('levelResult',[['cA',0.000001],['cB',0.000001],['cArea',0.000001],['cThickness',0.000001],['cJoint',0.000001],['cBatchArea',0.000001],['cWaste']]);updateCeramicOverview(valid);if(!valid)return;
     const A=num('cA'),B=num('cB'),area=num('cArea'),body=currentCerBody;
     const pattern=(el('cPattern')&&el('cPattern').value)||'recto';
     const w=patternWaste(pattern,num('cWaste'));
@@ -120,10 +140,11 @@
     const box=el('levelResult');
     if(box){box.innerHTML=resultHTML(obj.title,'UNE-EN 14411/12004 · '+A+' × '+B+' cm · patrón '+pattern+' · merma '+w+' %',rows);bindAdd(box,obj);}
   }
-  on(el('levelForm'),'submit',e=>{e.preventDefault();calcLevel();});
-  ['cBond','cPattern','cWaste','cTrowel'].forEach(id=>on(el(id),'change',()=>{calcLevel();if(el('adhForm')&&!el('adhForm').classList.contains('hidden'))adhesiveClass();}));
-  ['cA','cB','cArea','cBatchArea','cThickness','cJoint'].forEach(id=>on(el(id),'input',calcLevel));
+  on(el('levelForm'),'submit',e=>submitProgressiveCalculation(e,ceramicAdhesiveMode()?'adhForm':'levelForm',ceramicAdhesiveMode()?'adhResult':'levelResult',recalcCeramic));
+  ['cBond','cPattern','cWaste','cTrowel'].forEach(id=>on(el(id),'change',recalcCeramic));
+  ['cA','cB','cArea','cBatchArea','cThickness','cJoint'].forEach(id=>on(el(id),'input',recalcCeramic));
     function adhesiveClass(){
+    const valid=validCalculation('adhResult',[['aSize',0.000001],['cArea'],['cTrowel',0.000001]]);updateCeramicOverview(valid,true);if(!valid)return;
     const zone = el('aZone') ? el('aZone').value : 'floor';
     const place = el('aPlace') ? el('aPlace').value : 'interior';
     const size = num('aSize');
@@ -144,14 +165,19 @@
     const rows = [
       ['Tipo de baldosa', ceramicBodyLabel(body), 'UNE-EN 14411 · influye en la clase mínima'],
       ['Clasificación orientativa', cls, 'UNE-EN 12004 · ' + (meanings[cls] || 'Consultar ficha')],
-      ['Encolado', bondLabel, 'Simple ≈ 3–4 kg/m² · doble ≈ 5–6 kg/m²'],
+      ['Encolado', bondLabel, 'Llana '+trowel+' mm · consumo orientativo según configuración'],
       ['Consumo técnico', area ? ((glueKgM2 * area).toFixed(1) + ' kg · ' + Math.ceil(glueKgM2 * area / 25) + ' saco(s) 25 kg') : glueKgM2 + ' kg/m²', glueKgM2.toFixed(1) + ' kg/m² · llana '+trowel+' mm · ' + bondLabel + ' · UNE-EN 12004 · verificar ficha'],
       ['Comprobación', 'Obligatoria', 'Verificar ficha técnica del adhesivo elegido']
     ];
     const box = el('adhResult');
-    if(box){ box.classList.remove('hidden'); box.innerHTML = resultHTML('Cemento cola · ' + cls, ceramicBodyLabel(body) + ' · lado mayor ' + size + ' cm', rows); }
+    if(box){
+      box.classList.remove('hidden');box.innerHTML=resultHTML('Cemento cola · '+cls,ceramicBodyLabel(body)+' · lado mayor '+size+' cm',rows,false)+'<div class="actions"><button class="btn" type="button" data-adh-materials>Ir al cálculo de materiales</button></div>';
+      box.querySelector('[data-adh-materials]').onclick=()=>{setCeramicTab('level');focusInput(el('cA'));};
+    }
   }
-  on(el('adhForm'), 'submit', e => { e.preventDefault(); adhesiveClass(); });
+  on(el('adhForm'), 'submit', e => submitProgressiveCalculation(e,'adhForm','adhResult',adhesiveClass));
+  ['aZone','aPlace','aSupport'].forEach(id=>on(el(id),'change',adhesiveClass));on(el('aSize'),'input',adhesiveClass);
+  for(const [from,to]of [['lL','lH'],['rL','rW'],['wetL','wetH'],['cA','cB'],['cB','cArea']])on(el(from),'keydown',event=>{if(event.key==='Enter'){event.preventDefault();focusInput(el(to));}});
   function renderSavedJobs(){
     const c = el('savedJobs');
     if(!c) return;
@@ -200,7 +226,7 @@
       if(cfg.screen==='lining')setLiningType(el('lType').value);
       if(cfg.screen==='roof')setRoofSys(el('rSys').value);
       if(cfg.screen==='wet'){renderProducts();applyWetDefaults(data[currentCat]?.[cfg.values?.wetProduct]);Object.entries(cfg.values||{}).forEach(([id,v])=>{if(el(id))el(id).value=v;});calcWet();}
-      if(cfg.screen==='ceramic')calcLevel();
+      if(cfg.screen==='ceramic')setCeramicTab('level');
     });
     c.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { deletedPart={index:Number(b.dataset.del),part:work[Number(b.dataset.del)]};work.splice(deletedPart.index, 1); editingPart=null;el('undoWork').hidden=false; saveWork(); renderWork(); renderList(); });
   }
@@ -208,18 +234,24 @@
     readJobFields();freezeJobPrices();renderPriceProviders();invalidateTariffPreview();
     const c = el('listContent');
     if(!c) return;
-    if(!work.length){ c.innerHTML = '<div class="empty">Añade partidas para generar el presupuesto.</div>'; return; }
+    if(!work.length){ c.innerHTML = '<div class="empty">Añade partidas para generar el presupuesto.</div>';refreshBudgetOverview(budgetTotals()); return; }
     const tot = budgetTotals();
     const co = company.name || 'Tu empresa';
     const head = '<div class="quoteHead"><div><div class="quoteBrand">' + esc(co) + '</div><div class="small">' + esc([company.nif, company.phone, company.mail].filter(Boolean).join(' · ')) + '</div><div class="small">' + esc(company.addr||'') + '</div></div><div class="quoteMeta"><div><b>' + esc(jobMeta.num || 'Presupuesto') + '</b></div><div>' + esc(jobMeta.name || 'Obra sin nombre') + '</div><div>' + esc(jobMeta.client ? ('Cliente: ' + jobMeta.client) : '') + '</div><div>' + esc(jobMeta.addr||'') + '</div></div></div>';
     const parts = '<div class="groupHead">PARTIDAS POR ESTANCIA</div>' + work.map((x,i) => '<div class="listLine"><span><b>' + esc(x.zone||'General') + '</b> · ' + (i+1) + '. ' + esc(x.title) + '</span><strong>' + (x.items||[]).length + '</strong></div>').join('');
     const table = '<div class="groupHead">MATERIALES Y PRECIOS</div><div class="budgetHead"><span>Concepto</span><span>Ud</span><span>€/unidad sin IVA</span><span>Importe</span></div>' +
-      tot.rows.map(r => '<div class="budgetLine"><div>' + esc(r.name) + '<div class="rowDetail">' + esc((r.qty ? (String(r.qty).replace('.',',') + ' ' + r.unit) : '') + (r.detail ? ' · ' + r.detail : '')) + '</div></div><div class="money">' + esc(r.labor ? '—' : (String(r.qty).replace('.',',') + ' ' + r.unit)) + '</div><div>' + (r.labor ? '<span class="money">' + money(r.total) + '</span>' : '<input class="price" data-price-key="' + esc(r.key) + '" data-material-id="'+esc(encodeURIComponent(r.id))+'" aria-describedby="jobPriceStatus" aria-label="Precio por '+esc(r.unit)+' de '+esc(r.name)+'" placeholder="Sin precio" inputmode="decimal" value="' + (r.missing?'':r.unitPrice) + '">') + '</div><div class="budgetAmt" data-row-total="'+esc(encodeURIComponent(r.id))+'">' + (r.missing?'Sin precio':money(r.total)+' €') + '</div>'+budgetProviderHTML(r)+'</div>').join('');
+      tot.rows.map(budgetLineHTML).join('');
     const sums = '<div data-budget-totals>'+budgetSummaryHTML(tot)+'</div>';
     const notes = jobMeta.notes ? '<div class="info">' + esc(jobMeta.notes) + '</div>' : '';
     const valid = jobMeta.valid ? '<div class="small" style="margin-top:8px">Validez: ' + esc(jobMeta.valid) + ' días. Cantidades orientativas; verificar el sistema y la medición. Precios introducidos por el usuario.</div>' : '';
     c.innerHTML = '<div class="info" data-budget-warning role="status"'+(tot.provisional?'':' hidden')+'>'+(tot.provisional?'Presupuesto provisional: '+esc(provisionalText(tot))+'.':'')+'</div>' + head + parts + table + sums + notes + valid;
     bindBudgetPrices(c,tot.rows);
+    refreshBudgetOverview(tot);
+  }
+  function budgetLineHTML(row,index){
+    const id=esc(encodeURIComponent(row.id)),quantity=esc(String(row.qty).replace('.',',')+' '+row.unit),priceId='budgetPrice'+index,errorId=priceId+'Error';
+    const price=row.labor?'<span class="small">Incluida en la partida</span>':'<label for="'+priceId+'"><span class="budgetFieldLabel">Precio por '+esc(row.unit)+' · sin IVA</span><input id="'+priceId+'" class="price" data-price-key="'+esc(row.key)+'" data-material-id="'+id+'" aria-describedby="'+errorId+'" aria-label="Precio por '+esc(row.unit)+' sin IVA de '+esc(row.name)+'" placeholder="Sin precio" inputmode="decimal" enterkeyhint="next" value="'+(row.missing?'':row.unitPrice)+'"></label><span id="'+errorId+'" class="fieldError" data-price-error="'+id+'" hidden></span>';
+    return '<div class="budgetLine'+(row.missing?' isMissing':'')+'" data-budget-material="'+id+'"><div class="budgetConcept"><b>'+esc(row.name)+'</b><div class="rowDetail">'+esc(row.detail||'')+'</div></div><div class="budgetQty"><span class="budgetFieldLabel">Cantidad</span>'+ (row.labor?'—':quantity)+'</div><div class="budgetPriceField">'+price+'</div><div class="budgetLineAmount"><span class="budgetFieldLabel">Importe</span><strong class="budgetAmt" data-row-total="'+id+'">'+(row.missing?'Sin precio':money(row.total)+' €')+'</strong></div>'+budgetProviderHTML(row)+'</div>';
   }
   function budgetText(){
     if(!budgetInputValid()) return '';
@@ -336,14 +368,18 @@
     else window.addEventListener('load', registerWorker, {once:true});
   }
   ['jobName','jobClient','jobAddr','jobVat','jobDisc','jobProfitPct','jobLaborExtra','jobExtra','jobValid','jobNotes','jobNum','coName','coNif','coPhone','coMail','coAddr'].forEach(id => {
-    on(el(id), 'change', () => { saveJob(); if(['jobVat','jobDisc','jobProfitPct','jobLaborExtra','jobExtra'].includes(id)) renderList(); });
+    on(el(id), 'change', () => { saveJob(); if(['jobVat','jobDisc','jobProfitPct','jobLaborExtra','jobExtra'].includes(id)){invalidateTariffPreview();refreshBudgetAmounts(el('listContent'));} });
     on(el(id), 'blur', saveJob);
   });
-  ['jobProfitPct','jobDisc'].forEach(id => on(el(id), 'input', () => { saveJob(); renderList(); }));
+  ['jobProfitPct','jobDisc','jobLaborExtra','jobExtra'].forEach(id => on(el(id), 'input', () => { saveJob();invalidateTariffPreview();refreshBudgetAmounts(el('listContent')); }));
   ['viewAmounts','viewMaterials'].forEach(id=>on(el(id),'click',()=>{
-    const materials=id==='viewMaterials';el('listContent').classList.toggle('materialsOnly',materials);
-    el('viewMaterials').setAttribute('aria-pressed',String(materials));el('viewAmounts').setAttribute('aria-pressed',String(!materials));
+    setBudgetView(id==='viewMaterials');
   }));
+  function setBudgetView(materials){
+    el('listContent')?.classList.toggle('materialsOnly',materials);
+    el('viewMaterials')?.setAttribute('aria-pressed',String(materials));el('viewAmounts')?.setAttribute('aria-pressed',String(!materials));
+    if(el('budgetOverview'))el('budgetOverview').hidden=materials;
+  }
   on(el('shareBudget'),'click',async()=>{
     const text=budgetText();
     if(!text) return;
@@ -398,39 +434,73 @@
   function pricingSignature(){return JSON.stringify({work,jobPricing,jobMeta,priceBook,priceCatalog});}
   function budgetProviderHTML(row){
     if(row.labor)return '';
-    return '<div class="priceSource"><label>Proveedor<select data-price-provider="'+esc(encodeURIComponent(row.id))+'" aria-label="Proveedor de '+esc(row.name)+'">'+providerOptions(row.providerId,{historicalName:row.providerName})+'</select></label><span class="small" data-price-info="'+esc(encodeURIComponent(row.id))+'">'+esc(priceDateLabel(row.priceDate)+(row.reference?' · Ref. '+row.reference:''))+'</span><button class="btn" type="button" data-price-offers="'+esc(encodeURIComponent(row.id))+'">Ver precios / registrar tarifa</button></div>';
+    return '<details class="budgetSupplier" data-budget-supplier="'+esc(encodeURIComponent(row.id))+'"><summary>Proveedor: <span data-provider-name="'+esc(encodeURIComponent(row.id))+'">'+esc(row.providerName)+'</span> · Ver tarifas</summary><div class="priceSource"><label>Cambiar proveedor<select data-price-provider="'+esc(encodeURIComponent(row.id))+'" aria-label="Proveedor de '+esc(row.name)+'">'+providerOptions(row.providerId,{historicalName:row.providerName})+'</select></label><span class="small" data-price-info="'+esc(encodeURIComponent(row.id))+'">'+esc(priceDateLabel(row.priceDate)+(row.reference?' · Ref. '+row.reference:''))+'</span><button class="btn" type="button" data-price-offers="'+esc(encodeURIComponent(row.id))+'">Comparar precios / registrar tarifa</button></div></details>';
   }
   function budgetSummaryHTML(tot){return budgetSummary(tot).map(line=>'<div class="budgetTot'+(line.grand?' grand':'')+'"><span>'+esc(line.label)+'</span><span>'+money(line.amount)+' €</span></div>').join('');}
+  function refreshBudgetOverview(tot){
+    const priceInputs=[...el('listContent')?.querySelectorAll('[data-price-key]')||[]];
+    const errors=priceInputs.concat(['jobProfitPct','jobDisc','jobLaborExtra','jobExtra'].map(id=>el(id)).filter(Boolean)).filter(input=>!input.checkValidity()).length;
+    if(el('budgetQuickTotal'))el('budgetQuickTotal').textContent=money(tot.grand)+' €';
+    if(el('budgetQuickLabel'))el('budgetQuickLabel').textContent=tot.provisional||errors?'TOTAL PROVISIONAL':'TOTAL CON IVA';
+    if(el('budgetProgress'))el('budgetProgress').textContent=!work.length?'Añade una partida desde las calculadoras.':errors?'Revisa '+errors+' campo(s). El total conserva los últimos valores válidos.':(tot.missing?tot.missing+' material(es) sin precio. Presupuesto provisional.':'Todos los materiales tienen precio.')+(tot.incomplete?' '+tot.incomplete+' partida(s) pendientes de revisión técnica. Presupuesto provisional.':'');
+    if(el('valuePending')){el('valuePending').disabled=!tot.missing&&!errors;el('valuePending').textContent=errors?'Revisar datos':'Valorar pendientes'+(tot.missing?' ('+tot.missing+')':'');}
+    if(el('budgetAdjustmentsSummary'))el('budgetAdjustmentsSummary').textContent='IVA '+decimalText(tot.vatPct)+' % · beneficio '+decimalText(tot.profitPct)+' % · descuento '+decimalText(tot.discPct)+' %'+(jobMeta.laborExtra?' · mano de obra extra '+money(jobMeta.laborExtra)+' €':'')+(tot.extra?' · desplazamiento / varios '+money(tot.extra)+' €':'');
+  }
   function refreshBudgetAmounts(container){
+    if(!container)return;
     const tot=budgetTotals();
     container.querySelectorAll('[data-row-total]').forEach(node=>{const row=tot.rows.find(r=>r.id===decodeURIComponent(node.dataset.rowTotal));if(row)node.textContent=row.missing?'Sin precio':money(row.total)+' €';});
     container.querySelectorAll('[data-price-info]').forEach(node=>{const row=tot.rows.find(r=>r.id===decodeURIComponent(node.dataset.priceInfo));if(row)node.textContent=priceDateLabel(row.priceDate)+(row.reference?' · Ref. '+row.reference:'');});
     container.querySelectorAll('[data-budget-totals]').forEach(node=>node.innerHTML=budgetSummaryHTML(tot));
     container.querySelectorAll('[data-budget-warning]').forEach(node=>{node.hidden=!tot.provisional;node.textContent=tot.provisional?'Presupuesto provisional: '+provisionalText(tot)+'.':'';});
+    container.querySelectorAll('[data-provider-name]').forEach(node=>{const row=tot.rows.find(r=>r.id===decodeURIComponent(node.dataset.providerName));if(row)node.textContent=row.providerName;});
+    container.querySelectorAll('[data-budget-material]').forEach(node=>{const row=tot.rows.find(r=>r.id===decodeURIComponent(node.dataset.budgetMaterial));if(row)node.classList.toggle('isMissing',row.missing);});
+    refreshBudgetOverview(tot);
   }
   function bindBudgetPrices(container,rows){
     container.querySelectorAll('[data-price-key]').forEach(input=>{
       const line=rows.find(r=>r.id===decodeURIComponent(input.dataset.materialId||''))||rows.find(r=>r.key===input.dataset.priceKey);
       if(!line)return;
-      let previous=String(input.value);
+      input.dataset.savedPriceValue=String(input.value);
+      const showError=message=>container.querySelectorAll('[data-price-error]').forEach(node=>{if(node.dataset.priceError===input.dataset.materialId){node.textContent=message;node.hidden=!message;}});
       input.oninput=input.onchange=input.onblur=()=>{
-        if(String(input.value)===previous){const hadError=!input.checkValidity();input.setCustomValidity('');input.setAttribute('aria-invalid','false');if(hadError)pricingStatus('Se mantiene el último precio guardado.');return;}
+        if(String(input.value)===input.dataset.savedPriceValue){const hadError=!input.checkValidity();input.setCustomValidity('');input.setAttribute('aria-invalid','false');showError('');if(hadError){pricingStatus('Se mantiene el último precio guardado.');refreshBudgetOverview(budgetTotals());}return;}
         try{
-          saveBudgetMaterialPrice(line,input.value);previous=String(input.value);input.setCustomValidity('');input.setAttribute('aria-invalid','false');
-          invalidateTariffPreview();refreshBudgetAmounts(container);pricingStatus(previous.trim()===''?'Esta línea queda sin valorar. La tarifa guardada se conserva.':'Precio guardado para esta obra y en la tarifa del proveedor.');
-        }catch(err){input.setCustomValidity(err.message);input.setAttribute('aria-invalid','true');pricingStatus(err.message,true);}
+          saveBudgetMaterialPrice(line,input.value);input.dataset.savedPriceValue=String(input.value);input.setCustomValidity('');input.setAttribute('aria-invalid','false');showError('');
+          invalidateTariffPreview();refreshBudgetAmounts(container);pricingStatus(String(input.value).trim()===''?'Esta línea queda sin valorar. La tarifa guardada se conserva.':'Precio guardado para esta obra y en la tarifa del proveedor.');
+        }catch(err){input.setCustomValidity(err.message);input.setAttribute('aria-invalid','true');showError(err.message);refreshBudgetOverview(budgetTotals());pricingStatus(err.message,true);}
       };
+      input.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();input.oninput();focusPendingBudgetPrice(input);}};
     });
     container.querySelectorAll('[data-price-provider]').forEach(select=>select.onchange=()=>{
       const line=rows.find(r=>r.id===decodeURIComponent(select.dataset.priceProvider));if(!line)return;
-      try{const entry=selectBudgetProvider(line,select.value);renderList();pricingStatus(entry.price===null?'Este proveedor no tiene tarifa para el material. Introduce el precio sin IVA.':'Tarifa aplicada a esta línea de la obra.');}catch(err){select.value=line.providerId;pricingStatus(err.message,true);}
+      const previous=jobPricing.entries.find(e=>e.materialId===line.id)?.providerId||line.providerId;
+      try{
+        const entry=selectBudgetProvider(line,select.value),input=[...container.querySelectorAll('[data-price-key]')].find(node=>decodeURIComponent(node.dataset.materialId)===line.id);
+        if(input){input.value=entry.price===null?'':decimalText(entry.price);input.dataset.savedPriceValue=String(input.value);input.setCustomValidity('');input.setAttribute('aria-invalid','false');}
+        container.querySelectorAll('[data-price-error]').forEach(node=>{if(decodeURIComponent(node.dataset.priceError)===line.id){node.hidden=true;node.textContent='';}});
+        invalidateTariffPreview();refreshBudgetAmounts(container);pricingStatus(entry.price===null?'Este proveedor no tiene tarifa para el material. Introduce el precio sin IVA.':'Tarifa aplicada a esta línea de la obra.');
+      }catch(err){select.value=previous;pricingStatus(err.message,true);}
     });
     container.querySelectorAll('[data-price-offers]').forEach(button=>button.onclick=()=>{
       const line=rows.find(r=>r.id===decodeURIComponent(button.dataset.priceOffers));if(!line)return;
+      budgetReturnMaterialId=line.id;
       show('prices');if(el('catalogSearch'))el('catalogSearch').value=line.name;if(el('catalogProvider'))el('catalogProvider').value='all';renderPriceCatalog();
       if(catalogMaterial(line.id)?.rates.length)el('priceCatalogContent')?.scrollIntoView?.({behavior:'smooth',block:'start'});else openTariffEditor(line.id,line.providerId);
     });
   }
+  function focusPendingBudgetPrice(from=null){
+    const container=el('listContent');if(!container)return;
+    setBudgetView(false);
+    const inputs=[...container.querySelectorAll('[data-price-key]')];
+    const invalid=inputs.concat(['jobProfitPct','jobDisc','jobLaborExtra','jobExtra'].map(id=>el(id)).filter(Boolean)).find(input=>!input.checkValidity());
+    if(invalid){focusInput(invalid);invalid.reportValidity();return;}
+    const missing=new Set(budgetTotals().rows.filter(row=>row.missing).map(row=>row.id)),start=inputs.indexOf(from);
+    for(let step=1;step<=inputs.length;step++){const input=inputs[(start+step)%inputs.length];if(missing.has(decodeURIComponent(input.dataset.materialId))){focusInput(input);input.select?.();return;}}
+    if(el('budgetProgress'))el('budgetProgress').textContent='Todos los materiales tienen precio.'+(budgetTotals().incomplete?' Revisa los avisos técnicos de las partidas.':'');
+    from?.blur?.();
+  }
+  on(el('valuePending'),'click',()=>focusPendingBudgetPrice());
   function resetTariffEditor(){
     editingPendingRate=null;
     for(const id of ['tariffMaterial','tariffPrice','tariffReference','tariffVat'])if(el(id)){el(id).value='';el(id).setCustomValidity('');}

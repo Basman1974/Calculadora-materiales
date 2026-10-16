@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Calculadora Construcción">
-  <link rel="stylesheet" href="style.css?v=20261015-precios-proveedores">
+  <link rel="stylesheet" href="style.css?v=20261016-interfaz-completa">
   <link rel="preconnect" href="https://static.wixstatic.com" crossorigin>
   <link rel="preconnect" href="https://www.gyproclatenplaatsen.be" crossorigin>
   <link rel="preconnect" href="https://images.squarespace-cdn.com" crossorigin>
@@ -40,10 +40,10 @@
   </div>
   <section class="screen active" id="home">
     <aside class="updateNotice" id="updateNotice" aria-labelledby="updateNoticeTitle">
-      <div class="updateNoticeTop"><span>NOVEDADES · 15 OCT 2026</span><button class="btn" id="closeUpdateNotice" type="button">Cerrar aviso <span aria-hidden="true">×</span></button></div>
-      <h2 id="updateNoticeTitle">Precios guardados por proveedor</h2>
-      <p>Escribe precios en <strong>Presupuesto</strong> para conservarlos en tu catálogo, o registra e importa tarifas en <strong>Precios y proveedores</strong>.</p>
-      <ul><li>Compara precios del mismo material y unidad, con su proveedor, referencia y fecha.</li><li>Revisa una propuesta antes de actualizar una obra. Las copias guardadas conservan sus precios.</li><li>La ayuda explica tarifas CSV, precios con IVA, copias y las correcciones de cálculo.</li></ul>
+      <div class="updateNoticeTop"><span>NOVEDADES · 16 OCT 2026</span><button class="btn" id="closeUpdateNotice" type="button">Cerrar aviso <span aria-hidden="true">×</span></button></div>
+      <h2 id="updateNoticeTitle">Formularios más claros en todas las calculadoras</h2>
+      <p>Tabique, Trasdosado, Techo, Obra húmeda y Cerámica muestran las medidas y la configuración elegida. Los ajustes adicionales están agrupados en bloques desplegables.</p>
+      <ul><li>Los errores aparecen junto al campo y el botón de cálculo abre el bloque que debes corregir.</li><li>En Cerámica puedes revisar superficie, encolado y llana también al consultar la orientación del adhesivo.</li><li>Presupuesto conserva las tarjetas de materiales, «Valorar pendientes» y los precios por proveedor. La ayuda explica todos los cambios.</li></ul>
       <p class="updateNoticeNote">Revisa los avisos técnicos de las partidas y descarga una copia JSON para conservar obras, precios y proveedores fuera del navegador.</p>
     </aside>
     <div class="hero"><h2>¿Qué vas a calcular?</h2><p>Toca un trabajo. Luego solo pides las medidas del paño.</p></div>
@@ -57,45 +57,52 @@
   </section>
   <section class="screen" id="wall">
     <div class="backWrap"><button class="back" data-home type="button"><span class="backIcon">←</span><span>Volver</span></button></div>
-    <div class="sectionTitle">Tabique</div><p class="lead">Pon largo y alto. Lo demás ya viene relleno.</p>
+    <div class="sectionTitle">Tabique</div><p class="lead">Introduce las medidas, elige una configuración y revisa los materiales.</p>
     <div class="mountPreview"><button class="btn mountToggle" type="button" aria-expanded="false" aria-controls="wallSketch" data-mount="wallSketch">Ver montaje · Tabique</button><div class="systemSketch" id="wallSketch" hidden></div></div>
     <div class="famBanner slim"><span class="famName">Tabique PYL</span><span class="famSub">Dos caras · UNE 102043</span></div>
-    <form id="wallForm">
+    <form id="wallForm" novalidate>
       <div class="panel easyBlock">
-        <div class="easyTitle">Medidas</div>
+        <div class="easyTitle">1 · Medidas del tabique</div>
         <div class="grid">
-          <label>Largo (m)<input id="wL" value="4" inputmode="decimal"></label>
-          <label>Alto (m)<input id="wH" value="2.5" inputmode="decimal"></label>
+          <label>Largo (m)<input id="wL" value="4" inputmode="decimal" enterkeyhint="next" aria-describedby="wallMeasureHelp wLError"><span id="wLError" class="fieldError" hidden></span></label>
+          <label>Alto (m)<input id="wH" value="2.5" inputmode="decimal" enterkeyhint="done" aria-describedby="wallMeasureHelp wHError"><span id="wHError" class="fieldError" hidden></span></label>
         </div>
+        <p id="wallMeasureHelp" class="small">Medidas en metros. Puedes escribir 2,60 o 2.60.</p>
+        <p id="wallMeasureSummary" class="measureSummary"></p>
       </div>
       <div class="panel easyBlock">
-        <div class="easyTitle">Sistema</div>
-        <div class="presetBar" aria-label="Plantillas de tabique"><button type="button" class="preset" data-wall-preset="vivienda">Vivienda 1+1</button><button type="button" class="preset" data-wall-preset="bano">Baño 1+1 @400</button><button type="button" class="preset" data-wall-preset="doble">Doble 2+2</button></div>
-        
+        <div class="easyTitle">2 · Configuración</div>
+        <div class="presetBar" aria-label="Plantillas de tabique"><button type="button" class="preset" data-wall-preset="vivienda" aria-pressed="false">Estándar 1+1</button><button type="button" class="preset" data-wall-preset="bano" aria-pressed="false">Hidrófuga 1+1 · 400 mm</button><button type="button" class="preset" data-wall-preset="doble" aria-pressed="false">Doble placa 2+2</button></div>
+        <p class="small">1+1 significa una placa en cada cara. Las plantillas no acreditan prestaciones del sistema.</p>
+        <div class="configurationSummary"><b>Configuración elegida</b><p id="wallSystemSummary"></p></div>
+        <details class="progressiveBox" id="wallSystemOptions"><summary>Modificar placas, estructura y aislamiento</summary>
         <div class="grid">
           <label>Placas cara 1<select id="wA"><option value="1" selected>1 placa</option><option value="2">2 placas</option></select></label>
           <label>Placas cara 2<select id="wB"><option value="1">1 placa</option><option value="2">2 placas</option></select></label>
           <label>Montante<select id="wP"><option value="48">M48</option><option value="70" selected>M70</option><option value="90">M90</option></select></label>
-          <label>Separación<select id="wS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
+          <label>Separación entre montantes<select id="wS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
           <label>Espesor placa<select id="wBoardThick"><option value="12.5">12,5 mm</option><option value="15" selected>15 mm</option><option value="18">18 mm</option></select></label>
           <label>Lana mineral<select id="wWool"><option value="1" selected>Sí</option><option value="0">No</option></select></label>
           <label>Lámina acústica entre placas<select id="wMembrane" aria-describedby="wMembraneHint"><option value="none">Sin lámina</option><option value="1">Cara 1</option><option value="2">Cara 2</option><option value="both">Ambas caras</option></select></label>
-          <label id="wMembraneWasteWrap" class="hidden">Merma de lámina (%)<input id="wMembraneWaste" value="0" inputmode="decimal" aria-describedby="wMembraneHint"></label>
+          <label id="wMembraneWasteWrap" class="hidden">Merma de lámina (%)<input id="wMembraneWaste" value="0" inputmode="decimal" aria-describedby="wMembraneHint wMembraneWasteError"><span id="wMembraneWasteError" class="fieldError" hidden></span></label>
+          <label>Tipo de placa<select id="wBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
         </div>
         <div class="info" id="wMembraneHint" aria-live="polite">Selecciona dos placas en una cara para colocar lámina entre ellas.</div>
+        </details>
       </div>
-      <details class="moreBox">
-        <summary>Huecos, tipo de placa y mano de obra</summary>
+      <details class="moreBox" id="wallOpeningsOptions">
+        <summary>Huecos y aristas <span id="wallOpeningsSummary" class="summaryValue"></span></summary>
         <div class="grid">
-          <label>Tipo de placa<select id="wBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
-          <label>Aristas expuestas para guardavivos (m)<input id="wEdges" value="0" inputmode="decimal"><small>Mide únicamente las aristas que necesitan protección.</small></label>
-          <label>Puertas<input id="wDoors" value="0" inputmode="numeric"></label>
-          <label>Ventanas<input id="wWins" value="0" inputmode="numeric"></label>
-          <label>Mano de obra (€/m²)<input id="wLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
+          <label>Número de puertas<input id="wDoors" value="0" inputmode="numeric" aria-describedby="wWoolHint wDoorsError"><span id="wDoorsError" class="fieldError" hidden></span></label>
+          <label>Número de ventanas<input id="wWins" value="0" inputmode="numeric" aria-describedby="wWoolHint wWinsError"><span id="wWinsError" class="fieldError" hidden></span></label>
+          <label>Aristas expuestas para guardavivos (m)<input id="wEdges" value="0" inputmode="decimal" aria-describedby="wEdgesError"><small>Mide únicamente las aristas que necesitan protección.</small><span id="wEdgesError" class="fieldError" hidden></span></label>
         </div>
         <div class="info" id="wWoolHint">Puerta tipo 0,80 × 2,10. Ventana 1,20 × 1,20. Restan placa y lana, no la estructura.</div>
+        <p id="wallOpeningsError" class="fieldError" hidden></p>
       </details>
-      <button class="calc" type="submit">Calcular tabique</button>
+      <details class="moreBox" id="wallLaborOptions"><summary>Mano de obra <span id="wallLaborSummary" class="summaryValue"></span></summary><label>Precio de montaje (€/m² sin IVA)<input id="wLabor" value="0" inputmode="decimal" placeholder="Tu precio" aria-describedby="wLaborHelp wLaborError"><small id="wLaborHelp">Se aplica a la superficie neta del tabique. Con 0 no se añade mano de obra.</small><span id="wLaborError" class="fieldError" hidden></span></label></details>
+      <p id="wallHeightNotice" class="info" role="status"></p>
+      <div class="formActionBar"><button class="calc" type="submit">Ver materiales del tabique</button></div>
     </form><div class="result" id="wallResult"></div>
   </section>
   <section class="screen" id="lining">
@@ -109,42 +116,7 @@
       <button type="button" class="sysFam active" data-lining-type="auto" aria-pressed="true">Autoportante</button>
     </div>
     
-    <form id="liningForm">
-      <label class="hidden">Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label>
-      <div class="panel easyBlock">
-        <div class="easyTitle">Medidas</div>
-        <div class="grid">
-          <label>Largo (m)<input id="lL" value="4" inputmode="decimal"></label>
-          <label>Alto (m)<input id="lH" value="2.5" inputmode="decimal"></label>
-        </div>
-      </div>
-      <div class="panel easyBlock">
-        <div class="easyTitle">Sistema</div>
-        <div class="grid">
-          <label id="lLayersWrap">Placas<select id="lLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label>
-          <label>Lámina acústica entre placas<select id="lMembrane" aria-describedby="lMembraneHint"><option value="0">Sin lámina</option><option value="1">Con lámina</option></select></label>
-          <label id="lMembraneWasteWrap" class="hidden">Merma de lámina (%)<input id="lMembraneWaste" value="0" inputmode="decimal" aria-describedby="lMembraneHint"></label>
-          <div class="info" id="lMembraneHint" aria-live="polite">Disponible con doble placa PYL.</div>
-          <label id="lSpacingWrap">Separación<select id="lS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label>
-          <label id="lPasteRateWrap" class="hidden">Pasta de agarre (kg/m²)<input id="lPasteRate" value="5" inputmode="decimal"><small>Referencia aproximada: 5 kg/m². Ajustar según producto y soporte.</small></label>
-          <label id="lProfileWrap">Perfil<select id="lP"><option value="48">48 mm</option><option value="70" selected>70 mm</option><option value="90">90 mm</option></select></label>
-          <label>Espesor placa<select id="lBoardThick"><option value="12.5">12,5 mm</option><option value="15" selected>15 mm</option><option value="18">18 mm</option></select></label>
-          <label id="lWoolWrap">Lana mineral<select id="lWool"><option value="1" selected>Sí</option><option value="0">No</option></select></label><label>Merma placas / pasta<select id="lWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option><option value="12">12 %</option><option value="15">15 %</option></select></label>
-        </div>
-      </div>
-      <details class="moreBox">
-        <summary>Huecos, tipo de placa y mano de obra</summary>
-        <div class="grid">
-          <label>Tipo de placa<select id="lBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label>
-          <label>Aristas expuestas para guardavivos (m)<input id="lEdges" value="0" inputmode="decimal"><small>Mide únicamente las aristas que necesitan protección.</small></label>
-          <label>Puertas<input id="lDoors" value="0" inputmode="numeric"></label>
-          <label>Ventanas<input id="lWins" value="0" inputmode="numeric"></label>
-          <label>Mano de obra (€/m²)<input id="lLabor" value="0" inputmode="decimal" placeholder="Tu precio"></label>
-        </div>
-        <div class="info" id="lWoolHint">Los huecos restan placa y acabado, no la estructura.</div>
-      </details>
-      <button class="calc" type="submit">Calcular trasdosado</button>
-    </form><div class="result" id="liningResult"></div>
+    <form id="liningForm" class="progressiveForm" novalidate><label class="hidden">Sistema<select id="lType"><option value="direct">Directo</option><option value="semi">Semidirecto</option><option value="auto" selected>Autoportante</option></select></label><div class="panel easyBlock"><div class="easyTitle">1 · Medidas</div><div class="grid"><label>Largo (m)<input id="lL" value="4" inputmode="decimal" aria-describedby="lLError" enterkeyhint="next"><span class="fieldError" id="lLError" hidden></span></label><label>Alto (m)<input id="lH" value="2.5" inputmode="decimal" aria-describedby="lHError" enterkeyhint="next"><span class="fieldError" id="lHError" hidden></span></label></div><p class="small">Metros, con coma o punto decimal.</p><p id="liningMeasureSummary" class="measureSummary"></p></div><div class="panel easyBlock"><div class="easyTitle">2 · Configuración</div><div class="configurationSummary"><b>Configuración elegida</b><p id="liningSystemSummary"></p></div><label id="lPasteRateWrap" class="hidden">Pasta de agarre (kg/m²)<input id="lPasteRate" value="5" inputmode="decimal" aria-describedby="lPasteRateError" enterkeyhint="next"><span class="fieldError" id="lPasteRateError" hidden></span><small>Referencia aproximada: 5 kg/m². Ajustar según producto y soporte.</small></label><details class="moreBox" id="liningSystemOptions"><summary>Modificar placas, estructura y aislamiento</summary><div class="grid"><label id="lLayersWrap">Placas<select id="lLayers"><option value="1">1 placa</option><option value="2" selected>2 placas</option></select></label><label id="lSpacingWrap">Separación<select id="lS"><option value=".4">400 mm</option><option value=".6" selected>600 mm</option></select></label><label id="lProfileWrap">Perfil<select id="lP"><option value="48">48 mm</option><option value="70" selected>70 mm</option><option value="90">90 mm</option></select></label><label>Espesor placa<select id="lBoardThick"><option value="12.5">12,5 mm</option><option value="15" selected>15 mm</option><option value="18">18 mm</option></select></label><label>Tipo de placa<select id="lBoardType"><option value="normal" selected>Estándar BA</option><option value="hidro">Hidrófuga H</option><option value="rf">RF / F</option><option value="dura">Alta dureza I</option></select></label><label id="lWoolWrap">Lana mineral<select id="lWool"><option value="1" selected>Sí</option><option value="0">No</option></select></label><label>Lámina acústica entre placas<select id="lMembrane" aria-describedby="lMembraneHint"><option value="0">Sin lámina</option><option value="1">Con lámina</option></select></label><label id="lMembraneWasteWrap" class="hidden">Merma de lámina (%)<input id="lMembraneWaste" value="0" inputmode="decimal" aria-describedby="lMembraneHint lMembraneWasteError" enterkeyhint="next"><span class="fieldError" id="lMembraneWasteError" hidden></span></label></div><div class="info" id="lMembraneHint" aria-live="polite">Disponible con doble placa PYL.</div></details></div><details class="moreBox" id="liningOpeningsOptions"><summary>Huecos, aristas y merma <span id="liningOpeningsSummary" class="summaryValue"></span></summary><div class="grid"><label>Puertas<input id="lDoors" value="0" inputmode="numeric" aria-describedby="lDoorsError" enterkeyhint="next"><span class="fieldError" id="lDoorsError" hidden></span></label><label>Ventanas<input id="lWins" value="0" inputmode="numeric" aria-describedby="lWinsError" enterkeyhint="next"><span class="fieldError" id="lWinsError" hidden></span></label><label>Aristas expuestas para guardavivos (m)<input id="lEdges" value="0" inputmode="decimal" aria-describedby="lEdgesError" enterkeyhint="next"><span class="fieldError" id="lEdgesError" hidden></span><small>Mide únicamente las aristas que necesitan protección.</small></label><label>Merma placas / pasta<select id="lWaste"><option value="0">0 %</option><option value="5">5 %</option><option value="8" selected>8 %</option><option value="10">10 %</option><option value="12">12 %</option><option value="15">15 %</option></select></label></div><p id="lWoolHint" class="small">Puerta tipo 0,80 × 2,10 m y ventana 1,20 × 1,20 m. Descuentan placa y acabado; comprueba sus medidas reales.</p></details><details class="moreBox" id="liningLaborOptions"><summary>Mano de obra <span id="liningLaborSummary" class="summaryValue"></span></summary><label>Mano de obra (€/m²)<input id="lLabor" value="0" inputmode="decimal" placeholder="Tu precio" aria-describedby="lLaborError" enterkeyhint="next"><span class="fieldError" id="lLaborError" hidden></span></label></details><p id="liningTechnicalNotice" class="info" role="status"></p><div class="formActionBar"><button class="calc" type="submit">Ver materiales del trasdosado</button></div></form><div class="result" id="liningResult"></div>
   </section>
 
 

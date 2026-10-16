@@ -21,7 +21,7 @@ function worker({failInstall=false,offline=false,status=200,cached='recurso-cach
         put:async request=>{puts.push(request);},
         match:async(request,options)=>{matches.push({request,options});return request==='./'?'pagina-cache':cached;}
       }),
-      keys:async()=>['calculadora-construccion-antigua','otra-aplicacion','calculadora-construccion-20261015-precios-proveedores'],
+      keys:async()=>['calculadora-construccion-antigua','otra-aplicacion','calculadora-construccion-20261016-interfaz-completa'],
       delete:async key=>{deleted.push(key);},
       match:async()=>{throw Error('No debe consultar otras cachés');}
     },
@@ -112,4 +112,14 @@ test('Las dimensiones declaradas del logo corresponden a las del PNG real',()=>{
   const manifest=JSON.parse(readFileSync(join(root,'manifest.json'),'utf8'));
   assert.equal(manifest.icons.find(icon=>icon.src==='logo.png').sizes,size);
   // No afirma que este logo rectangular cumpla los tamaños de instalación.
+});
+
+test('Cargadores, interfaz, aviso y caché utilizan la misma versión de recursos',()=>{
+  const version=readFileSync(join(root,'app.js'),'utf8').match(/const v = '([^']+)'/)[1];
+  const index=readFileSync(join(root,'index.html'),'utf8');
+  for(const file of ['ui-a.html','ui-b.html','ui-c.html'])assert.ok(index.includes(file+'?v='+version));
+  assert.ok(readFileSync(join(root,'ui-a.html'),'utf8').includes('style.css?v='+version));
+  for(const file of ['app.js','data.js'])assert.ok(readFileSync(join(root,'ui-c.html'),'utf8').includes(file+'?v='+version));
+  assert.ok(readFileSync(join(root,'service-worker.js'),'utf8').includes("const CACHE='calculadora-construccion-"+version+"'"));
+  assert.ok(readFileSync(join(root,'app-a1.js'),'utf8').includes("localStorage.setItem('calc-notice-seen','"+version+"')"));
 });

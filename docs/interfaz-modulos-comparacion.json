@@ -1,0 +1,11 @@
+{
+  "comparison_base": "Copia local anterior a la ampliación del 16/10/2026",
+  "cases": {
+    "lining": 9,
+    "roof": 14,
+    "wet": 29,
+    "ceramic": 24
+  },
+  "total": 76,
+  "all_material_rows_identical": true
+}

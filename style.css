@@ -347,3 +347,62 @@ body[data-mode="dark"] :is(.rowVal,.quickLine strong,.groupHead,.eyebrow,.budget
 @media(max-width:520px){.priceSource,.priceOffer{grid-template-columns:minmax(0,1fr)}.priceInline{display:grid;grid-template-columns:1fr}.priceInline .btn{width:100%}}
 @media print{.priceSource,.priceTools{display:none!important}}
 .price[aria-invalid="true"]{outline:2px solid var(--text);outline-offset:2px;border-style:dashed}
+
+/* Formularios progresivos: medidas y precios primero, ajustes siempre accesibles. */
+#wall input,#wall select,#list input,#list select{font-size:16px;min-height:48px}
+.progressiveForm input,.progressiveForm select{font-size:16px;min-height:48px}
+.progressiveForm .calc{margin-top:0;width:100%;min-height:52px;font-size:1rem}
+.progressiveForm [aria-invalid="true"]{border:2px dashed var(--text);outline:1px solid var(--text)}
+.progressiveForm>label{margin-top:10px}
+.progressiveForm .productCard{grid-template-columns:80px minmax(0,1fr);padding:9px;gap:12px}
+.progressiveForm .productImgWrap{height:86px}
+.fieldError{display:block;margin-top:6px;font-size:.8rem;font-weight:800;line-height:1.4;color:var(--text)}
+.fieldError[hidden]{display:none!important}
+#wall [aria-invalid="true"],#list [aria-invalid="true"]{border:2px dashed var(--text);outline:1px solid var(--text)}
+.measureSummary{margin:8px 0 0;font-weight:850;font-size:.9rem;line-height:1.5}
+.configurationSummary{padding:12px;background:var(--soft);border-radius:12px;font-size:.86rem;line-height:1.5}
+.configurationSummary p{margin:5px 0 0}
+.progressiveBox{margin-top:10px}.progressiveBox summary,.budgetSupplier summary{cursor:pointer;min-height:48px;padding:12px 0;font-weight:850;line-height:1.4}
+.progressiveBox .grid{margin-top:8px}
+.summaryValue{display:block;font-size:.78rem;font-weight:650;color:var(--text);margin-top:5px;line-height:1.5}
+#wall .preset{min-height:48px;border-radius:12px;font-size:.8rem;flex:1 1 140px}
+#wall .preset.active{background:var(--accentSoft);border:2px solid var(--text);color:var(--text)}
+#wall .preset:focus-visible,summary:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+#wall .calc{margin-top:0;width:100%;min-height:52px;font-size:1rem}
+.formActionBar{margin-top:12px;background:var(--card);padding:8px 0;border-radius:12px}
+#wallResult,#listContent input{scroll-margin-top:20px;scroll-margin-bottom:140px}
+.budgetOverview{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.budgetOverview[hidden]{display:none!important}
+.budgetOverview>div{min-width:0}.budgetOverview strong{display:block;font-size:1.6rem;overflow-wrap:anywhere}
+.budgetOverview p{font-size:.85rem;line-height:1.5;margin:6px 0 0}.budgetOverview .btn{min-height:48px;flex-shrink:0}
+.priceSaveStatus{font-size:.85rem;line-height:1.5;margin:10px 0}.priceSaveStatus:empty{display:none}
+.budgetViews{padding:12px 0 0}.budgetViews .btn{min-height:48px}
+.budgetFieldLabel{display:block;font-size:.72rem;font-weight:750;line-height:1.4;margin-bottom:5px}
+.budgetLine{padding:14px 0;align-items:start}
+.budgetLine input{width:100%;min-height:48px;font-size:16px;padding:10px 8px}
+.budgetConcept .rowDetail{margin-top:6px;font-size:.76rem}
+.budgetLineAmount{text-align:right}.budgetLineAmount strong{display:block;font-size:.9rem}
+.budgetSupplier{grid-column:1/-1;font-size:.8rem;border-top:1px solid var(--line)}
+.budgetSupplier summary{overflow-wrap:anywhere;padding:12px 2px}
+.budgetSupplier .priceSource{padding-top:0}
+.budgetExports .actions{padding:0;flex-wrap:wrap}.budgetExports .btn{flex:1 1 140px;min-height:48px}
+.materialsOnly .budgetSupplier{display:none!important}
+@media(max-width:600px){
+  .formActionBar{position:sticky;bottom:calc(88px + env(safe-area-inset-bottom));z-index:10;border-top:1px solid var(--line)}
+  #wallForm:focus-within .formActionBar{position:static}
+  .progressiveForm:focus-within .formActionBar{position:static}
+  .budgetOverview{align-items:stretch;flex-direction:column}.budgetOverview .btn{width:100%}
+  #listContent{padding:12px;background:var(--soft)}
+  .budgetHead{display:none}
+  .budgetLine{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:14px;margin:12px 0;background:var(--card)}
+  .budgetConcept,.budgetQty{grid-column:1/-1}.budgetConcept>b{font-size:.95rem}
+  .budgetQty{font-size:.9rem}.budgetQty .budgetFieldLabel{display:inline;margin-right:8px}
+  .budgetLineAmount{align-self:center}.budgetLineAmount strong{font-size:1rem}
+  .budgetLine.isMissing{border-style:dashed;border-color:var(--text)}
+  .budgetSupplier summary{font-size:.83rem}
+  .materialsOnly .budgetLine{grid-template-columns:minmax(0,1fr)}
+  .materialsOnly .budgetQty{text-align:left}
+}
+@media print{
+  .budgetOverview,.budgetViews,.budgetExports,#budgetAdjustments,#budgetTariffOptions,.priceSaveStatus,.budgetSupplier,.formActionBar{display:none!important}
+}

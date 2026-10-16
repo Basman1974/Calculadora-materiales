@@ -5,30 +5,50 @@
   function el(id){ if(cache[id] === undefined) cache[id] = document.getElementById(id); return cache[id]; }
   function finiteAmount(value){ const n=Number(String(value ?? '').replace(',','.')); return Number.isFinite(n)&&n>=0?n:0; }
   function num(id){ const n = el(id); return n?finiteAmount(n.value):0; }
-  function validCalculation(resultId, rules, message=''){
+  function focusInput(input){
+    if(!input)return;
+    for(let parent=input.parentElement;parent;parent=parent.parentElement){if(parent.tagName==='DETAILS')parent.open=true;}
+    input.focus({preventScroll:true});
+    input.scrollIntoView?.({block:'center',behavior:'auto'});
+  }
+  function submitProgressiveCalculation(event,formId,resultId,calculate){
+    event.preventDefault();calculate();
+    const form=el(formId),section=el(resultId)?.closest('.screen');
+    const invalid=[...(form?.querySelectorAll('input,select')||[]),...(section?.querySelectorAll('input,select')||[])].find(input=>!input.checkValidity());
+    if(invalid){focusInput(invalid);invalid.reportValidity();return;}
+    if(!el(resultId)?.querySelectorAll('[role="alert"]').length)el(resultId)?.scrollIntoView?.({block:'start',behavior:'auto'});
+  }
+  function inputNumberText(id){
+    const input=el(id),text=String(input?.value??'').trim(),value=Number(text.replace(',','.'));
+    return text!==''&&Number.isFinite(value)&&value>=0&&input?.checkValidity()?decimalText(value):'pendiente';
+  }
+  function setOverview(id,text){if(el(id))el(id).textContent=text;}
+  function selectText(id){const input=el(id);return Array.from(input?.options||[]).find(option=>option.value===input.value)?.textContent||input?.value||'pendiente';}
+  function validCalculation(resultId, rules, message='',messageField=''){
     const errors=[];
     const section=el(resultId)?.closest('.screen');
-    if(section)section.querySelectorAll('input,select').forEach(input=>{input.setCustomValidity('');input.setAttribute('aria-invalid','false');});
+    if(section)section.querySelectorAll('input,select').forEach(input=>{input.setCustomValidity('');input.setAttribute('aria-invalid','false');const hint=el(input.id+'Error');if(hint){hint.textContent='';hint.hidden=true;}});
     rules.forEach(([id,min=0,integer=false])=>{
       const input=el(id);if(!input)return;
       const text=String(input.value).trim(),value=Number(text.replace(',','.'));
       const valid=text!==''&&Number.isFinite(value)&&value>=min&&(!integer||Number.isInteger(value));
       const error=valid?'':'Introduce un número '+(integer?'entero ':'')+(min===0.000001?'mayor que 0':'igual o mayor que '+min)+'.';
       input.setCustomValidity(error);input.setAttribute('aria-invalid',String(!valid));
+      const hint=el(id+'Error');if(hint){hint.textContent=error;hint.hidden=valid;}
       if(!valid)errors.push(error);
     });
-    if(message)errors.push(message);
+    if(message){errors.push(message);const input=el(messageField);if(input){input.setCustomValidity(message);input.setAttribute('aria-invalid','true');const hint=el(messageField+'Error');if(hint){hint.textContent=message;hint.hidden=false;}}}
     if(errors.length){const box=el(resultId);if(box)box.innerHTML='<div class="info" role="alert">'+esc(message||errors[0])+'</div>';return false;}
     return true;
   }
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261015-precios-proveedores');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261016-interfaz-completa');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261015-precios-proveedores')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261016-interfaz-completa')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
@@ -142,9 +162,9 @@
     readJobFields();
     for(const id of ['jobProfitPct','jobDisc','jobLaborExtra','jobExtra']){
       const input = el(id);
-      if(input && !input.checkValidity()){ input.reportValidity(); input.focus(); return false; }
+      if(input && !input.checkValidity()){ focusInput(input); input.reportValidity(); return false; }
     }
-    for(const input of el('listContent')?.querySelectorAll('[data-price-key]')||[]){if(!input.checkValidity()){input.reportValidity();input.focus();return false;}}
+    for(const input of el('listContent')?.querySelectorAll('[data-price-key]')||[]){if(!input.checkValidity()){el('viewAmounts')?.click();focusInput(input);input.reportValidity();return false;}}
     return true;
   }
   function readBudgetAmount(id,previous){
@@ -152,6 +172,7 @@
     const value=percentageValue(input.value,Number.MAX_VALUE);
     input.setCustomValidity(value===null?'Introduce un importe válido igual o mayor que 0. Se conserva el último importe válido.':'');
     input.setAttribute('aria-invalid',String(value===null));
+    const hint=el(id+'Error');if(hint){hint.textContent=input.validationMessage;hint.hidden=value!==null;}
     return value===null?finiteAmount(previous):value;
   }
   function readJobFields(){
@@ -556,6 +577,7 @@
   const nav = $all('[data-nav]');
   const data = window.CALC_DATA || {};
   let currentScreen='home';
+  let budgetReturnMaterialId=null;
   const scrollPositions={};
   function show(id, fromHistory=false){
     if(!el(id))return;
@@ -572,12 +594,16 @@
     else if(id === 'wall' && !primed.wall){ calcWall(); primed.wall = 1; }
     else if(id === 'lining' && !primed.lining){ calcLining(); primed.lining = 1; }
     else if(id === 'roof' && !primed.roof){ calcRoof(); primed.roof = 1; }
-    else if(id === 'ceramic' && !primed.ceramic){ calcLevel(); primed.ceramic = 1; }
+    else if(id === 'ceramic' && !primed.ceramic){ recalcCeramic(); primed.ceramic = 1; }
     window.scrollTo(0, scrollPositions[id]||0);
     const shell = document.scrollingElement || document.documentElement;
     if(shell) shell.scrollTop = scrollPositions[id]||0;
     const app = document.querySelector('.app') || document.querySelector('.shell');
     if(app) app.scrollTop = 0;
+    if(id==='list'&&budgetReturnMaterialId){
+      const input=[...el('listContent')?.querySelectorAll('[data-price-key]')||[]].find(node=>decodeURIComponent(node.dataset.materialId)===budgetReturnMaterialId);
+      budgetReturnMaterialId=null;if(input){setBudgetView(false);focusInput(input);}
+    }
   }
   // Navegación directa: la app abre en Inicio, sin clave ni código postal.
   history.replaceState({screen:'home'},'', '#home');
@@ -695,18 +721,11 @@
     e.preventDefault(); e.stopPropagation();
     currentCerBody=btn.dataset.cerBody;
     $all('[data-cer-body]').forEach(x=>x.classList.toggle('active',x===btn));
-    calcLevel();
-    if(el('adhForm')&&!el('adhForm').classList.contains('hidden')) adhesiveClass();
+    recalcCeramic();
   }));
   $all('[data-cer-tab]').forEach(btn => on(btn, 'click', e => {
     e.preventDefault(); e.stopPropagation();
-    const level=btn.dataset.cerTab==='level';
-    $all('[data-cer-tab]').forEach(x=>x.classList.toggle('active',x===btn));
-    if(el('levelForm')) el('levelForm').classList.toggle('hidden',!level);
-    if(el('levelResult')) el('levelResult').classList.toggle('hidden',!level);
-    if(el('adhForm')) el('adhForm').classList.toggle('hidden',level);
-    if(el('adhResult')) el('adhResult').classList.toggle('hidden',level);
-    if(level) calcLevel(); else adhesiveClass();
+    setCeramicTab(btn.dataset.cerTab);
   }));
 
   $all('[data-mount]').forEach(button=>on(button,'click',()=>{
@@ -765,18 +784,12 @@
     if(body && body.dataset.cerBody){
       currentCerBody = body.dataset.cerBody;
       $all('[data-cer-body]').forEach(x => x.classList.toggle('active', x === body));
-      calcLevel();
-      if(el('adhForm') && !el('adhForm').classList.contains('hidden')) adhesiveClass();
+      recalcCeramic();
       return;
     }
     const tab = e.target.closest('[data-cer-tab]');
     if(tab && tab.dataset.cerTab){
-      const level = tab.dataset.cerTab === 'level';
-      $all('[data-cer-tab]').forEach(x => x.classList.toggle('active', x === tab));
-      if(el('levelForm')) el('levelForm').classList.toggle('hidden', !level);
-      if(el('levelResult')) el('levelResult').classList.toggle('hidden', !level);
-      if(el('adhForm')) el('adhForm').classList.toggle('hidden', level);
-      if(el('adhResult')) el('adhResult').classList.toggle('hidden', level);
+      setCeramicTab(tab.dataset.cerTab);
     }
   });
 
