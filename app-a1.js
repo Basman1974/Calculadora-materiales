@@ -45,11 +45,11 @@
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261019-techos');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261020-techos-visibles');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261019-techos')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261020-techos-visibles')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';

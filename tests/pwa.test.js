@@ -21,7 +21,7 @@ function worker({failInstall=false,offline=false,status=200,cached='recurso-cach
         put:async request=>{puts.push(request);},
         match:async(request,options)=>{matches.push({request,options});return request==='./'?'pagina-cache':cached;}
       }),
-      keys:async()=>['calculadora-construccion-antigua','otra-aplicacion','calculadora-construccion-20261019-techos'],
+      keys:async()=>['calculadora-construccion-antigua','otra-aplicacion','calculadora-construccion-20261020-techos-visibles'],
       delete:async key=>{deleted.push(key);},
       match:async()=>{throw Error('No debe consultar otras cachés');}
     },

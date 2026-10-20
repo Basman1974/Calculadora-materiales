@@ -1,0 +1,78 @@
+{
+  "verified_at": "2026-10-20T14:03:13.441354+00:00",
+  "base_commit": "f245e97c9c3731a6ec75a27ae95a804d66ee435c",
+  "resource_version": "20261020-techos-visibles",
+  "calculation_version": "20261019-techos",
+  "ci_steps": 4,
+  "tests": 243,
+  "results": [
+    {
+      "ci_step": 1,
+      "exit_code": 0
+    },
+    {
+      "ci_step": 2,
+      "exit_code": 0
+    },
+    {
+      "ci_step": 3,
+      "exit_code": 0
+    },
+    {
+      "ci_step": 4,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/budget-flows.test.js",
+      "tests": 16,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/budget.test.js",
+      "tests": 22,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/interface-modules.test.js",
+      "tests": 28,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/interface.test.js",
+      "tests": 15,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/materials.test.js",
+      "tests": 42,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/prices.test.js",
+      "tests": 51,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/pwa.test.js",
+      "tests": 13,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/roof-results.test.js",
+      "tests": 13,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/roofs.test.js",
+      "tests": 39,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sources.test.js",
+      "tests": 4,
+      "exit_code": 0
+    }
+  ],
+  "browser": "No ejecutado: servidor local bloqueado (EPERM)",
+  "stage": "Validación previa a publicación autorizada"
+}

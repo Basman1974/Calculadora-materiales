@@ -41,15 +41,21 @@
     if(/tabla técnica|une |une-|ficha/.test(text)) return {c:'estimate',t:'REFERENCIA ORIENTATIVA'};
     return {c:'estimate',t:'ESTIMACIÓN'};
   }
-  function resultHTML(title, meta, rows, canAdd=true){
+  function resultHTML(title, meta, rows, canAdd=true, options={}){
+    const missing=options.showPending?rows.filter(row=>/no dimensionados/i.test(row[1])):[];
     const pending=partNeedsReview({title,items:rows,calculationVersion:CALCULATION_VERSION});
     const conditionalHeight=rows.some(row=>row[0]==='Comprobación de altura');
     const warning=pending?'Hay elementos sin dimensionar o un despiece pendiente. El presupuesto será provisional.':conditionalHeight?'Altura orientativa según tabla del sistema. Confirma perfiles, placas y condiciones: este cálculo no acredita la validez de perfiles genéricos.':'';
-    const quick=rows.filter(x=>!isTechnicalRow(x));
-    const quickHtml=quick.map(x=>'<div class="quickLine"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
+    const quick=rows.filter(x=>!isTechnicalRow(x)||missing.includes(x));
+    const quickHtml=quick.map(x=>missing.includes(x)?
+      '<div class="quickPending"><div class="quickLine"><span>'+esc(x[0])+'</span><strong>Pendiente de calcular</strong></div><p>'+esc(x[2]||'Completa los datos del sistema para calcular este material.')+'</p></div>':
+      '<div class="quickLine"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
+    const completion=missing.length?'<div class="roofCompletion" role="status"><b>Faltan cantidades en este despiece</b><p>'+esc(missing[0][2])+'</p>'+
+      (options.actions||[]).map(action=>'<button class="btn" type="button" data-roof-complete="'+esc(action.field)+'">'+esc(action.label)+'</button>').join('')+
+      '<p class="small">El presupuesto será provisional. Los elementos pendientes aparecen en la lista. Puedes guardar el despiece para completarlo después.</p></div>':'';
     const tech=rows.map(x=>{const q=rowConfidence(x);return '<div class="row"><div class="rowName">'+esc(x[0])+' <span class="trust '+q.c+'">'+q.t+'</span></div><div class="rowVal">'+esc(x[1])+'</div>'+(x[2]?'<div class="rowDetail">'+esc(x[2])+'</div>':'')+'</div>';}).join('');
-    return '<div class="resultHead"><div class="eyebrow">MATERIALES CALCULADOS</div><div class="resultTitle">'+esc(title)+'</div><div class="resultMeta">'+esc(meta)+'</div></div>'+
-      (warning?'<div class="info" role="status">'+esc(warning)+'</div>':'')+'<div class="quickResult">'+quickHtml+'</div>'+
+    return '<div class="resultHead"><div class="eyebrow">'+(missing.length?'DESPIECE INCOMPLETO':'MATERIALES CALCULADOS')+'</div><div class="resultTitle">'+esc(title)+'</div><div class="resultMeta">'+esc(meta)+'</div></div>'+
+      completion+(!completion&&warning?'<div class="info" role="status">'+esc(warning)+'</div>':'')+'<div class="quickResult">'+quickHtml+'</div>'+
       '<details class="techDetails"><summary>Ver cálculo técnico, fórmulas y fuentes</summary><div class="groupHead">DETALLE TÉCNICO</div>'+tech+'</details>'+
       (canAdd?'<div class="workZoneWrap"><label>Estancia / zona<input class="workZone" placeholder="Ej. Baño principal"></label></div>'+
       '<div class="actions"><button class="btn addWork" type="button">Añadir a Obra</button></div>':'');
@@ -398,6 +404,9 @@
   const roofData=window.CALC_ROOF_DATA;
   const roofDefaults={rBoardThick:'12.5',rReference:'f47',rWeight:'',rExtraLoad:'0',rRodMargin:'',rRodStock:'1',rPerimeter:'angle',rFixWaste:'10',rPasteRate:'',rSierraRuns:'',rSierraBar:'',rSierraHangers:'',rGypsumPoints:'',rGypsumFibre:'',rGypsumPaste:''};
   function roofHas(id){return String(el(id)?.value??'').trim()!=='';}
+  function roofReferenceWeight(layers,thick,fmt){
+    return el('rBoardType').value==='normal'&&fmt[0]===2&&fmt[1]===1.2?roofData.standardWeight[layers+'x'+thick]:undefined;
+  }
   function roofCeil(value){const near=Math.round(value);return Math.abs(value-near)<=32*Number.EPSILON*Math.max(1,Math.abs(value))?near:Math.ceil(value);}
   function roofNumber(value){return Number(value.toFixed(6)).toString();}
   function roofUnique(values){return [...new Set(values.map(x=>Number(x.toFixed(9))))].sort((a,b)=>a-b);}
@@ -484,7 +493,7 @@
   }
   function roofBuildPlan(sys,L,W,layers,thick,fmt){
     const span=sys==='double'?W:Math.max(L,W),width=sys==='double'?L:Math.min(L,W),boards=roofBoards(span,width,fmt,layers);
-    const base=roofHas('rWeight')?num('rWeight'):el('rBoardType').value==='normal'&&fmt[0]===2&&fmt[1]===1.2?roofData.standardWeight[layers+'x'+thick]:undefined;
+    const base=roofHas('rWeight')?num('rWeight'):roofReferenceWeight(layers,thick,fmt);
     const load=base===undefined?null:(base+num('rExtraLoad'))*9.81/1000;
     const limits=load===null?null:roofData.f47[sys]?.find(row=>load<=row.load+1e-12);
     const supported=el('rReference').value==='f47'&&el('rBoardType').value!=='rf'&&[12.5,15].includes(thick)&&!!limits;
@@ -521,7 +530,10 @@
     setOverview('roofSystemSummary',meta.name+(pyl?' · '+num('rLayers')+' placa(s) '+boardTypeLabel('rBoardType')+' '+inputNumberText('rBoardThick')+' mm · '+el('rBoard').value.split(',').map(Number).map(n=>Math.round(n*1000)).join(' × ')+' mm · '+(el('rMembrane').value==='1'?'con lámina':'sin lámina'):'')+(sys==='cm70'?' · autoportante, sin suspensiones':' · descuelgue '+inputNumberText('rDrop')+' cm'));
     setOverview('roofOpeningsSummary',inputNumberText('rHoles')+' m² de huecos · merma '+inputNumberText('rWaste')+' %');
     setOverview('roofLaborSummary',num('rLabor')?inputNumberText('rLabor')+' €/m² sin IVA':el('rLabor').checkValidity()?'Sin añadir':'Revisar precio');
-    setOverview('roofLoadSummary',roofHas('rWeight')?'Conjunto '+inputNumberText('rWeight')+' + adicional '+inputNumberText('rExtraLoad')+' kg/m²':'Peso de referencia cuando exista; adicional '+inputNumberText('rExtraLoad')+' kg/m²');
+    const reference=roofReferenceWeight(num('rLayers'),num('rBoardThick'),el('rBoard').value.split(',').map(Number));
+    setOverview('roofLoadSummary',roofHas('rWeight')?'Conjunto '+inputNumberText('rWeight')+' + adicional '+inputNumberText('rExtraLoad')+' kg/m²':reference===undefined?'Falta el peso del conjunto para esta configuración':'Referencia '+decimalText(reference)+' + adicional '+inputNumberText('rExtraLoad')+' kg/m²');
+    setOverview('rWeightHint',reference===undefined?'Esta combinación no tiene un peso de referencia cargado. Introduce el peso de placas y estructura según la ficha del sistema; las cargas adicionales se suman aparte.':'Si dejas el campo vacío se utiliza '+decimalText(reference)+' kg/m² del conjunto de referencia. Confirma que corresponde a tus placas y estructura; puedes sustituirlo por el dato de la ficha.');
+    el('rWeight').placeholder=reference===undefined?'Necesario para esta combinación':decimalText(reference)+' kg/m² de referencia';
     setOverview('roofTechnicalNotice',(valid?'':'Hay datos por corregir. ')+(sys==='cm70'?'Sistema autoportante: luz y apoyo pendientes de dimensionar. ':'')+'Despiece de referencia, pendiente de validar con el sistema y soporte reales. El presupuesto será provisional.');
   }
   function calcRoof(){
@@ -536,7 +548,7 @@
     const fmt=el('rBoard').value.split(',').map(Number),layers=num('rLayers'),thick=num('rBoardThick');
     const error=!roofMeta[sys]?'Selecciona un sistema de techo válido.':holes>A?'Los huecos superan la superficie del techo.':pyl&&(![1,2].includes(layers)||![12.5,15,18].includes(thick)||!['2,1.2','2.7,1.2','2,.6'].includes(el('rBoard').value))?'Configuración de placa no disponible.':suspended&&(!['f47','generic'].includes(el('rReference').value)||!['angle','clip','none'].includes(el('rPerimeter').value))?'Selecciona una referencia y un encuentro disponibles.':A>10000||Math.max(num('rL'),num('rW'))>1000?'Paño demasiado grande para el despiece interactivo; divídelo en estancias.':rules.some(([id])=>num(id)>1000000)?'Valor demasiado grande para el cálculo; revisa las unidades.':'';
     if(!validCalculation('roofResult',rules,error,holes>A?'rHoles':'rL')){updateRoofOverview(false);return;}
-    const L=num('rL'),W=num('rW'),waste=1+num('rWaste')/100;let rows=[],layout={},title=roofMeta[sys].name;
+    const L=num('rL'),W=num('rW'),waste=1+num('rWaste')/100;let rows=[],layout={},title=roofMeta[sys].name,missingWeight=false;
     renderRoofSketch(sys);
     if(t24){
       const grid=roofData.t24,xcuts=roofCenteredCuts(L,.6),ycuts=roofCenteredCuts(W,.6),primary=ycuts.slice(1,-1).filter((_,i)=>i%2===0);
@@ -567,7 +579,8 @@
       rows.push(...roofPerimeterRows(L,W,sys));
       const plan=roofBuildPlan(sys,L,W,layers,thick,fmt);layout={sourceId:plan.sourceId,baseWeight:plan.baseWeight,extraWeight:plan.extraWeight,loadKN:plan.loadKN,primary:plan.primary,secondary:plan.secondary,hangerAxis:plan.hangerAxis,hangers:plan.hangers,maxHangerSpacing:plan.limits?.hanger??null,supported:plan.supported,jointLengths:plan.boards.layers.map(layer=>layer.joints)};
       if(suspended){
-        rows.push(['Comprobación de carga',plan.loadKN===null?'Peso pendiente de definir':roofNumber(plan.loadKN)+' kN/m²','Conjunto '+(plan.baseWeight??'pendiente')+' + adicional '+plan.extraWeight+' kg/m². '+(roofHas('rWeight')?'Peso del conjunto introducido por el usuario.':'Peso de una variante estándar de referencia; confirmar el peso del conjunto real.')]);
+        missingWeight=plan.loadKN===null&&el('rReference').value==='f47'&&el('rBoardType').value!=='rf'&&[12.5,15].includes(thick);
+        rows.push(['Comprobación de carga',plan.loadKN===null?'Peso pendiente de definir':roofNumber(plan.loadKN)+' kN/m²',plan.loadKN===null?'No hay peso de referencia para esta combinación; falta el peso del conjunto según ficha.':'Conjunto '+plan.baseWeight+' + adicional '+plan.extraWeight+' kg/m². '+(roofHas('rWeight')?'Peso del conjunto introducido por el usuario.':'Peso de una variante estándar de referencia; confirmar el peso del conjunto real.')]);
         if(plan.supported){
           const sec=roofPack(plan.span,plan.secondary),prim=sys==='double'?roofPack(L,plan.primary):null;
           if(prim)rows.push(['TC47 primario 3000',prim.bars+' barras',prim.runs+' recorridos × '+roofNumber(L)+' m; separación máxima 900 mm.'],['Crucetas F47/17',prim.runs*sec.runs+' uds','Una pieza de encaje compatible por cruce primario-secundario; no se añaden tornillos metal-metal por un ratio de m².']);
@@ -592,7 +605,24 @@
     rows.push(['Aviso de despiece','Despiece pendiente de validar','Verificar componentes, soporte, carga, recortes, anclajes y accesorios. La cantidad de referencia no acredita una solución estructural aprobada.']);
     const lab=laborRow(net,num('rLabor'),'techo');if(lab)rows.push(lab);
     const obj={title:title+' · '+A.toFixed(2)+' m²',items:rows,area:A,net,roofLayout:layout,incomplete:true};
-    updateRoofOverview(true);const box=el('roofResult');box.innerHTML=resultHTML(obj.title,'Despiece de referencia · neto '+roofNumber(net)+' m²',rows);bindAdd(box,obj);
+    updateRoofOverview(true);
+    const actions=[];
+    if(missingWeight){
+      const message='Falta el peso del conjunto para '+layers+' placa(s) de '+roofNumber(thick).replace('.',',')+' mm. Incluye placas y estructura según la ficha para calcular perfiles y cuelgues.';
+      el('rWeight').setCustomValidity(message);el('rWeight').setAttribute('aria-invalid','true');
+      el('rWeightError').textContent=message;el('rWeightError').hidden=false;
+      actions.push({field:'rWeight',label:'Completar peso del conjunto'});
+    }else if(suspended&&!layout.supported)actions.push({field:el('rReference').value==='generic'?'rReference':el('rBoardType').value==='rf'?'rBoardType':![12.5,15].includes(thick)?'rBoardThick':'rWeight',label:'Revisar configuración y carga'});
+    if(suspended&&layout.supported){
+      if(rows.some(row=>row[0]==='Varilla roscada M6'&&row[1]==='No dimensionados'))actions.push({field:!roofHas('rRodMargin')?'rRodMargin':num('rDrop')+num('rRodMargin')<=0?'rDrop':'rRodStock',label:'Completar longitud de varilla'});
+      if(rows.some(row=>row[0]==='Pasta de juntas'&&row[1]==='No dimensionados'))actions.push({field:'rPasteRate',label:'Completar consumo de pasta'});
+    }
+    if(sys==='sierra'&&(!roofHas('rSierraRuns')||!roofHas('rSierraBar')||!roofHas('rSierraHangers')))actions.push({field:!roofHas('rSierraRuns')?'rSierraRuns':!roofHas('rSierraBar')?'rSierraBar':'rSierraHangers',label:'Completar datos del plano'});
+    if(sys==='escayola'&&(!roofHas('rGypsumPoints')||!roofHas('rGypsumFibre')||!roofHas('rGypsumPaste')))actions.push({field:!roofHas('rGypsumPoints')?'rGypsumPoints':!roofHas('rGypsumFibre')?'rGypsumFibre':'rGypsumPaste',label:'Completar datos de escayola'});
+    const box=el('roofResult'),missing=rows.some(row=>row[1]==='No dimensionados');
+    box.innerHTML=resultHTML(obj.title,(pyl?layers+' placa(s) de '+roofNumber(thick).replace('.',',')+' mm · ':'')+'Despiece de referencia · neto '+roofNumber(net)+' m²',rows,true,{showPending:true,actions});bindAdd(box,obj);
+    box.querySelectorAll('[data-roof-complete]').forEach(button=>on(button,'click',()=>focusInput(el(button.dataset.roofComplete))));
+    if(missing)box.querySelector('.addWork').textContent=editingPart===null?'Guardar despiece incompleto':'Guardar cambios · despiece incompleto';
   }
   on(el('roofForm'),'submit',e=>submitProgressiveCalculation(e,'roofForm','roofResult',calcRoof));
   ['rSys','rBoard','rLayers','rBoardType','rBoardThick','rReference','rPerimeter','rWaste','rMembrane'].forEach(id=>on(el(id),'change',calcRoof));
