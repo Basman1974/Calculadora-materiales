@@ -30,17 +30,48 @@ test('PRISMA utiliza la ficha de 2026 y advierte capas; fino rechaza 10 mm',()=>
   const f=fixture();f.select('revestimientos','weberpral prisma');f.set({wetArea:10,wetWaste:0,wetMortarWaste:0,wetThickness:20});f.api.wet();const part=f.add('wetResult');assert.equal(part.items[0][1],'12 sacos');assert.match(part.items[1][2],/15 mm por capa/);
   f.select('revestimientos','weber.rev fino');f.set({wetThickness:10});f.api.wet();assert.match(f.nodes.wetResult.innerHTML,/Espesor fuera/);
 });
+for(const [name,area,thickness,waste,expectedKg,expectedSacks]of [
+  ['APLICAREV Cal Nature Pro',10,10,0,'180.00',8],
+  ['APLICAREV Cal Nature Pro',10,10,10,'198.00',8],
+  ['APLICAREV Cal Nature Pro',25,10,0,'450.00',18],
+  ['APLICAREV Cal Nature Pro',10,20,0,'360.00',15],
+  ['Mortero Cal revoco Aplicarev 25kg BCO',10,9,0,'126.00',6],
+  ['Mortero Cal revoco Aplicarev 25kg BCO',10,7,10,'107.80',5]
+]){
+  test('Mortero de cal: '+name+' '+area+' m² × '+thickness+' mm, merma '+waste+' %',()=>{
+    const f=fixture();f.select('revestimientos',name);f.set({wetArea:area,wetThickness:thickness,wetWaste:waste});f.api.wet();
+    const part=f.add('wetResult'),material=part.items[0],total=f.api.totals();
+    assert.equal(material[1],expectedSacks+' sacos');assert.ok(material[2].startsWith(expectedKg+' kg ·'));
+    assert.equal(total.rows[0].qty,expectedSacks);assert.equal(total.rows[0].unit,'saco');assert.equal(total.incomplete,0);
+  });
+}
+for(const thickness of [9.01,10]){
+  test('Cal Revoco rechaza espesores superiores a 9 mm: '+thickness,()=>{
+    const f=fixture();f.select('revestimientos','Mortero Cal revoco Aplicarev 25kg BCO');f.set({wetThickness:thickness});f.api.wet();
+    assert.match(f.nodes.wetResult.innerHTML,/role="alert"/);assert.doesNotMatch(f.nodes.wetResult.innerHTML,/Añadir a Obra/);
+  });
+}
+test('Cal Nature antiguo conserva cantidades, precio y copia; editar aplica el consumo actualizado',()=>{
+  const name='APLICAREV Cal Nature Pro';
+  const oldPart={title:name+' · 10.00 m²',calculationVersion:'20261012-auditoria',items:[[name,'9 sacos','205.20 kg · espesor 10 mm · merma 8 %']],editor:{screen:'wet',cat:'revestimientos',values:{wetProduct:name,wetArea:'10',wetMeasureMode:'direct',wetThickness:'10',wetWaste:'8'}}};
+  const f=fixture({'calculadora-work-v1':JSON.stringify([oldPart]),'calculadora-prices-v1':JSON.stringify({[name+' [saco]']:10}),'calculadora-job-v1':JSON.stringify({vat:0}),'calculadora-jobs-v1':JSON.stringify([{meta:{vat:0},work:[oldPart],prices:{[name+' [saco]']:10}}])});
+  assert.equal(f.api.rows()[0].items[0][1],'9 sacos');assert.equal(f.api.totals().mat,90);assert.equal(f.api.totals().provisional,true);
+  f.api.show('work');f.nodes.workContent.querySelectorAll('[data-edit]')[0].click();f.add('wetResult');
+  assert.equal(f.api.rows().length,1);assert.equal(f.api.rows()[0].items[0][1],'8 sacos');assert.match(f.api.rows()[0].items[0][2],/^194.40 kg/);
+  assert.equal(f.api.totals().mat,80);assert.equal(f.api.totals().provisional,false);
+  assert.equal(f.api.state().savedJobs[0].work[0].items[0][1],'9 sacos');
+});
 test('Cerámica: respeta merma cero y las cuñas dependen de la tanda',()=>{
   const f=fixture();f.set({cA:60,cB:60,cArea:36,cWaste:0,cBatchArea:5});f.api.ceramic();const part=f.add('levelResult');assert.equal(part.items.find(r=>r[0]==='Baldosas / piezas')[1],'100 uds');assert.equal(part.items.find(r=>r[0]==='Cuñas reutilizables')[1],'60 uds');assert.equal(f.api.totals().rows.length,5);
 });
 test('T24 60×120: 50 placas exactas y solo secundarios de 1200',()=>{
-  const f=fixture();f.set({rL:6,rW:6,rWaste:0});f.api.roofSys('desmontable120');const part=f.add('roofResult');assert.equal(part.items[0][1],'50 uds');assert.equal(part.items.find(r=>r[0]==='Perfil T24 secundario 1200')[1],'51 barras');assert.equal(part.items.some(r=>r[0]==='Perfil T24 secundario 600'),false);assert.equal(f.api.totals().provisional,true);
+  const f=fixture();f.set({rL:6,rW:6,rWaste:0});f.api.roofSys('desmontable120');const part=f.add('roofResult');assert.equal(part.items[0][1],'50 uds');assert.equal(part.items.find(r=>r[0]==='Perfil T24 secundario 1200')[1],'54 barras');assert.equal(part.items.some(r=>r[0]==='Perfil T24 secundario 600'),false);assert.equal(f.api.totals().provisional,true);
 });
 test('Varillas: 21 suspensiones de 70 cm necesitan 21 barras de 1 m',()=>{
   const f=fixture();assert.equal(f.api.rod(21,70)[1],'21 uds');assert.equal(f.api.rod(21,30)[1],'7 uds');assert.equal(f.api.rod(21,120)[1],'No dimensionados');
 });
 test('Doble TC47: crucetas coinciden con las intersecciones de los perfiles',()=>{
-  const f=fixture();f.api.roof();const part=f.add('roofResult');assert.equal(part.items.find(r=>r[0]==='Crucetas')[1],'66 uds');
+  const f=fixture();f.api.roof();const part=f.add('roofResult');assert.equal(part.items.find(r=>r[0]==='Crucetas F47/17')[1],'66 uds');
 });
 test('Trasdosado directo: pasta aproximada configurable y sin estructura',()=>{
   const f=fixture();f.set({lL:4,lH:2.5,lWaste:0,lPasteRate:5});f.api.liningType('direct');const part=f.add('liningResult');assert.equal(part.items.find(r=>r[0]==='Pasta de agarre')[1],'3 saco(s) de 20 kg');assert.equal(part.items.some(r=>/Montante|Canal|Tornillos/.test(r[0])),false);assert.equal(f.nodes.lProfileWrap.classList.contains('hidden'),true);

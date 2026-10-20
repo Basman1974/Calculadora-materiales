@@ -1,0 +1,517 @@
+{
+  "date": "2026-10-19",
+  "repository": "Basman1974/Calculadora-materiales",
+  "branch": "main",
+  "commit_at_start_and_end": "f0f2b29bc7a31c11f3f91c11489e1ffa480dc94f",
+  "tree": "b21278453937af5c4a23778a69c9f2b6ea774190",
+  "baseline_file_count": 84,
+  "unchanged_count": 84,
+  "application_modified": false,
+  "published": false,
+  "checks": [
+    {
+      "path": "ui-b.html",
+      "expected_sha": "fa68087ce4f823efd6c894a0b649af18e870ca21",
+      "actual_sha": "fa68087ce4f823efd6c894a0b649af18e870ca21",
+      "matches": true
+    },
+    {
+      "path": "weberpral-prisma.jpg",
+      "expected_sha": "bccc5852a6367682850fa39ac04417e4e8111f2e",
+      "actual_sha": "bccc5852a6367682850fa39ac04417e4e8111f2e",
+      "matches": true
+    },
+    {
+      "path": "aplica-primer-top-5kg.jpg",
+      "expected_sha": "326ad9b1e9a0dd29fe7eec34471379a1454d442c",
+      "actual_sha": "326ad9b1e9a0dd29fe7eec34471379a1454d442c",
+      "matches": true
+    },
+    {
+      "path": "tile-techo.svg",
+      "expected_sha": "964d57b31e0c5004d5cb6546059c5c01b1ce676d",
+      "actual_sha": "964d57b31e0c5004d5cb6546059c5c01b1ce676d",
+      "matches": true
+    },
+    {
+      "path": "data.js",
+      "expected_sha": "07c34784a6f9ce21ae08794456b08572595e4d71",
+      "actual_sha": "07c34784a6f9ce21ae08794456b08572595e4d71",
+      "matches": true
+    },
+    {
+      "path": "sikatop-10.jpg",
+      "expected_sha": "e65e5a1e8bcb7088f54a40351017f4199f42e628",
+      "actual_sha": "e65e5a1e8bcb7088f54a40351017f4199f42e628",
+      "matches": true
+    },
+    {
+      "path": "app-a1.js",
+      "expected_sha": "125ec7dce53224ba9ba92245e8ed6d1b498bc28f",
+      "actual_sha": "125ec7dce53224ba9ba92245e8ed6d1b498bc28f",
+      "matches": true
+    },
+    {
+      "path": "tile-humeda.svg",
+      "expected_sha": "cf9a86da6390e6652de7dcb74e4a6cefd9221dff",
+      "actual_sha": "cf9a86da6390e6652de7dcb74e4a6cefd9221dff",
+      "matches": true
+    },
+    {
+      "path": "aplicarev-cal-nature-pro.jpg",
+      "expected_sha": "04d178f0e6a144035cb6a786664965a0bb7ffc52",
+      "actual_sha": "04d178f0e6a144035cb6a786664965a0bb7ffc52",
+      "matches": true
+    },
+    {
+      "path": "logo.png",
+      "expected_sha": "cad6a28f0ba3215a7612e97fcd42196781e0d53c",
+      "actual_sha": "cad6a28f0ba3215a7612e97fcd42196781e0d53c",
+      "matches": true
+    },
+    {
+      "path": "SikaTop-50.jpg",
+      "expected_sha": "f4e06522c652c4337fe514914ec18e7032684ab2",
+      "actual_sha": "f4e06522c652c4337fe514914ec18e7032684ab2",
+      "matches": true
+    },
+    {
+      "path": "puente-union-plus.jpg",
+      "expected_sha": "590eb01753c1a95e19b8804a1a12906709408455",
+      "actual_sha": "590eb01753c1a95e19b8804a1a12906709408455",
+      "matches": true
+    },
+    {
+      "path": "mortero-cal-base-aplicarev-25kg-bco.jpg",
+      "expected_sha": "ee36f074a6391d33ff12af4fbd1ce511681efd33",
+      "actual_sha": "ee36f074a6391d33ff12af4fbd1ce511681efd33",
+      "matches": true
+    },
+    {
+      "path": "puente-de-union-morteros-henares-ptu-20.jpg",
+      "expected_sha": "368de8fa64912475104e2cede15705d66f954b0d",
+      "actual_sha": "368de8fa64912475104e2cede15705d66f954b0d",
+      "matches": true
+    },
+    {
+      "path": "ui-a.html",
+      "expected_sha": "b19b060d4614c4163bcf80abefdc8869fbedff0e",
+      "actual_sha": "b19b060d4614c4163bcf80abefdc8869fbedff0e",
+      "matches": true
+    },
+    {
+      "path": "tile-trasdosado.svg",
+      "expected_sha": "36c9ecd92fcb48419dbf4f35b84ee5d64827f865",
+      "actual_sha": "36c9ecd92fcb48419dbf4f35b84ee5d64827f865",
+      "matches": true
+    },
+    {
+      "path": "sikatop-30.jpg",
+      "expected_sha": "4ca3fb1a4fe805fdf084b03869608fb24b7daced",
+      "actual_sha": "4ca3fb1a4fe805fdf084b03869608fb24b7daced",
+      "matches": true
+    },
+    {
+      "path": "tile-ceramica.svg",
+      "expected_sha": "ab196142e61aa1d4a8171fade6b032443065fb0a",
+      "actual_sha": "ab196142e61aa1d4a8171fade6b032443065fb0a",
+      "matches": true
+    },
+    {
+      "path": "cal revoco.pdf",
+      "expected_sha": "b8209f5f90f07c13eda39c930f232fc4c4a5ba18",
+      "actual_sha": "b8209f5f90f07c13eda39c930f232fc4c4a5ba18",
+      "matches": true
+    },
+    {
+      "path": "app-a2.js",
+      "expected_sha": "bff31bfcfb450db0683fc45fbd372149077324cd",
+      "actual_sha": "bff31bfcfb450db0683fc45fbd372149077324cd",
+      "matches": true
+    },
+    {
+      "path": "tile-tabique.svg",
+      "expected_sha": "82d3b9016a8bee4a84a0542b4b87b571fa67e62b",
+      "actual_sha": "82d3b9016a8bee4a84a0542b4b87b571fa67e62b",
+      "matches": true
+    },
+    {
+      "path": "service-worker.js",
+      "expected_sha": "1742fbd27cfea57167ef6d3ac38a02dec24273ce",
+      "actual_sha": "1742fbd27cfea57167ef6d3ac38a02dec24273ce",
+      "matches": true
+    },
+    {
+      "path": "index.html",
+      "expected_sha": "9fc003c2c4de440333f0b5bf086fcb2ad396a120",
+      "actual_sha": "9fc003c2c4de440333f0b5bf086fcb2ad396a120",
+      "matches": true
+    },
+    {
+      "path": "app.js",
+      "expected_sha": "6745c332d43e474790b016af554c9e6f1b583abc",
+      "actual_sha": "6745c332d43e474790b016af554c9e6f1b583abc",
+      "matches": true
+    },
+    {
+      "path": ".nojekyll",
+      "expected_sha": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+      "actual_sha": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+      "matches": true
+    },
+    {
+      "path": "app-b.js",
+      "expected_sha": "3455307c734d1c29e0772d9656033bef464b080b",
+      "actual_sha": "3455307c734d1c29e0772d9656033bef464b080b",
+      "matches": true
+    },
+    {
+      "path": "style.css",
+      "expected_sha": "b02f829558d9296cf761db520b076c545496d14b",
+      "actual_sha": "b02f829558d9296cf761db520b076c545496d14b",
+      "matches": true
+    },
+    {
+      "path": "weberrev-fino.jpg",
+      "expected_sha": "6f316cca9f81f1c75e27b24a7841eac4b86a11cc",
+      "actual_sha": "6f316cca9f81f1c75e27b24a7841eac4b86a11cc",
+      "matches": true
+    },
+    {
+      "path": "weberev-hidro-plus.jpg",
+      "expected_sha": "ba744c0b707e52f2a14c7533a5959de86e9025b5",
+      "actual_sha": "ba744c0b707e52f2a14c7533a5959de86e9025b5",
+      "matches": true
+    },
+    {
+      "path": "ui-c.html",
+      "expected_sha": "75f85d5b603d3e943a4067ebfffe5154424ccad4",
+      "actual_sha": "75f85d5b603d3e943a4067ebfffe5154424ccad4",
+      "matches": true
+    },
+    {
+      "path": "manifest.json",
+      "expected_sha": "d9dc86f91b0758f80bafcf9bf8d42a24f6408bc6",
+      "actual_sha": "d9dc86f91b0758f80bafcf9bf8d42a24f6408bc6",
+      "matches": true
+    },
+    {
+      "path": "tests/prices.test.js",
+      "expected_sha": "558b1e673ea65b42781f10fd61b3d0779992235a",
+      "actual_sha": "558b1e673ea65b42781f10fd61b3d0779992235a",
+      "matches": true
+    },
+    {
+      "path": "tests/pwa.test.js",
+      "expected_sha": "63bcb45ab440df8bc92ff853a60c4f8766d702e8",
+      "actual_sha": "63bcb45ab440df8bc92ff853a60c4f8766d702e8",
+      "matches": true
+    },
+    {
+      "path": "tests/budget.test.js",
+      "expected_sha": "f8fcb85981a7017b4ef498fd3e615de3f61a2f31",
+      "actual_sha": "f8fcb85981a7017b4ef498fd3e615de3f61a2f31",
+      "matches": true
+    },
+    {
+      "path": "tests/interface.test.js",
+      "expected_sha": "089340cd4840a75013474681d9ceaeef6d43c8d4",
+      "actual_sha": "089340cd4840a75013474681d9ceaeef6d43c8d4",
+      "matches": true
+    },
+    {
+      "path": "tests/budget-flows.test.js",
+      "expected_sha": "b4e6f27bac460a5c6b223f86bb500d65ffe1895c",
+      "actual_sha": "b4e6f27bac460a5c6b223f86bb500d65ffe1895c",
+      "matches": true
+    },
+    {
+      "path": "tests/materials.test.js",
+      "expected_sha": "6eb519064f1d2fd197b474bd118f210cc8bbf5b9",
+      "actual_sha": "6eb519064f1d2fd197b474bd118f210cc8bbf5b9",
+      "matches": true
+    },
+    {
+      "path": "tests/interface-modules.test.js",
+      "expected_sha": "0563f2f51c2838618538eb0753e0fd7264327c3f",
+      "actual_sha": "0563f2f51c2838618538eb0753e0fd7264327c3f",
+      "matches": true
+    },
+    {
+      "path": "tests/material-fixture.cjs",
+      "expected_sha": "20b05e1c9623a2e28e0e137965282539eb9bb3ca",
+      "actual_sha": "20b05e1c9623a2e28e0e137965282539eb9bb3ca",
+      "matches": true
+    },
+    {
+      "path": "tests/sources.test.js",
+      "expected_sha": "308694ba485adb8e5003e82aabc73a4e28eb4f18",
+      "actual_sha": "308694ba485adb8e5003e82aabc73a4e28eb4f18",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-directo.svg",
+      "expected_sha": "c3510b0f5c26c44b82b17ce3dca9f218ad87563a",
+      "actual_sha": "c3510b0f5c26c44b82b17ce3dca9f218ad87563a",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-techo-simple.svg",
+      "expected_sha": "3671da6d41336fd5dd4fd17544e1c1891d2dd205",
+      "actual_sha": "3671da6d41336fd5dd4fd17544e1c1891d2dd205",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-registrable-120.svg",
+      "expected_sha": "77a268c8ac3d0241b76a1c59f5b4805b8b354008",
+      "actual_sha": "77a268c8ac3d0241b76a1c59f5b4805b8b354008",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-techo-sierra.svg",
+      "expected_sha": "51e320bbcdb7bccd89dba83d4e3db88af0cb5303",
+      "actual_sha": "51e320bbcdb7bccd89dba83d4e3db88af0cb5303",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-techo-doble.svg",
+      "expected_sha": "3c8a5055ded7fb8c9de2a99c101883c91c9de8f4",
+      "actual_sha": "3c8a5055ded7fb8c9de2a99c101883c91c9de8f4",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-techo.svg",
+      "expected_sha": "96f7ee794f468e270a7bbe3feff30f4d7cb1813e",
+      "actual_sha": "96f7ee794f468e270a7bbe3feff30f4d7cb1813e",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-semidirecto.svg",
+      "expected_sha": "c03d5a6d125ead43d3686ca4fb3b9c5a2d2afeb3",
+      "actual_sha": "c03d5a6d125ead43d3686ca4fb3b9c5a2d2afeb3",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite-05.js",
+      "expected_sha": "0608c2c7c6fd6a9e3ee2c52494e135c3545dcfb4",
+      "actual_sha": "0608c2c7c6fd6a9e3ee2c52494e135c3545dcfb4",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite-07.js",
+      "expected_sha": "372824d52feac216a0b54abe2d79be1a91e150e5",
+      "actual_sha": "372824d52feac216a0b54abe2d79be1a91e150e5",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-escayola.svg",
+      "expected_sha": "3c8d9deba7923357d6256e0d7fff8a5f1a3e74b5",
+      "actual_sha": "3c8d9deba7923357d6256e0d7fff8a5f1a3e74b5",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite-03.js",
+      "expected_sha": "2761917f31d27eb1dac39d6c025ac36d4a25f9bd",
+      "actual_sha": "2761917f31d27eb1dac39d6c025ac36d4a25f9bd",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite.js",
+      "expected_sha": "79a470412e0c71f92be4dd8336ae5c16ee074547",
+      "actual_sha": "79a470412e0c71f92be4dd8336ae5c16ee074547",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite-04.js",
+      "expected_sha": "ba5768fcf9d1d8c1c99038ee55e1e7bdbf5fc426",
+      "actual_sha": "ba5768fcf9d1d8c1c99038ee55e1e7bdbf5fc426",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-techo-biapoyado.svg",
+      "expected_sha": "d4e1d13b616ec0442449a4682623bafbb37aec74",
+      "actual_sha": "d4e1d13b616ec0442449a4682623bafbb37aec74",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite-01.js",
+      "expected_sha": "fd7dfbb78a41c8b6237aebd968852c8d34962c71",
+      "actual_sha": "fd7dfbb78a41c8b6237aebd968852c8d34962c71",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-tabique.svg",
+      "expected_sha": "1b10623d0ade04c35a672d66990e9e13bdd4ac77",
+      "actual_sha": "1b10623d0ade04c35a672d66990e9e13bdd4ac77",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-autoportante.svg",
+      "expected_sha": "93c62b79f8cb73dbc62b82fe705d2f26b58acf34",
+      "actual_sha": "93c62b79f8cb73dbc62b82fe705d2f26b58acf34",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite-06.js",
+      "expected_sha": "bec3651b0d3c468feafdb8ae6c77c23da7adeb08",
+      "actual_sha": "bec3651b0d3c468feafdb8ae6c77c23da7adeb08",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite-08.js",
+      "expected_sha": "3008a0d3abafb3ccf1f3f965f03d663ea098f875",
+      "actual_sha": "3008a0d3abafb3ccf1f3f965f03d663ea098f875",
+      "matches": true
+    },
+    {
+      "path": "assets/mount-sprite-02.js",
+      "expected_sha": "6e7cfd769256031822153aad30d864c8f69a65d0",
+      "actual_sha": "6e7cfd769256031822153aad30d864c8f69a65d0",
+      "matches": true
+    },
+    {
+      "path": "assets/montaje-registrable-60.svg",
+      "expected_sha": "dcbebf9df06c72416414949463e04c8549b28afb",
+      "actual_sha": "dcbebf9df06c72416414949463e04c8549b28afb",
+      "matches": true
+    },
+    {
+      "path": "docs/precios-proveedores-cambios.patch",
+      "expected_sha": "7d8ad83f00c950d9492d40f043afc1b0ea164fad",
+      "actual_sha": "7d8ad83f00c950d9492d40f043afc1b0ea164fad",
+      "matches": true
+    },
+    {
+      "path": "docs/interfaz-modulos.md",
+      "expected_sha": "b76423821d7a806207c2787867d6852a0ce8bae3",
+      "actual_sha": "b76423821d7a806207c2787867d6852a0ce8bae3",
+      "matches": true
+    },
+    {
+      "path": "docs/interfaz-progresiva.md",
+      "expected_sha": "22ebe0330c39bb457249912662b9117936133618",
+      "actual_sha": "22ebe0330c39bb457249912662b9117936133618",
+      "matches": true
+    },
+    {
+      "path": "docs/precios-proveedores-validacion.txt",
+      "expected_sha": "e919e6792465efc08f5b6b297c88165775668d85",
+      "actual_sha": "e919e6792465efc08f5b6b297c88165775668d85",
+      "matches": true
+    },
+    {
+      "path": "docs/precios-proveedores-validacion.json",
+      "expected_sha": "75918eedc24060820535477ca33783e9ffa2665d",
+      "actual_sha": "75918eedc24060820535477ca33783e9ffa2665d",
+      "matches": true
+    },
+    {
+      "path": "docs/interfaz-modulos-comparacion.json",
+      "expected_sha": "d387102869556fef31bf23c5a798e68b806e0511",
+      "actual_sha": "d387102869556fef31bf23c5a798e68b806e0511",
+      "matches": true
+    },
+    {
+      "path": "docs/interfaz-progresiva-validacion.json",
+      "expected_sha": "b53da1f8b3155b250b3a01e975904d19086f73cf",
+      "actual_sha": "b53da1f8b3155b250b3a01e975904d19086f73cf",
+      "matches": true
+    },
+    {
+      "path": "docs/revision-beneficio-industrial.md",
+      "expected_sha": "a638be0435f1d57559b1d7fe03a3f7d114196c47",
+      "actual_sha": "a638be0435f1d57559b1d7fe03a3f7d114196c47",
+      "matches": true
+    },
+    {
+      "path": "docs/precios-proveedores.md",
+      "expected_sha": "d34564773bc071a46e0285a6789f558bf81504ea",
+      "actual_sha": "d34564773bc071a46e0285a6789f558bf81504ea",
+      "matches": true
+    },
+    {
+      "path": "docs/interfaz-modulos-validacion.txt",
+      "expected_sha": "0f5a6d76211cfd01aa6dae7ddeab0dbfbe53286f",
+      "actual_sha": "0f5a6d76211cfd01aa6dae7ddeab0dbfbe53286f",
+      "matches": true
+    },
+    {
+      "path": "docs/interfaz-modulos-validacion.json",
+      "expected_sha": "156f05d2d0874d693f8df3399ae0cac1660241bf",
+      "actual_sha": "156f05d2d0874d693f8df3399ae0cac1660241bf",
+      "matches": true
+    },
+    {
+      "path": "docs/referencias-desarrollo.md",
+      "expected_sha": "e38178bf0e309671c5a0efb698f0fed2bc5d0f74",
+      "actual_sha": "e38178bf0e309671c5a0efb698f0fed2bc5d0f74",
+      "matches": true
+    },
+    {
+      "path": "docs/interfaz-progresiva-validacion.txt",
+      "expected_sha": "2260fe472825fc7a0f83703058bfc65b4c1f4711",
+      "actual_sha": "2260fe472825fc7a0f83703058bfc65b4c1f4711",
+      "matches": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "expected_sha": "939b0cdf76419c4e6bd5cd383d076f41cea431e6",
+      "actual_sha": "939b0cdf76419c4e6bd5cd383d076f41cea431e6",
+      "matches": true
+    },
+    {
+      "path": ".github/workflows/pages.yml",
+      "expected_sha": "2b1a41d983fc929210f121f646d8873663207b1f",
+      "actual_sha": "2b1a41d983fc929210f121f646d8873663207b1f",
+      "matches": true
+    },
+    {
+      "path": "docs/auditoria/cambios.patch",
+      "expected_sha": "591dcb40a929aa12fc96baec481ccd4db4a8c7af",
+      "actual_sha": "591dcb40a929aa12fc96baec481ccd4db4a8c7af",
+      "matches": true
+    },
+    {
+      "path": "docs/auditoria/hallazgos-iniciales.json",
+      "expected_sha": "b85b94c071eae53e6ac19f95b0fa7d5990cfbffd",
+      "actual_sha": "b85b94c071eae53e6ac19f95b0fa7d5990cfbffd",
+      "matches": true
+    },
+    {
+      "path": "docs/auditoria/hallazgos-finales.json",
+      "expected_sha": "5cdc0295e5d283629111a32fa6fff08cbd8ed513",
+      "actual_sha": "5cdc0295e5d283629111a32fa6fff08cbd8ed513",
+      "matches": true
+    },
+    {
+      "path": "docs/auditoria/inventario-cambios.json",
+      "expected_sha": "b6510e075e1a82c60b8fbd2cd7e6403564ec3ea4",
+      "actual_sha": "b6510e075e1a82c60b8fbd2cd7e6403564ec3ea4",
+      "matches": true
+    },
+    {
+      "path": "docs/auditoria/informe-completo.md",
+      "expected_sha": "db8efdc5a94d3967b435b70ff080d5a28e886f18",
+      "actual_sha": "db8efdc5a94d3967b435b70ff080d5a28e886f18",
+      "matches": true
+    },
+    {
+      "path": "docs/auditoria/validacion.txt",
+      "expected_sha": "96eb65f6435ba3aa4a483f96d91ad719da4610b6",
+      "actual_sha": "96eb65f6435ba3aa4a483f96d91ad719da4610b6",
+      "matches": true
+    },
+    {
+      "path": "docs/auditoria/fuentes-tecnicas.json",
+      "expected_sha": "13dd19f993581c3be0f87c2b75184745980a62c1",
+      "actual_sha": "13dd19f993581c3be0f87c2b75184745980a62c1",
+      "matches": true
+    },
+    {
+      "path": "docs/auditoria/validacion.json",
+      "expected_sha": "7dcd6035838267aa27fdce07bac7c7de675d53cc",
+      "actual_sha": "7dcd6035838267aa27fdce07bac7c7de675d53cc",
+      "matches": true
+    }
+  ]
+}

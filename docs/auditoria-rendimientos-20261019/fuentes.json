@@ -1,0 +1,375 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-19",
+  "commit": "f0f2b29bc7a31c11f3f91c11489e1ffa480dc94f",
+  "notice": "Un documento leído no equivale a validación universal del sistema. Se mantienen explícitos los cotejos parciales y las unidades ambiguas.",
+  "sources": {
+    "knauf-perlfix-2025": {
+      "manufacturer": "Knauf",
+      "product_or_system": "Perlfix K465.es",
+      "document": "Ficha técnica K465.es",
+      "document_version": "09/2025",
+      "page_or_section": "p. 1 envase; p. 2 aplicación; p. 3 consumo",
+      "url": "https://knauf.com/api/download-center/v1/assets/cbdb1f8a-e886-45a7-9880-94639dae3c39?download=true",
+      "unit": "kg/m²",
+      "conditions": "Consumo aproximado. Soporte e irregularidades condicionan el consumo; grandes irregularidades requieren otra disposición. No es una prestación universal de toda pasta.",
+      "verified_values": {
+        "consumption": 5,
+        "packKg": 20
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "placo-wall-2026": {
+      "manufacturer": "Placo",
+      "product_or_system": "Tabiques con perfiles del sistema de espesor nominal 0,60 mm",
+      "document": "Manual del instalador",
+      "document_version": "2026",
+      "page_or_section": "Tabiques: tabla Alturas máximas; página pendiente de confirmar",
+      "url": "https://www.placo.es/documents/catalogos-manuales-y-guias/manual-del-instalador-2026.pdf",
+      "unit": "m de altura",
+      "conditions": "Agrupa 12,5 y 15 mm. Inercias M48=2,57; M70=6,57; M90=11,97 cm⁴; respetar montaje, perfil y placas del sistema. Tablas localizadas en índice de búsqueda; no se ha abierto el PDF completo.",
+      "verified_values": {},
+      "status": "pendiente_cotejo_integro",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Intento de apertura oficial; no fue posible cotejar íntegramente la tabla."
+    },
+    "placo-lining-2022": {
+      "manufacturer": "Placo",
+      "product_or_system": "Trasdosados autoportantes sin arriostrar",
+      "document": "Capítulo Trasdosados",
+      "document_version": "PDF 220426; edición interna pendiente de confirmar",
+      "page_or_section": "Alturas máximas sin arriostrar; tabla completa pendiente de cotejo",
+      "url": "https://www.placo.es/documents/catalogos-manuales-y-guias/220426-trasdosados-es.pdf",
+      "unit": "m de altura",
+      "conditions": "No trasladar las alturas a perfiles genéricos. Una placa de 12,5 mm no tiene límite cargado. El cotejo íntegro de todos los valores sigue pendiente.",
+      "verified_values": {},
+      "status": "pendiente_cotejo_integro",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Intento de apertura oficial; no fue posible cotejar íntegramente la tabla."
+    },
+    "rockfon-t24-2023": {
+      "manufacturer": "Rockfon",
+      "product_or_system": "System T24 A Click",
+      "document": "Guía de instalación",
+      "document_version": "10/2023 según nombre del documento",
+      "page_or_section": "p. 3 consumos; p. 4 cargas; p. 5 distribución",
+      "url": "https://www.rockfon.es/siteassets/commerce/es/grids/documents/documentation/gu%C3%ADas-de-instalaci%C3%B3n/es-installation-guide-rockfon-system-t24-a-click-51_d_10_2023.pdf",
+      "unit": "m/m²; ud/m²",
+      "conditions": "600×600: primario .83, secundario 1200 1.67, secundario 600 .83; 1200×600: primario .83, secundario 1200 1.67, sin secundario 600. .70 suspensiones/m² orientativas en este sistema. Verificar cargas, perímetro, recortes y compatibilidad de componentes.",
+      "verified_values": {
+        "primaryRate": 0.83,
+        "secondary1200Rate": 1.67,
+        "secondary600Rate600x600": 0.83,
+        "secondary600Rate1200x600": 0,
+        "hangerRate": 0.7
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "sika-top10-2024": {
+      "manufacturer": "Sika",
+      "product_or_system": "SikaTop-10",
+      "document": "Hoja de datos del producto",
+      "document_version": "Octubre 2024 / 01.02 / 021790400000000011",
+      "page_or_section": "p. 1 envases y densidad; p. 2 consumo",
+      "url": "https://esp.sika.com/dam/dms/es01/7/sikatop_-10.pdf",
+      "unit": "kg/m²/capa",
+      "conditions": "Aproximadamente .20–.50 por capa; puede aumentar en soportes porosos, rugosos o desgastados. No convertir en rendimiento certificado exacto.",
+      "verified_values": {
+        "min": 0.2,
+        "max": 0.5,
+        "packKg": 5,
+        "perCoat": true
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "sika-top30-2018": {
+      "manufacturer": "Sika",
+      "product_or_system": "SikaTop-30",
+      "document": "Hoja de datos del producto",
+      "document_version": "Abril 2018 / 01.01 / 020301010010000176",
+      "page_or_section": "p. 1 presentación; p. 2 consumo",
+      "url": "https://esp.sika.com/dam/dms/es01/0/sikatop_-30.pdf",
+      "unit": "kg/m²",
+      "conditions": "Aproximadamente .150–.175 según absorción y rugosidad. Envases disponibles 5 y 25 kg; referencia de cálculo 5 kg.",
+      "verified_values": {
+        "min": 0.15,
+        "max": 0.175,
+        "packKg": 5
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "sika-top50-2018": {
+      "manufacturer": "Sika",
+      "product_or_system": "SikaTop-50",
+      "document": "Hoja de datos del producto",
+      "document_version": "Abril 2018 / 01.01 / 020404030010000021",
+      "page_or_section": "p. 1 presentación y densidad; p. 2 consumo",
+      "url": "https://esp.sika.com/dam/dms/es01/z/sikatop_-50.pdf",
+      "unit": "kg/m²",
+      "conditions": "Consumo .125–.150 kg/m². Envases .5 L, 5 y 25 kg; referencia de cálculo 5 kg. La densidad 1,04 kg/L no convierte la ficha en un consumo dado en litros.",
+      "verified_values": {
+        "min": 0.125,
+        "max": 0.15,
+        "packKg": 5
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "mh-ptu20-2024": {
+      "manufacturer": "Morteros Henares",
+      "product_or_system": "PTU-20",
+      "document": "Ficha técnica Puente de unión PTU-20",
+      "document_version": "Septiembre 2024",
+      "page_or_section": "p. 1 consumo/presentación",
+      "url": "https://www.morteroshenares.com/wp-content/uploads/PUENTE-DE-UNION-PTU20.pdf",
+      "unit": "kg/m²",
+      "conditions": "400–450 g/m² sobre soportes poco porosos; envase 5 kg. No convertir el número de envases a litros.",
+      "verified_values": {
+        "min": 0.4,
+        "max": 0.45,
+        "packKg": 5
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "mh-plus-2023": {
+      "manufacturer": "Morteros Henares",
+      "product_or_system": "Puente de unión PLUS MH",
+      "document": "Ficha técnica",
+      "document_version": "Septiembre 2023",
+      "page_or_section": "p. 1 consumo y presentación; características técnicas",
+      "url": "https://www.morteroshenares.com/wp-content/uploads/PUENTE-DE-UNION-PLUS-MH.pdf",
+      "unit": "kg/m²; kg/L",
+      "conditions": "200–250 g/m²; densidad 1,00–1,05 kg/L. Envases 1, 5 y 25 L. Se utiliza 1,00 kg/L para estimar conservadoramente el volumen máximo, no como densidad exacta.",
+      "verified_values": {
+        "min": 0.2,
+        "max": 0.25,
+        "densityMin": 1,
+        "densityMax": 1.05,
+        "packL": 5
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "capa-top-2025": {
+      "manufacturer": "Cementos Capa",
+      "product_or_system": "Aplica Primer Top",
+      "document": "Ficha técnica en inglés",
+      "document_version": "Rev. 07/2025 (nombre de fichero may-25)",
+      "page_or_section": "p. 1 consumo; p. 2 envase y densidad",
+      "url": "https://capa.es/wp-content/uploads/2025/07/FT-Aplica-Primer-Top-EN-may-25.pdf",
+      "unit": "kg/m²",
+      "conditions": "Consumo aproximado .125–.175 según rugosidad y naturaleza del soporte, envase 5 kg. La ficha española de junio 2024 contiene la unidad kg/l en el párrafo de consumo: no se usa ese párrafo como superficie.",
+      "verified_values": {
+        "min": 0.125,
+        "max": 0.175,
+        "packKg": 5
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "capa-level-2023": {
+      "manufacturer": "Cementos Capa",
+      "product_or_system": "Aplica Level Primer",
+      "document": "Ficha técnica",
+      "document_version": "03/10/2023",
+      "page_or_section": "p. 1 diluciones/capas; p. 2 rendimiento/presentación",
+      "url": "https://capa.es/wp-content/uploads/2024/05/FT-Aplicalevel-Primer-E25LE5L-ES-Oct-23.pdf",
+      "unit": "L/m²/capa de producto diluido",
+      "conditions": "Aprox. .10–.20 L/m²/capa DILUIDO. Estimación usa la media .15. Sin absorción 1:1 => .075 de concentrado; poco poroso 1:1,5 => .060; poroso dos capas 1:2 + 1:1,5 => .110. Envases 5 y 25 L.",
+      "verified_values": {},
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "weber-prisma-2026": {
+      "manufacturer": "Saint-Gobain Weber",
+      "product_or_system": "weberpral PRISMA",
+      "document": "Ficha técnica",
+      "document_version": "12/01/2026",
+      "page_or_section": "p. 1 consumo; p. 2 espesor/capas",
+      "url": "https://www.es.weber/files/es/2026-01/weberpral_PRISMA.pdf",
+      "unit": "kg/m²/mm",
+      "conditions": "1,500 kg/m² para 1 mm. 12–15 mm/capa, máximo 30 mm en dos capas. Tras raspado mínimo 10 mm. Sobre enfoscado el conjunto no debe superar 30 mm.",
+      "verified_values": {
+        "kg": 1.5,
+        "min": 12,
+        "max": 30,
+        "maxLayer": 15
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "weber-fino-2025": {
+      "manufacturer": "Saint-Gobain Weber",
+      "product_or_system": "weberev FINO / anterior weber.rev fino",
+      "document": "Guía Weber 2025/26",
+      "document_version": "2025/26",
+      "page_or_section": "Sección de producto weberev FINO: consumo y espesores",
+      "url": "https://www.es.weber/files/es/2025-01/GUIA%20WEBER%202025_26_web_12%2C5mb_0.pdf",
+      "unit": "kg/m²/mm",
+      "conditions": "1,7 kg/m²/mm; 2–5 mm. Consumo corroborado en tarifa oficial 2026. Consulta de extracto indexado; PDF grande no abierto íntegramente.",
+      "verified_values": {
+        "kg": 1.7,
+        "min": 2,
+        "max": 5
+      },
+      "status": "contraste_indexado",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Extracto indexado de la guía oficial y tarifa oficial Weber 2026; PDF íntegro no accesible.",
+      "additional_url": "https://www.es.weber/files/es/2026-01/Tarifa%20de%20precios%20Weber%202026.pdf"
+    },
+    "weber-hidro-2026": {
+      "manufacturer": "Saint-Gobain Weber",
+      "product_or_system": "weberev HIDRO PLUS",
+      "document": "Ficha técnica",
+      "document_version": "23/04/2026",
+      "page_or_section": "p. 1 consumo; p. 2 espesor y aplicación",
+      "url": "https://www.es.weber/files/es/2026-04/FTC-ES-P-weberev-hidro-PLUS.pdf",
+      "unit": "kg/m²/cm",
+      "conditions": "18 kg/m²/cm = 1,8 kg/m²/mm; 10 mm/capa y máximo 20 mm en dos capas. Se mantiene el coeficiente y se documentan espesores.",
+      "verified_values": {
+        "kg": 1.8,
+        "min": 10,
+        "max": 20,
+        "maxLayer": 10
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "capa-nature-2024": {
+      "manufacturer": "Cementos Capa",
+      "product_or_system": "Aplicarev Cal Nature Pro Blanco",
+      "document": "Ficha técnica y página oficial",
+      "document_version": "12/2024",
+      "page_or_section": "p. 1 aplicación; p. 2 características; presentación en página del producto",
+      "url": "https://capa.es/wp-content/uploads/2024/12/AplicaRev-Cal-Nature-Pro-blanco_12-24.pdf",
+      "unit": "La tabla expresa 19±2 kg sin superficie ni espesor de referencia.",
+      "conditions": "La ficha consultada no permite deducir 1,9 kg/m²/mm. Mantener pendiente de aclaración; no inferir rendimiento a partir de la densidad.",
+      "verified_values": {
+        "max": 20,
+        "maxLayer": 20,
+        "p": 42
+      },
+      "status": "unidad_consumo_incompleta",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "capa-base-2025": {
+      "manufacturer": "Cementos Capa",
+      "product_or_system": "Aplicarev Cal Base",
+      "document": "Ficha técnica",
+      "document_version": "Septiembre 2025",
+      "page_or_section": "p. 1 espesores; p. 2 características",
+      "url": "https://capa.es/wp-content/uploads/2025/09/FT-Aplicarev-Cal-Base-SEPT-25.pdf",
+      "unit": "kg/m²/cm",
+      "conditions": "14±1 kg/m²/cm => referencia nominal 1,4 kg/m²/mm. Espesor 10–50 mm, capas de 15 mm; verificar soporte y secuencia.",
+      "verified_values": {
+        "kg": 1.4,
+        "min": 10,
+        "max": 50,
+        "maxLayer": 15
+      },
+      "status": "verificado_condicional",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura del PDF oficial mediante extracción web; condiciones y unidades contrastadas."
+    },
+    "capa-revoco-2023": {
+      "manufacturer": "Cementos Capa",
+      "product_or_system": "Aplicarev Cal Revoco",
+      "document": "Catálogo/ficha aportada en el repositorio: cal revoco.pdf",
+      "document_version": "Rev. 10/23",
+      "page_or_section": "Rev. 10/23, páginas impresas 178–179; imagen p. 179 inspeccionada.",
+      "url": "https://github.com/Basman1974/Calculadora-materiales/blob/f0f2b29bc7a31c11f3f91c11489e1ffa480dc94f/cal%20revoco.pdf",
+      "unit": "La tabla impresa dice Kg/cm² y cm espesor, no kg/m²/cm.",
+      "conditions": "Se observó una errata dimensional en la ficha local. El 1,4 kg/m²/mm del código es plausible como intención, pero no queda certificado por esta tabla. El registro de 12/10/2026 había normalizado la unidad sin recoger esta errata; se rectifica aquí.",
+      "verified_values": {
+        "min": 7,
+        "maxLayer": 9,
+        "packKg": 25
+      },
+      "status": "errata_unidad_pendiente_aclaracion",
+      "previous_review_on": "2026-10-12",
+      "reviewed_on": "2026-10-19",
+      "review_method": "Lectura de texto de p. 178 y visual del PDF local, p. 179, renderizado a 1600 px."
+    },
+    "knauf-d11-2025": {
+      "manufacturer": "Knauf",
+      "product_or_system": "D112a.es F47/17 y variantes D11.es",
+      "document": "D11.es Techos suspendidos",
+      "document_version": "10/2025 según portada",
+      "page_or_section": "p. 5 dimensionado; p. 7 separaciones; p. 15 perímetro; p. 32–35 montaje y consumos",
+      "url": "https://knauf.com/api/download-center/v1/assets/59ac9b50-6faa-47a7-b13a-6a01035b2e1e?country=es&download=true",
+      "reviewed_on": "2026-10-19",
+      "unit": "mm; kN/m²; ud; m",
+      "conditions": "Referencia comparativa de un sistema concreto. No valida automáticamente un perfil genérico TC47, ni sistemas Placo F530. Las cargas, la capacidad del cuelgue y el encuentro perimetral condicionan el dimensionado.",
+      "status": "referencia_comparativa_condicional",
+      "verified_values": {
+        "F47_single_secondary_b500_max_a_load_015_mm": 1200,
+        "F47_double_primary_c900_max_a_load_015_mm": 900
+      },
+      "review_method": "Lectura del PDF oficial mediante extracción web; sin inspección gráfica completa de todas las variantes."
+    },
+    "sika-ceram252-2024": {
+      "manufacturer": "Sika",
+      "product_or_system": "SikaCeram-252 StarFlex",
+      "document": "Hoja de datos del producto",
+      "document_version": "Septiembre 2024 / 06.01",
+      "page_or_section": "p. 2 consumo; p. 3 aplicación",
+      "url": "https://esp.sika.com/dam/dms/es01/9/sikaceram_-252_starflex.pdf",
+      "reviewed_on": "2026-10-19",
+      "unit": "kg de polvo/m²",
+      "conditions": "Ejemplo de consumo específico por producto y técnica; no es una sustitución universal de las estimaciones actuales de la calculadora.",
+      "status": "ejemplo_documentado_no_integrado",
+      "verified_values": {
+        "trowel6Indicative": 3,
+        "trowel10Indicative": 5
+      },
+      "review_method": "Lectura de la ficha oficial mediante extracción web."
+    },
+    "rubi-delta-kit": {
+      "manufacturer": "RUBI",
+      "product_or_system": "DELTA LEVEL SYSTEM KIT V4",
+      "document": "Página oficial de producto",
+      "document_version": "Página sin versión editorial visible",
+      "page_or_section": "Descripción del sistema y cuñas reutilizables",
+      "url": "https://www.rubi.com/es/producto/delta-level-system-kit-v4",
+      "reviewed_on": "2026-10-19",
+      "unit": "No se valida consumo de clips/m²",
+      "conditions": "Confirma carácter reutilizable de las cuñas, pero no valida el algoritmo de clips de la PWA.",
+      "status": "verificacion_concepto_sin_ratio",
+      "verified_values": {},
+      "review_method": "Consulta de extracto oficial indexado."
+    }
+  }
+}

@@ -1,0 +1,338 @@
+[
+  {
+    "path": "ui-b.html",
+    "sha": "fa68087ce4f823efd6c894a0b649af18e870ca21"
+  },
+  {
+    "path": "weberpral-prisma.jpg",
+    "sha": "bccc5852a6367682850fa39ac04417e4e8111f2e"
+  },
+  {
+    "path": "aplica-primer-top-5kg.jpg",
+    "sha": "326ad9b1e9a0dd29fe7eec34471379a1454d442c"
+  },
+  {
+    "path": "tile-techo.svg",
+    "sha": "964d57b31e0c5004d5cb6546059c5c01b1ce676d"
+  },
+  {
+    "path": "data.js",
+    "sha": "07c34784a6f9ce21ae08794456b08572595e4d71"
+  },
+  {
+    "path": "sikatop-10.jpg",
+    "sha": "e65e5a1e8bcb7088f54a40351017f4199f42e628"
+  },
+  {
+    "path": "app-a1.js",
+    "sha": "125ec7dce53224ba9ba92245e8ed6d1b498bc28f"
+  },
+  {
+    "path": "tile-humeda.svg",
+    "sha": "cf9a86da6390e6652de7dcb74e4a6cefd9221dff"
+  },
+  {
+    "path": "aplicarev-cal-nature-pro.jpg",
+    "sha": "04d178f0e6a144035cb6a786664965a0bb7ffc52"
+  },
+  {
+    "path": "logo.png",
+    "sha": "cad6a28f0ba3215a7612e97fcd42196781e0d53c"
+  },
+  {
+    "path": "SikaTop-50.jpg",
+    "sha": "f4e06522c652c4337fe514914ec18e7032684ab2"
+  },
+  {
+    "path": "puente-union-plus.jpg",
+    "sha": "590eb01753c1a95e19b8804a1a12906709408455"
+  },
+  {
+    "path": "mortero-cal-base-aplicarev-25kg-bco.jpg",
+    "sha": "ee36f074a6391d33ff12af4fbd1ce511681efd33"
+  },
+  {
+    "path": "puente-de-union-morteros-henares-ptu-20.jpg",
+    "sha": "368de8fa64912475104e2cede15705d66f954b0d"
+  },
+  {
+    "path": "ui-a.html",
+    "sha": "b19b060d4614c4163bcf80abefdc8869fbedff0e"
+  },
+  {
+    "path": "tile-trasdosado.svg",
+    "sha": "36c9ecd92fcb48419dbf4f35b84ee5d64827f865"
+  },
+  {
+    "path": "sikatop-30.jpg",
+    "sha": "4ca3fb1a4fe805fdf084b03869608fb24b7daced"
+  },
+  {
+    "path": "tile-ceramica.svg",
+    "sha": "ab196142e61aa1d4a8171fade6b032443065fb0a"
+  },
+  {
+    "path": "cal revoco.pdf",
+    "sha": "b8209f5f90f07c13eda39c930f232fc4c4a5ba18"
+  },
+  {
+    "path": "app-a2.js",
+    "sha": "bff31bfcfb450db0683fc45fbd372149077324cd"
+  },
+  {
+    "path": "tile-tabique.svg",
+    "sha": "82d3b9016a8bee4a84a0542b4b87b571fa67e62b"
+  },
+  {
+    "path": "service-worker.js",
+    "sha": "1742fbd27cfea57167ef6d3ac38a02dec24273ce"
+  },
+  {
+    "path": "index.html",
+    "sha": "9fc003c2c4de440333f0b5bf086fcb2ad396a120"
+  },
+  {
+    "path": "app.js",
+    "sha": "6745c332d43e474790b016af554c9e6f1b583abc"
+  },
+  {
+    "path": ".nojekyll",
+    "sha": "8b137891791fe96927ad78e64b0aad7bded08bdc"
+  },
+  {
+    "path": "app-b.js",
+    "sha": "3455307c734d1c29e0772d9656033bef464b080b"
+  },
+  {
+    "path": "style.css",
+    "sha": "b02f829558d9296cf761db520b076c545496d14b"
+  },
+  {
+    "path": "weberrev-fino.jpg",
+    "sha": "6f316cca9f81f1c75e27b24a7841eac4b86a11cc"
+  },
+  {
+    "path": "weberev-hidro-plus.jpg",
+    "sha": "ba744c0b707e52f2a14c7533a5959de86e9025b5"
+  },
+  {
+    "path": "ui-c.html",
+    "sha": "75f85d5b603d3e943a4067ebfffe5154424ccad4"
+  },
+  {
+    "path": "manifest.json",
+    "sha": "d9dc86f91b0758f80bafcf9bf8d42a24f6408bc6"
+  },
+  {
+    "path": "tests/prices.test.js",
+    "sha": "558b1e673ea65b42781f10fd61b3d0779992235a"
+  },
+  {
+    "path": "tests/pwa.test.js",
+    "sha": "63bcb45ab440df8bc92ff853a60c4f8766d702e8"
+  },
+  {
+    "path": "tests/budget.test.js",
+    "sha": "f8fcb85981a7017b4ef498fd3e615de3f61a2f31"
+  },
+  {
+    "path": "tests/interface.test.js",
+    "sha": "089340cd4840a75013474681d9ceaeef6d43c8d4"
+  },
+  {
+    "path": "tests/budget-flows.test.js",
+    "sha": "b4e6f27bac460a5c6b223f86bb500d65ffe1895c"
+  },
+  {
+    "path": "tests/materials.test.js",
+    "sha": "6eb519064f1d2fd197b474bd118f210cc8bbf5b9"
+  },
+  {
+    "path": "tests/interface-modules.test.js",
+    "sha": "0563f2f51c2838618538eb0753e0fd7264327c3f"
+  },
+  {
+    "path": "tests/material-fixture.cjs",
+    "sha": "20b05e1c9623a2e28e0e137965282539eb9bb3ca"
+  },
+  {
+    "path": "tests/sources.test.js",
+    "sha": "308694ba485adb8e5003e82aabc73a4e28eb4f18"
+  },
+  {
+    "path": "assets/montaje-directo.svg",
+    "sha": "c3510b0f5c26c44b82b17ce3dca9f218ad87563a"
+  },
+  {
+    "path": "assets/montaje-techo-simple.svg",
+    "sha": "3671da6d41336fd5dd4fd17544e1c1891d2dd205"
+  },
+  {
+    "path": "assets/montaje-registrable-120.svg",
+    "sha": "77a268c8ac3d0241b76a1c59f5b4805b8b354008"
+  },
+  {
+    "path": "assets/montaje-techo-sierra.svg",
+    "sha": "51e320bbcdb7bccd89dba83d4e3db88af0cb5303"
+  },
+  {
+    "path": "assets/montaje-techo-doble.svg",
+    "sha": "3c8a5055ded7fb8c9de2a99c101883c91c9de8f4"
+  },
+  {
+    "path": "assets/montaje-techo.svg",
+    "sha": "96f7ee794f468e270a7bbe3feff30f4d7cb1813e"
+  },
+  {
+    "path": "assets/montaje-semidirecto.svg",
+    "sha": "c03d5a6d125ead43d3686ca4fb3b9c5a2d2afeb3"
+  },
+  {
+    "path": "assets/mount-sprite-05.js",
+    "sha": "0608c2c7c6fd6a9e3ee2c52494e135c3545dcfb4"
+  },
+  {
+    "path": "assets/mount-sprite-07.js",
+    "sha": "372824d52feac216a0b54abe2d79be1a91e150e5"
+  },
+  {
+    "path": "assets/montaje-escayola.svg",
+    "sha": "3c8d9deba7923357d6256e0d7fff8a5f1a3e74b5"
+  },
+  {
+    "path": "assets/mount-sprite-03.js",
+    "sha": "2761917f31d27eb1dac39d6c025ac36d4a25f9bd"
+  },
+  {
+    "path": "assets/mount-sprite.js",
+    "sha": "79a470412e0c71f92be4dd8336ae5c16ee074547"
+  },
+  {
+    "path": "assets/mount-sprite-04.js",
+    "sha": "ba5768fcf9d1d8c1c99038ee55e1e7bdbf5fc426"
+  },
+  {
+    "path": "assets/montaje-techo-biapoyado.svg",
+    "sha": "d4e1d13b616ec0442449a4682623bafbb37aec74"
+  },
+  {
+    "path": "assets/mount-sprite-01.js",
+    "sha": "fd7dfbb78a41c8b6237aebd968852c8d34962c71"
+  },
+  {
+    "path": "assets/montaje-tabique.svg",
+    "sha": "1b10623d0ade04c35a672d66990e9e13bdd4ac77"
+  },
+  {
+    "path": "assets/montaje-autoportante.svg",
+    "sha": "93c62b79f8cb73dbc62b82fe705d2f26b58acf34"
+  },
+  {
+    "path": "assets/mount-sprite-06.js",
+    "sha": "bec3651b0d3c468feafdb8ae6c77c23da7adeb08"
+  },
+  {
+    "path": "assets/mount-sprite-08.js",
+    "sha": "3008a0d3abafb3ccf1f3f965f03d663ea098f875"
+  },
+  {
+    "path": "assets/mount-sprite-02.js",
+    "sha": "6e7cfd769256031822153aad30d864c8f69a65d0"
+  },
+  {
+    "path": "assets/montaje-registrable-60.svg",
+    "sha": "dcbebf9df06c72416414949463e04c8549b28afb"
+  },
+  {
+    "path": "docs/precios-proveedores-cambios.patch",
+    "sha": "7d8ad83f00c950d9492d40f043afc1b0ea164fad"
+  },
+  {
+    "path": "docs/interfaz-modulos.md",
+    "sha": "b76423821d7a806207c2787867d6852a0ce8bae3"
+  },
+  {
+    "path": "docs/interfaz-progresiva.md",
+    "sha": "22ebe0330c39bb457249912662b9117936133618"
+  },
+  {
+    "path": "docs/precios-proveedores-validacion.txt",
+    "sha": "e919e6792465efc08f5b6b297c88165775668d85"
+  },
+  {
+    "path": "docs/precios-proveedores-validacion.json",
+    "sha": "75918eedc24060820535477ca33783e9ffa2665d"
+  },
+  {
+    "path": "docs/interfaz-modulos-comparacion.json",
+    "sha": "d387102869556fef31bf23c5a798e68b806e0511"
+  },
+  {
+    "path": "docs/interfaz-progresiva-validacion.json",
+    "sha": "b53da1f8b3155b250b3a01e975904d19086f73cf"
+  },
+  {
+    "path": "docs/revision-beneficio-industrial.md",
+    "sha": "a638be0435f1d57559b1d7fe03a3f7d114196c47"
+  },
+  {
+    "path": "docs/precios-proveedores.md",
+    "sha": "d34564773bc071a46e0285a6789f558bf81504ea"
+  },
+  {
+    "path": "docs/interfaz-modulos-validacion.txt",
+    "sha": "0f5a6d76211cfd01aa6dae7ddeab0dbfbe53286f"
+  },
+  {
+    "path": "docs/interfaz-modulos-validacion.json",
+    "sha": "156f05d2d0874d693f8df3399ae0cac1660241bf"
+  },
+  {
+    "path": "docs/referencias-desarrollo.md",
+    "sha": "e38178bf0e309671c5a0efb698f0fed2bc5d0f74"
+  },
+  {
+    "path": "docs/interfaz-progresiva-validacion.txt",
+    "sha": "2260fe472825fc7a0f83703058bfc65b4c1f4711"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "sha": "939b0cdf76419c4e6bd5cd383d076f41cea431e6"
+  },
+  {
+    "path": ".github/workflows/pages.yml",
+    "sha": "2b1a41d983fc929210f121f646d8873663207b1f"
+  },
+  {
+    "path": "docs/auditoria/cambios.patch",
+    "sha": "591dcb40a929aa12fc96baec481ccd4db4a8c7af"
+  },
+  {
+    "path": "docs/auditoria/hallazgos-iniciales.json",
+    "sha": "b85b94c071eae53e6ac19f95b0fa7d5990cfbffd"
+  },
+  {
+    "path": "docs/auditoria/hallazgos-finales.json",
+    "sha": "5cdc0295e5d283629111a32fa6fff08cbd8ed513"
+  },
+  {
+    "path": "docs/auditoria/inventario-cambios.json",
+    "sha": "b6510e075e1a82c60b8fbd2cd7e6403564ec3ea4"
+  },
+  {
+    "path": "docs/auditoria/informe-completo.md",
+    "sha": "db8efdc5a94d3967b435b70ff080d5a28e886f18"
+  },
+  {
+    "path": "docs/auditoria/validacion.txt",
+    "sha": "96eb65f6435ba3aa4a483f96d91ad719da4610b6"
+  },
+  {
+    "path": "docs/auditoria/fuentes-tecnicas.json",
+    "sha": "13dd19f993581c3be0f87c2b75184745980a62c1"
+  },
+  {
+    "path": "docs/auditoria/validacion.json",
+    "sha": "7dcd6035838267aa27fdce07bac7c7de675d53cc"
+  }
+]

@@ -42,7 +42,7 @@
     return {c:'estimate',t:'ESTIMACIÓN'};
   }
   function resultHTML(title, meta, rows, canAdd=true){
-    const pending=partNeedsReview({title,items:rows,calculationVersion:'20261012-auditoria'});
+    const pending=partNeedsReview({title,items:rows,calculationVersion:CALCULATION_VERSION});
     const conditionalHeight=rows.some(row=>row[0]==='Comprobación de altura');
     const warning=pending?'Hay elementos sin dimensionar o un despiece pendiente. El presupuesto será provisional.':conditionalHeight?'Altura orientativa según tabla del sistema. Confirma perfiles, placas y condiciones: este cálculo no acredita la validez de perfiles genéricos.':'';
     const quick=rows.filter(x=>!isTechnicalRow(x));
@@ -61,7 +61,7 @@
       const section=node.closest('.screen');
       const values={}; section.querySelectorAll('input[id],select[id],textarea[id]').forEach(x=>values[x.id]=x.value);
       const z=node.querySelector('.workZone');
-      const copy=Object.assign({},obj,{calculationVersion:'20261012-auditoria',zone:(z&&z.value.trim())||'General',editor:{screen:section.id,values,cat:currentCat,body:currentCerBody}});
+      const copy=Object.assign({},obj,{calculationVersion:CALCULATION_VERSION,zone:(z&&z.value.trim())||'General',editor:{screen:section.id,values,cat:currentCat,body:currentCerBody}});
       if(editingPart!==null){work[editingPart]=copy;editingPart=null;}else work.push(copy);
       freezeJobPrices();saveWork(); b.textContent='Guardado en Obra';
     };
@@ -395,115 +395,208 @@
     setRoofSys(btn.dataset.roofSys);
     saveDraft({target:el('rSys')});
   }));
-  function tc47Pack(span, width, spacing, barLen){
-    const sp = spacing || 0.5, bar = barLen || 3;
-    const runs = Math.max(1, Math.ceil(Math.max(0, width) / sp) + 1);
-    const per = Math.max(1, Math.ceil(Math.max(0.01, span) / bar));
-    return {runs:runs, bars:runs * per, splices:runs * Math.max(0, per - 1), ml:runs * span};
+  const roofData=window.CALC_ROOF_DATA;
+  const roofDefaults={rBoardThick:'12.5',rReference:'f47',rWeight:'',rExtraLoad:'0',rRodMargin:'',rRodStock:'1',rPerimeter:'angle',rFixWaste:'10',rPasteRate:'',rSierraRuns:'',rSierraBar:'',rSierraHangers:'',rGypsumPoints:'',rGypsumFibre:'',rGypsumPaste:''};
+  function roofHas(id){return String(el(id)?.value??'').trim()!=='';}
+  function roofCeil(value){const near=Math.round(value);return Math.abs(value-near)<=32*Number.EPSILON*Math.max(1,Math.abs(value))?near:Math.ceil(value);}
+  function roofNumber(value){return Number(value.toFixed(6)).toString();}
+  function roofUnique(values){return [...new Set(values.map(x=>Number(x.toFixed(9))))].sort((a,b)=>a-b);}
+  function roofCuts(length,module,offset=0){
+    const values=[0,length];
+    for(let x=offset||module;x<length-1e-9;x+=module)if(x>1e-9)values.push(x);
+    return roofUnique(values);
   }
-  function empalmeRow(n){
-    const ud = Math.max(0, Math.ceil(n));
-    return ['Empalme TC47', ud + ' uds · ' + Math.ceil(ud / 50) + ' caja(s) de 50', 'Estimación orientativa · unión de barras de 3 m · 1 pieza por junta de perfil'];
+  function roofCenteredCuts(length,module){
+    const cells=roofCeil(length/module);if(cells<=1)return [0,length];
+    const edge=(length-(cells-2)*module)/2;
+    return roofUnique([0,length,...Array.from({length:cells-1},(_,i)=>edge+i*module)]);
   }
-  function rodRow(hangers,dropCm){
-    const length=dropCm/100;
-    if(length<=0||length>1)return ['Varilla M6','No dimensionados','Selecciona longitud comercial y margen de montaje: la varilla de 1 m no cubre este plenum.'];
-    const cuts=Math.floor(1/length+1e-10);
-    return ['Varilla M6 1 m',Math.ceil(hangers/cuts)+' uds',hangers+' suspensiones · '+cuts+' corte(s) de '+dropCm+' cm por varilla · añadir margen para fijación y regulación según montaje'];
+  function roofAxis(length,gap,edge,extra=[]){
+    if(length<=2*edge)return roofUnique([length/2,...extra.filter(x=>x>0&&x<length)]);
+    const axis=[edge,length-edge,...extra.filter(x=>x>0&&x<length)];
+    for(let x=gap;x<length-edge-1e-9;x+=gap)if(x>edge)axis.push(x);
+    return roofUnique(axis);
+  }
+  function roofHangerAxis(length,gap,edge){
+    if(length<=2*edge)return [length/2];
+    const intervals=roofCeil((length-2*edge)/gap);
+    return Array.from({length:intervals+1},(_,i)=>edge+i*(length-2*edge)/intervals);
+  }
+  function roofPack(span,axis,bar=3){
+    const pieces=roofCeil(span/bar);
+    return {runs:axis.length,bars:axis.length*pieces,splices:axis.length*Math.max(0,pieces-1),ml:span*axis.length};
+  }
+  function roofWallStock(lengths,bar=3){
+    let full=0;const tails=[],segments=[];
+    for(const length of lengths){
+      const count=roofCeil(length/bar),tail=length-(count-1)*bar;
+      full+=count-1;for(let i=1;i<count;i++)segments.push(bar);segments.push(tail);
+      if(tail>bar-1e-9)full++;else tails.push(tail);
+    }
+    const bins=[];
+    tails.sort((a,b)=>b-a).forEach(tail=>{const i=bins.findIndex(left=>left+1e-9>=tail);if(i<0)bins.push(bar-tail);else bins[i]-=tail;});
+    return {bars:full+bins.length,segments};
+  }
+  function roofPerimeterRows(L,W,sys){
+    const perimeter=2*(L+W),t24=sys.startsWith('desmontable'),cm=sys==='cm70',sierra=sys==='sierra';
+    if(['simple','double'].includes(sys)&&el('rPerimeter').value==='none')return [['Comprobación de perímetro','Revisar encuentro sin perfil','Encuentro no portante; no se descuentan cuelgues por apoyo en paredes.']];
+    const groups=sierra?[{name:'Ángulo perimetral L 30/25',lengths:[Math.max(L,W),Math.max(L,W)]},{name:'Canal perimetral 48 para sierra',lengths:[Math.min(L,W),Math.min(L,W)]}]:[{name:t24?'Ángulo perimetral T24':cm?'Canal R70':el('rPerimeter').value==='clip'?'Perfil perimetral Clip 18':'Ángulo perimetral L 30/25',lengths:[L,L,W,W]}];
+    const rows=[];let fixes=0;
+    for(const group of groups){
+      const stock=roofWallStock(group.lengths);
+      rows.push([group.name,stock.bars+' barras de 3 m',roofNumber(group.lengths.reduce((a,b)=>a+b,0))+' m · cortes aprovechados entre paredes, sin unir retales adicionales']);
+      for(const segment of stock.segments)fixes+=roofHangerAxis(segment,t24?roofData.t24.perimeterFixing:roofData.perimeterFixing,.1).length;
+    }
+    rows.push(['Fijaciones del perimetral',cm?'No dimensionados':fixes+' uds',cm?'Definir fijación del apoyo portante mediante tabla y soporte.':'Por cada tramo comercial, paso máximo '+(t24?'450':'600')+' mm; primera y última a 100 mm o menos. Elegir fijación adecuada al soporte.']);
+    if(!t24)rows.push(['Banda acústica perimetral',roofNumber(perimeter)+' m · '+roofCeil(perimeter/30)+' rollo(s) de 30 m','Longitud del encuentro con paredes; elegir banda compatible con el perfil.']);
+    return rows;
+  }
+  function empalmeRow(n){return ['Empalme TC47',n+' uds · '+roofCeil(n/50)+' caja(s) de 50','Una pieza compatible por junta de perfil; alternar las juntas.'];}
+  function rodRow(hangers,dropCm,marginCm=0,stockM=1){
+    const length=(dropCm+marginCm)/100;
+    if(!Number.isFinite(length)||length<=0||!Number.isFinite(stockM)||stockM<=0||length>stockM+1e-12)return ['Varilla roscada M6','No dimensionados','La longitud de corte no cabe en la varilla comercial; revisar plenum, margen y montaje.'];
+    const ratio=stockM/length,near=Math.round(ratio),cuts=Math.abs(ratio-near)<32*Number.EPSILON*Math.max(1,ratio)?near:Math.floor(ratio);
+    return ['Varilla roscada M6 '+roofNumber(stockM)+' m',roofCeil(hangers/cuts)+' uds',hangers+' suspensiones · '+cuts+' corte(s) de '+roofNumber(dropCm+marginCm)+' cm · plenum '+roofNumber(dropCm)+' + margen '+roofNumber(marginCm)+' cm'];
+  }
+  function roofRodRow(hangers){return roofHas('rRodMargin')?rodRow(hangers,num('rDrop'),num('rRodMargin'),num('rRodStock')):['Varilla roscada M6','No dimensionados','Introduce el margen real de fijación y regulación para determinar la longitud de corte.'];}
+  function roofJointLength(rects,span,width){
+    const groups=new Map();
+    function edge(orientation,coord,a,b,max){if(coord<=1e-9||coord>=max-1e-9)return;const key=orientation+':'+coord.toFixed(9);if(!groups.has(key))groups.set(key,[]);groups.get(key).push([a,b]);}
+    for(const r of rects){edge('x',r.x,r.y,r.y+r.h,span);edge('x',r.x+r.w,r.y,r.y+r.h,span);edge('y',r.y,r.x,r.x+r.w,width);edge('y',r.y+r.h,r.x,r.x+r.w,width);}
+    let length=0;
+    for(const intervals of groups.values()){
+      intervals.sort((a,b)=>a[0]-b[0]);let start=intervals[0][0],end=intervals[0][1];
+      for(const [a,b]of intervals.slice(1)){if(a<=end+1e-9)end=Math.max(end,b);else{length+=end-start;start=a;end=b;}}length+=end-start;
+    }
+    return length;
+  }
+  function roofBoards(span,width,fmt,layers){
+    const all=[];const edges=[];
+    for(let layer=0;layer<layers;layer++){
+      const rects=[],xcuts=roofCuts(span,fmt[1],layer?fmt[1]/2:0);
+      for(let col=0;col<xcuts.length-1;col++){
+        const ycuts=roofCuts(width,fmt[0],(col+layer)%2?fmt[0]/2:0);edges.push(...ycuts.slice(1,-1));
+        for(let row=0;row<ycuts.length-1;row++)rects.push({x:xcuts[col],y:ycuts[row],w:xcuts[col+1]-xcuts[col],h:ycuts[row+1]-ycuts[row]});
+      }
+      all.push({rects,joints:roofJointLength(rects,span,width)});
+    }
+    return {layers:all,edges:roofUnique(edges)};
+  }
+  function roofBuildPlan(sys,L,W,layers,thick,fmt){
+    const span=sys==='double'?W:Math.max(L,W),width=sys==='double'?L:Math.min(L,W),boards=roofBoards(span,width,fmt,layers);
+    const base=roofHas('rWeight')?num('rWeight'):el('rBoardType').value==='normal'&&fmt[0]===2&&fmt[1]===1.2?roofData.standardWeight[layers+'x'+thick]:undefined;
+    const load=base===undefined?null:(base+num('rExtraLoad'))*9.81/1000;
+    const limits=load===null?null:roofData.f47[sys]?.find(row=>load<=row.load+1e-12);
+    const supported=el('rReference').value==='f47'&&el('rBoardType').value!=='rf'&&[12.5,15].includes(thick)&&!!limits;
+    const secondary=roofAxis(width,.5,roofData.profileEdge,boards.edges);
+    const primary=sys==='double'?roofAxis(W,.9,roofData.profileEdge):[];
+    const hangerSpan=sys==='double'?L:span;
+    const hangerAxis=supported?roofHangerAxis(hangerSpan,limits.hanger,roofData.hangerEdge):[];
+    const hangers=(sys==='double'?primary.length:secondary.length)*hangerAxis.length;
+    return {sourceId:roofData.sourceId,span,width,baseWeight:base??null,extraWeight:num('rExtraLoad'),loadKN:load,limits,supported,secondary,primary,hangerAxis,hangers,boards};
+  }
+  function roofFinishRows(plan,net,thick,layers,fmt){
+    const rows=[],waste=1+num('rFixWaste')/100,rf=el('rBoardType').value==='rf',hard=el('rBoardType').value==='dura';
+    if(rf||hard)rows.push(['Tornillos placa-metal específicos','No dimensionados','Definir tornillo y patrón de fijación del sistema RF o placa de alta dureza; no se usa el patrón de pared.']);
+    else{
+      const pitch=fmt[1]===1.2?.2:.15;
+      plan.boards.layers.forEach((layer,index)=>{
+        let screws=0;
+        for(const r of layer.rects){const supports=plan.secondary.filter(y=>y>=r.y-1e-9&&y<=r.y+r.h+1e-9).length;screws+=supports*roofHangerAxis(r.w,pitch,.01).length;}
+        rows.push(['Tornillos '+(index+1)+'.ª placa 3,5 × '+pylScrewLength(thick*(index+1)),roofCeil(screws*waste)+' uds · '+roofCeil(roofCeil(screws*waste)/1000)+' caja(s) de 1.000',screws+' uds geométricas · separación adoptada '+Math.round(pitch*1000)+' mm en todas las capas · merma '+num('rFixWaste')+' % · revisar recortes y fijación real']);
+      });
+      if(fmt[1]!==1.2)rows.push(['Comprobación de formato','Revisar ficha de placa 600 mm','Se adopta paso conservador 150 mm para estimar la compra; compatibilidad del producto y sistema pendiente de verificar.']);
+    }
+    const jointLengths=rf?plan.boards.layers.map(layer=>layer.joints):[plan.boards.layers.at(-1).joints];
+    const tape=(jointLengths.reduce((a,b)=>a+b,0)+2*(plan.span+plan.width))*waste;
+    rows.push(['Cinta de papel para juntas',roofNumber(tape)+' m · '+roofCeil(tape/150)+' rollo(s) de 150 m','Juntas contadas una vez por capa tratada y perímetro; '+(rf?'sistema RF pendiente de validar':'capa visible; relleno de las juntas interiores sin cinta')+' · merma '+num('rFixWaste')+' %']);
+    const reference=el('rBoardType').value==='normal'&&thick===12.5&&fmt[0]===2&&fmt[1]===1.2?(layers===1?.3:.5):null;
+    const rate=roofHas('rPasteRate')?num('rPasteRate'):reference;
+    rows.push(['Pasta de juntas',rate===null?'No dimensionados':roofNumber(net*rate*waste)+' kg · '+roofCeil(net*rate*waste/20)+' saco(s) de 20 kg',rate===null?'Introduce el consumo total por m² según producto y acabado.':rate+' kg/m² del conjunto, antes de merma · '+(roofHas('rPasteRate')?'configurado por el usuario':'media orientativa de la configuración estándar de referencia; verificar efecto del perímetro y acabado')]);
+    return rows;
   }
   function updateRoofOverview(valid){
     const sys=el('rSys').value,meta=roofMeta[sys]||roofMeta.double,pyl=meta.fam==='continuo',area=num('rL')*num('rW');
     setOverview('roofMeasureSummary',valid?inputNumberText('rL')+' × '+inputNumberText('rW')+' m · '+money(area)+' m² brutos · '+money(area-num('rHoles'))+' m² netos':'Revisa los datos señalados para calcular los materiales.');
-    const format=(el('rBoard').value.split(',').map(Number).map(n=>Math.round(n*1000)).join(' × '));
-    setOverview('roofSystemSummary',meta.name+(pyl?' · '+inputNumberText('rLayers')+' placa(s) '+boardTypeLabel('rBoardType')+' · '+format+' mm · '+(el('rMembrane').value==='1'?'con lámina (merma '+inputNumberText('rMembraneWaste')+' %)':'sin lámina'):'')+(sys==='cm70'?' · autoportante, sin suspensiones':' · descuelgue '+inputNumberText('rDrop')+' cm'));
+    setOverview('roofSystemSummary',meta.name+(pyl?' · '+num('rLayers')+' placa(s) '+boardTypeLabel('rBoardType')+' '+inputNumberText('rBoardThick')+' mm · '+el('rBoard').value.split(',').map(Number).map(n=>Math.round(n*1000)).join(' × ')+' mm · '+(el('rMembrane').value==='1'?'con lámina':'sin lámina'):'')+(sys==='cm70'?' · autoportante, sin suspensiones':' · descuelgue '+inputNumberText('rDrop')+' cm'));
     setOverview('roofOpeningsSummary',inputNumberText('rHoles')+' m² de huecos · merma '+inputNumberText('rWaste')+' %');
     setOverview('roofLaborSummary',num('rLabor')?inputNumberText('rLabor')+' €/m² sin IVA':el('rLabor').checkValidity()?'Sin añadir':'Revisar precio');
-    setOverview('roofTechnicalNotice',(valid?'':'Hay datos por corregir. ')+(sys==='cm70'?'Sistema autoportante: verificar luz, sección y cargas; los montantes no están dimensionados. ':'')+'Despiece pendiente de validación técnica. El presupuesto de este techo será provisional.');
+    setOverview('roofLoadSummary',roofHas('rWeight')?'Conjunto '+inputNumberText('rWeight')+' + adicional '+inputNumberText('rExtraLoad')+' kg/m²':'Peso de referencia cuando exista; adicional '+inputNumberText('rExtraLoad')+' kg/m²');
+    setOverview('roofTechnicalNotice',(valid?'':'Hay datos por corregir. ')+(sys==='cm70'?'Sistema autoportante: luz y apoyo pendientes de dimensionar. ':'')+'Despiece de referencia, pendiente de validar con el sistema y soporte reales. El presupuesto será provisional.');
   }
   function calcRoof(){
-    const currentSys=el('rSys').value,pyl=roofMeta[currentSys]?.fam==='continuo';
-    el('rDropWrap')?.classList.toggle('hidden',currentSys==='cm70');el('roofSystemOptions')?.classList.toggle('hidden',!pyl);
-    ['rBoardWrap','rLayersWrap','rBoardTypeWrap'].forEach(id=>el(id)?.classList.toggle('hidden',!pyl));
-    const membraneRow=singleFaceMembrane('r',pyl&&num('rLayers')>=2,netArea(num('rL')*num('rW'),num('rHoles')));
-    if(!validCalculation('roofResult',[['rL',0.000001],['rW',0.000001],...(pyl?[['rLayers',1,true]]:[]),...(currentSys!=='cm70'?[['rDrop']]:[]),['rHoles'],['rWaste'],['rLabor'],...(membraneRow?[['rMembraneWaste']]:[])],num('rHoles')>num('rL')*num('rW')?'Los huecos superan la superficie del techo.':'','rHoles')){updateRoofOverview(false);return;}
-    const L = num('rL'), W = num('rW'), A = L * W, l = num('rLayers'), waste=Math.max(0,num('rWaste')||0), wf=1+waste/100;
-    const holes = num('rHoles'), net = netArea(A, holes);
-    const kind = boardTypeLabel('rBoardType');
-    const fmt = (el('rBoard') ? el('rBoard').value : '2,1.2').split(',').map(Number);
-    const sys = el('rSys') ? el('rSys').value : 'double', d = num('rDrop');
-    const modular = sys === 'desmontable60' || sys === 'desmontable120' || sys === 'escayola';
+    if(!roofData?.f47||!el('rBoardThick')){el('roofResult').innerHTML='<div class="info" role="alert">Los recursos de techo están incompletos. Recarga cuando haya conexión para recibir la misma versión de todos los archivos.</div>';return;}
+    const sys=el('rSys').value,pyl=roofMeta[sys]?.fam==='continuo',suspended=['simple','double'].includes(sys),t24=sys?.startsWith('desmontable');
+    const visible={roofSystemOptions:pyl,roofLoadOptions:suspended,roofSuspensionOptions:suspended,roofFinishingOptions:suspended,roofSierraOptions:sys==='sierra',roofGypsumOptions:sys==='escayola',rPerimeterWrap:suspended,rDropWrap:sys!=='cm70'};
+    Object.entries(visible).forEach(([id,on])=>el(id)?.classList.toggle('hidden',!on));
+    ['rBoardWrap','rLayersWrap','rBoardTypeWrap','rBoardThickWrap'].forEach(id=>el(id)?.classList.toggle('hidden',!pyl));
+    const A=num('rL')*num('rW'),holes=num('rHoles'),net=netArea(A,holes),membrane=singleFaceMembrane('r',pyl&&num('rLayers')>=2,net);
+    const rules=[['rL',.000001],['rW',.000001],['rHoles'],['rWaste'],['rLabor'],...(sys!=='cm70'?[['rDrop']]:[]),...(pyl?[['rLayers',1,true],['rBoardThick',.000001]]:[]),...(suspended?[['rExtraLoad'],['rFixWaste']]:[]),...(suspended&&roofHas('rWeight')?[['rWeight',.000001]]:[]),...(suspended?[['rRodStock',.000001],...(roofHas('rRodMargin')?[['rRodMargin']]:[])]:[]),...(suspended&&roofHas('rPasteRate')?[['rPasteRate']]:[]),...(membrane?[['rMembraneWaste']]:[])];
+    for(const [id,min,integer]of sys==='sierra'?[['rSierraRuns',1,true],['rSierraBar',.000001],['rSierraHangers',1,true]]:sys==='escayola'?[['rGypsumPoints',1,true],['rGypsumFibre',0],['rGypsumPaste',.000001]]:[])if(roofHas(id))rules.push([id,min,integer]);
+    const fmt=el('rBoard').value.split(',').map(Number),layers=num('rLayers'),thick=num('rBoardThick');
+    const error=!roofMeta[sys]?'Selecciona un sistema de techo válido.':holes>A?'Los huecos superan la superficie del techo.':pyl&&(![1,2].includes(layers)||![12.5,15,18].includes(thick)||!['2,1.2','2.7,1.2','2,.6'].includes(el('rBoard').value))?'Configuración de placa no disponible.':suspended&&(!['f47','generic'].includes(el('rReference').value)||!['angle','clip','none'].includes(el('rPerimeter').value))?'Selecciona una referencia y un encuentro disponibles.':A>10000||Math.max(num('rL'),num('rW'))>1000?'Paño demasiado grande para el despiece interactivo; divídelo en estancias.':rules.some(([id])=>num(id)>1000000)?'Valor demasiado grande para el cálculo; revisa las unidades.':'';
+    if(!validCalculation('roofResult',rules,error,holes>A?'rHoles':'rL')){updateRoofOverview(false);return;}
+    const L=num('rL'),W=num('rW'),waste=1+num('rWaste')/100;let rows=[],layout={},title=roofMeta[sys].name;
     renderRoofSketch(sys);
-    if(el('rBoardWrap')) el('rBoardWrap').classList.toggle('hidden', modular);
-    if(el('rLayersWrap')) el('rLayersWrap').classList.toggle('hidden', modular);
-    let rows = [], title = 'Techo', meta = 'plenum ' + d + ' cm';
-    if(sys === 'desmontable60' || sys === 'desmontable120'){
-      const tile60 = sys === 'desmontable60';
-      const tileUds = Math.ceil(net / (tile60 ? 0.36 : 0.72) * wf - 1e-10);
-      const primM = A * 0.83, sec12M = A * 1.67, sec6M = tile60 ? A * 0.83 : 0;
-      const hang = Math.ceil(A * 0.70), peri = 2 * (L + W);
-      title = tile60 ? 'Techo desmontable 60 × 60' : 'Techo desmontable 60 × 120';
-      meta = 'Perfilería T24 vista · primarios cada 1,20 m';
-      rows = [
-        [tile60 ? 'Placa desmontable 600 × 600' : 'Placa desmontable 600 × 1200', tileUds + ' uds', (tile60 ? '2,78' : '1,39') + ' ud/m² · merma '+waste+' % · sistema T24'],
-        ['Perfil T24 primario 3600', Math.ceil(primM / 3.6) + ' barras', primM.toFixed(2) + ' m · referencia de sistema T24: 0,83 m/m²'],
-        ['Perfil T24 secundario 1200', Math.ceil(sec12M / 1.2) + ' barras', sec12M.toFixed(2) + ' m · referencia de sistema T24: 1,67 m/m²'],
-        ['Perfil T24 secundario 600', Math.ceil(sec6M / 0.6) + ' barras', sec6M.toFixed(2) + ' m · referencia de sistema T24: 0,83 m/m²'],
-        ['Ángulo perimetral T24', Math.ceil(peri / 3) + ' barras', peri.toFixed(1) + ' m de perímetro · barra 3 m'],
-        ['Cuelgues / suspensiones', hang + ' uds', '0,70 ud/m² · primarios cada 1,20 m'],
-        ['Varilla o cuelgue', hang + ' uds', 'Plenum ' + d + ' cm · una por suspensión']
+    if(t24){
+      const grid=roofData.t24,xcuts=roofCenteredCuts(L,.6),ycuts=roofCenteredCuts(W,.6),primary=ycuts.slice(1,-1).filter((_,i)=>i%2===0);
+      if(!primary.length)primary.push(W/2);
+      const cross=xcuts.slice(1,-1),secondary600=ycuts.slice(1,-1).filter(y=>!primary.some(p=>Math.abs(p-y)<1e-9));
+      const hanging=roofHangerAxis(L,grid.hanger,grid.hangerEdge),hangers=primary.length*hanging.length;
+      layout={sourceId:grid.sourceId,primary,cross,secondary600,hangerAxis:hanging,hangers};
+      rows=[
+        [sys==='desmontable60'?'Placa desmontable 600 × 600':'Placa desmontable 600 × 1200',roofCeil(net/(sys==='desmontable60'?.36:.72)*waste)+' uds','Compra por superficie y merma '+num('rWaste')+' %; comprobar cortes de borde y orientación.'],
+        ['Perfil T24 primario 3600',primary.length*roofCeil(L/3.6)+' barras',primary.length+' recorridos × '+roofNumber(L)+' m; máximo 1,20 m entre primarios; sin reutilizar recortes con conectores.'],
+        ['Perfil T24 secundario 1200',cross.length*(primary.length+1)+' barras',cross.length+' alineaciones × '+(primary.length+1)+' tramos entre primarios y paredes; incluye piezas de borde, sin reutilizar recortes.'],
+        ...(sys==='desmontable60'?[['Perfil T24 secundario 600',secondary600.length*(xcuts.length-1)+' barras',secondary600.length+' alineaciones entre primarios × '+(xcuts.length-1)+' tramos; incluye recortes de borde.']]:[]),
+        ...roofPerimeterRows(L,W,sys),
+        ['Cuelgues T24 completos',hangers+' uds',primary.length+' primarios × '+hanging.length+' cuelgues; paso ≤1200 mm y extremos ≤450 mm. Conjunto completo: no se suma otra fila genérica de varilla o cuelgue.'],
+        ['Anclajes al forjado T24',hangers+' uds','Un punto por cuelgue del modelo; seleccionar conjunto y anclaje compatible con soporte y carga.'],
+        ['Comprobación de instalaciones','Revisar refuerzos y cuelgues adicionales','El modelo no incluye equipos ni luminarias. Verificar también capacidad del sistema, peso del panel y profundidad mínima de desmontaje.']
       ];
-      if(!tile60)rows=rows.filter(row=>row[0]!=='Perfil T24 secundario 600');
-    } else if(sys === 'escayola'){
-      const plates = Math.ceil(net / 0.6 * wf - 1e-10);
-      const fix = Math.ceil(A * 3);
-      const estopa = A * 0.22;
-      const pasta = A * 6;
-      title = 'Techo fijo de escayola';
-      meta = 'Estimación de fijación por estopa · comprobar el sistema';
-      rows = [
-        ['Placa de escayola 1000 × 600', plates + ' uds', '1,67 ud/m² · merma '+waste+' % · placa nervada habitual'],
-        ['Fijaciones de estopa', fix + ' uds', 'Estimación orientativa de 3 puntos/m²; validar fijación y plenum con documentación del sistema'],
-        ['Estopa / fibra vegetal', Math.ceil(estopa) + ' kg', '0,22 kg/m² · esparto o sisal amasado con pasta'],
-        ['Pasta de escayola UNE-EN 13279-1', Math.ceil(pasta / 20) + ' saco(s) de 20 kg', pasta.toFixed(1) + ' kg · estopadas + juntas + enlucido'],
-        ['Aviso de plenum', d > 25 ? 'Plenum ' + d + ' cm: fijación pendiente de dimensionar' : 'Plenum ' + d + ' cm: verificar fijación', 'Límite histórico pendiente de contraste; comprobar la solución técnica']
-      ];
-    } else {
-      const plates = Math.ceil(net * l * wf / (fmt[0] * fmt[1]));
-      rows = [['Placa PYL ' + kind + ' ' + Math.round(fmt[0] * 1000) + ' × ' + Math.round(fmt[1] * 1000), plates + ' uds', 'UNE-EN 520 · ' + kind + ' · ' + l + ' capa(s) · merma ' + waste + ' % · neto ' + net.toFixed(2) + ' m²']];
-      if(sys === 'double'){
-        title = 'Techo doble TC47';
-        const prim = tc47Pack(L, W, 0.9, 3), sec = tc47Pack(W, L, 0.5, 3);
-        rows.push(['TC47 primario 3000', prim.bars + ' barras', 'Estimación orientativa · referencia conservadora 0,90 m · ' + prim.runs + ' recorridos · ' + prim.ml.toFixed(1) + ' m'], ['TC47 secundario 3000', sec.bars + ' barras', 'Estimación orientativa · cada 0,50 m · ' + sec.runs + ' recorridos · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(prim.splices + sec.splices), ['Crucetas', prim.runs * sec.runs + ' uds', 'Cruces primaria-secundaria'], ['Horquillas', Math.ceil(A / .99) + ' uds', '≈1,01 ud/m² · estimación orientativa pendiente de verificar para el sistema'], rodRow(Math.ceil(A/.99),d));
-      } else if(sys === 'simple'){
-        title = 'Techo TC47 simple';
-        const pack = tc47Pack(Math.max(L, W), Math.min(L, W), 0.5, 3);
-        rows.push(['TC47 portante 3000', pack.bars + ' barras', 'Estimación orientativa · cada 0,50 m · ' + pack.runs + ' recorridos · ' + pack.ml.toFixed(1) + ' m'], empalmeRow(pack.splices), ['Horquillas', Math.ceil(A / 1.2) + ' uds', 'Suspensiones'], rodRow(Math.ceil(A/1.2),d));
-      } else if(sys === 'sierra'){
-        title = 'Techo perfil sierra';
-        const sec = tc47Pack(Math.max(L, W), Math.min(L, W), 0.5, 3);
-        rows.push(['Perfil sierra', Math.ceil(A / 2.7) + ' barras', 'Estimación 0,37 barra/m² · verificar despiece de forjado'], ['TC47 secundario 3000', sec.bars + ' barras', 'Secundario cada 0,50 m · ' + sec.ml.toFixed(1) + ' m'], empalmeRow(sec.splices), ['Suspensiones', Math.ceil(A / .95) + ' uds', 'Puntos de suspensión']);
-      } else {
-        title = 'Techo canal + montante';
-        rows.push(['Canal R70', Math.ceil(2 * (L + W) / 3) + ' barras', 'UNE-EN 14195 · apoyo perimetral'], ['Montante M70', 'No dimensionados', 'Definir luz, sección, modulación, placas y cargas mediante la tabla del sistema; no se utiliza un ratio por m² para dimensionar el elemento portante'], ['Comprobación de luz', 'Verificar tabla técnica D13', 'Sistema biapoyado: no lleva suspensiones. La luz admisible depende de perfil, modulación, placas y carga.']);
-      }
-      rows.push.apply(rows, pylJoinRows(mergeFaceWork([pylFaceWork(net, l)])));
-      rows.push(mmRow(A, 'roof'));
-      meta = 'Estimación de materiales · plenum ' + d + ' cm';
+    }else if(sys==='escayola'){
+      const pieces=roofCeil(L)*roofCeil(W/.6),points=roofHas('rGypsumPoints')?pieces*num('rGypsumPoints'):null;
+      layout={piecesBeforeWaste:pieces,points};
+      rows=[['Placa de escayola 1000 × 600',roofCeil(Math.max(pieces,net/.6)*waste)+' uds',pieces+' piezas del replanteo rectangular, sin reutilizar recortes; merma '+num('rWaste')+' %.'],
+        ['Fijaciones de estopa',points===null?'No dimensionados':points+' uds',points===null?'Introduce los puntos por pieza según placa y montaje.':pieces+' piezas × '+num('rGypsumPoints')+' puntos/pieza configurados; revisar los recortes.'],
+        ['Estopa / fibra vegetal',roofHas('rGypsumFibre')?roofNumber(A*num('rGypsumFibre'))+' kg':'No dimensionados','Consumo introducido según producto y montaje; no se aplica 0,22 kg/m² por defecto.'],
+        ['Pasta de escayola',roofHas('rGypsumPaste')?roofCeil(A*num('rGypsumPaste')/20)+' saco(s) de 20 kg':'No dimensionados','Consumo configurado para fijaciones, juntas y acabado; no se aplica 6 kg/m² por defecto.'],
+        ['Comprobación de suspensión','Pendiente de dimensionar','Verificar placa, soporte, puntos, longitud y tipo de fijación. No se utiliza el umbral histórico de 25 cm como límite validado.']];
+    }else{
+      rows=[['Placa PYL '+boardTypeLabel('rBoardType')+' '+roofNumber(thick).replace('.',',')+' mm · '+fmt.map(x=>Math.round(x*1000)).join(' × '),roofCeil(net*layers*waste/(fmt[0]*fmt[1]))+' uds',layers+' capa(s) · neto '+roofNumber(net)+' m² · merma '+num('rWaste')+' % · compra por superficie; comprobar aprovechamiento de cortes.']];
+      rows.push(...roofPerimeterRows(L,W,sys));
+      const plan=roofBuildPlan(sys,L,W,layers,thick,fmt);layout={sourceId:plan.sourceId,baseWeight:plan.baseWeight,extraWeight:plan.extraWeight,loadKN:plan.loadKN,primary:plan.primary,secondary:plan.secondary,hangerAxis:plan.hangerAxis,hangers:plan.hangers,maxHangerSpacing:plan.limits?.hanger??null,supported:plan.supported,jointLengths:plan.boards.layers.map(layer=>layer.joints)};
+      if(suspended){
+        rows.push(['Comprobación de carga',plan.loadKN===null?'Peso pendiente de definir':roofNumber(plan.loadKN)+' kN/m²','Conjunto '+(plan.baseWeight??'pendiente')+' + adicional '+plan.extraWeight+' kg/m². '+(roofHas('rWeight')?'Peso del conjunto introducido por el usuario.':'Peso de una variante estándar de referencia; confirmar el peso del conjunto real.')]);
+        if(plan.supported){
+          const sec=roofPack(plan.span,plan.secondary),prim=sys==='double'?roofPack(L,plan.primary):null;
+          if(prim)rows.push(['TC47 primario 3000',prim.bars+' barras',prim.runs+' recorridos × '+roofNumber(L)+' m; separación máxima 900 mm.'],['Crucetas F47/17',prim.runs*sec.runs+' uds','Una pieza de encaje compatible por cruce primario-secundario; no se añaden tornillos metal-metal por un ratio de m².']);
+          rows.push([sys==='double'?'TC47 secundario 3000':'TC47 portante 3000',sec.bars+' barras',sec.runs+' recorridos × '+roofNumber(plan.span)+' m; paso máximo 500 mm y perfiles adicionales en juntas de placa.'],empalmeRow(sec.splices+(prim?.splices||0)),
+            ['Horquillas / cuelgues Pívot F47/17',plan.hangers+' uds',(sys==='double'?plan.primary.length:plan.secondary.length)+' recorridos × '+plan.hangerAxis.length+' puntos; paso máximo '+roofNumber(plan.limits.hanger*1000)+' mm; extremos a 150 mm o menos.'],
+            ['Anclaje universal de suspensión F47/17',plan.hangers+' uds','Una pieza por cuelgue de la configuración de referencia Pívot + universal.'],
+            ['Fijaciones al forjado F47/17',plan.hangers*2+' uds','Dos fijaciones por anclaje universal de referencia; elegir fijación según soporte y carga.'],roofRodRow(plan.hangers));
+        }else rows.push(['Perfilería y suspensiones TC47','No dimensionados',el('rReference').value==='generic'?'La tabla F47/17 no acredita otra perfilería.':el('rBoardType').value==='rf'?'Selecciona una solución RF ensayada con todos sus componentes.':![12.5,15].includes(thick)?'Espesor fuera de las variantes de referencia cargadas.':plan.loadKN===null?'Introduce el peso del conjunto según ficha.':'Carga fuera del intervalo configurado de hasta 0,30 kN/m². No se extrapolan separaciones.']);
+      }else if(sys==='sierra'){
+        const count=roofHas('rSierraRuns')&&roofHas('rSierraBar')?num('rSierraRuns')*roofCeil(Math.max(L,W)/num('rSierraBar')):null;
+        rows.push(['Perfil sierra',count===null?'No dimensionados':count+' barras de '+roofNumber(num('rSierraBar'))+' m','Recorridos y longitud comercial introducidos según plano; verificar producto, luces, muescas y uniones.'],
+          ['TC47 secundario 3000','No dimensionados','Replantear según las muescas y compatibilidad del perfil sierra; no se reutiliza la tabla de doble TC47.'],
+          ['Suspensiones sierra',roofHas('rSierraHangers')?num('rSierraHangers')+' uds':'No dimensionados','Cantidad del plano verificado; completar varillas, anclajes y accesorios propios del sistema.'],
+          ['Empalmes y fijaciones sierra','No dimensionados','Definir el detalle del producto. No se aplica un ratio de barras ni suspensiones por superficie.']);
+      }else rows.push(['Montante M70','No dimensionados','Dimensionar luz, modulación, placas y cargas mediante tabla del sistema.'],['Fijaciones y uniones M70','No dimensionados','Definir apoyos, anclajes y uniones; no se utilizan tornillos por un ratio de superficie.'],['Comprobación de luz','Verificar tabla técnica D13','Sistema autoportante sin horquillas ni varillas; no se dimensiona mediante el descuelgue.']);
+      if(suspended&&plan.supported)rows.push(...roofFinishRows(plan,net,thick,layers,fmt));
+      else rows.push(['Tornillos y tratamiento de juntas','No dimensionados','Definir la estructura, fijación y tratamiento del sistema para completar los auxiliares.']);
+      if(el('rMembrane').value==='1')rows.push(['Comprobación de lámina acústica','Verificar peso y compatibilidad','Incluye el peso de la lámina en la carga adicional si no forma parte del peso del conjunto.']);
     }
-    rows.push(['Aviso de despiece','Despiece pendiente de validar','Verificar sistema, carga, luz, disposición y anclajes al soporte. No equivale a una solución estructural aprobada.']);
-    if(membraneRow) rows.splice(1,0,membraneRow);
-    if(holes) rows.push(['Huecos descontados', holes.toFixed(2) + ' m²', 'Restan placa y acabado. La perfilería va a la superficie bruta.']);
-    const lab = laborRow(net, num('rLabor'), 'techo');
-    if(lab) rows.push(lab);
-    const obj = {title:title + ' · ' + A.toFixed(2) + ' m²', items:rows, area:A, net:net};
-    updateRoofOverview(true);
-    const box = el('roofResult');
-    if(box){ box.innerHTML = resultHTML(obj.title, meta + ' · neto ' + net.toFixed(2) + ' m²', rows); bindAdd(box, obj); }
+    if(membrane)rows.splice(1,0,membrane);
+    if(holes)rows.push(['Huecos descontados',roofNumber(holes)+' m²','Descontados de placas por superficie. Sin posición del hueco, no se descuentan perfiles, fijaciones ni longitud de juntas.'],['Recercado de huecos','No dimensionados','Definir posición, dimensiones y refuerzos de cada hueco para completar el pedido.']);
+    rows.push(['Aviso de despiece','Despiece pendiente de validar','Verificar componentes, soporte, carga, recortes, anclajes y accesorios. La cantidad de referencia no acredita una solución estructural aprobada.']);
+    const lab=laborRow(net,num('rLabor'),'techo');if(lab)rows.push(lab);
+    const obj={title:title+' · '+A.toFixed(2)+' m²',items:rows,area:A,net,roofLayout:layout,incomplete:true};
+    updateRoofOverview(true);const box=el('roofResult');box.innerHTML=resultHTML(obj.title,'Despiece de referencia · neto '+roofNumber(net)+' m²',rows);bindAdd(box,obj);
   }
-  on(el('roofForm'), 'submit', e => submitProgressiveCalculation(e,'roofForm','roofResult',calcRoof));
-  ['rSys','rBoard','rLayers','rBoardType','rHoles','rWaste','rLabor'].forEach(id => on(el(id), 'change', calcRoof));
-  on(el('rMembrane'),'change',calcRoof);
-  ['rL','rW','rDrop','rHoles','rLabor','rMembraneWaste'].forEach(id => on(el(id), 'input', calcRoof));
+  on(el('roofForm'),'submit',e=>submitProgressiveCalculation(e,'roofForm','roofResult',calcRoof));
+  ['rSys','rBoard','rLayers','rBoardType','rBoardThick','rReference','rPerimeter','rWaste','rMembrane'].forEach(id=>on(el(id),'change',calcRoof));
+  ['rL','rW','rDrop','rHoles','rLabor','rMembraneWaste',...Object.keys(roofDefaults).filter(id=>!['rBoardThick','rReference','rPerimeter'].includes(id))].forEach(id=>on(el(id),'input',calcRoof));
   function setWetCat(cat){
     if(!data[cat]) return;
     currentCat = cat;

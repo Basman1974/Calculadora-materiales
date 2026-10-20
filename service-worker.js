@@ -1,4 +1,4 @@
-const CACHE='calculadora-construccion-20261016-interfaz-completa';
+const CACHE='calculadora-construccion-20261019-techos';
 const CORE=[
   'SikaTop-50.jpg','aplica-primer-top-5kg.jpg','aplicarev-cal-nature-pro.jpg','mortero-cal-base-aplicarev-25kg-bco.jpg','puente-de-union-morteros-henares-ptu-20.jpg','puente-union-plus.jpg','sikatop-10.jpg','sikatop-30.jpg','weberev-hidro-plus.jpg','weberpral-prisma.jpg','weberrev-fino.jpg',
   './','index.html','style.css','data.js','app.js','app-a1.js','app-a2.js','app-b.js',

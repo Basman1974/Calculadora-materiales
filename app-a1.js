@@ -1,4 +1,5 @@
 (() => {
+  const CALCULATION_VERSION='20261019-techos';
   const $ = s => document.querySelector(s);
   const $all = s => [...document.querySelectorAll(s)];
   const cache = Object.create(null);
@@ -44,11 +45,11 @@
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261016-interfaz-completa');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261019-techos');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261016-interfaz-completa')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261019-techos')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
@@ -255,8 +256,10 @@
   function partNeedsReview(part){
     const items=part.items||[];
     if(part.incomplete||items.some(row=>/no dimensionados|fuera de tabla|verificar tabla técnica|usar varilla|despiece pendiente|pendiente de dimensionar/i.test(row.join(' '))))return true;
+    if((part.editor?.screen==='roof'||/techo/i.test(part.title))&&part.calculationVersion!==CALCULATION_VERSION)return true;
+    if(!['20261019-cal-morteros',CALCULATION_VERSION].includes(part.calculationVersion)&&items.some(row=>row[0]==='APLICAREV Cal Nature Pro'))return true;
     // No recalcular ni sustituir precios de copias antiguas de forma silenciosa.
-    return part.calculationVersion!=='20261012-auditoria'&&(/techo|caravista 24x12x5/i.test(part.title)||items.some(row=>/^SikaTop-(10|30|50)$|^Puente de unión PLUS \(MH\)$|^Puente de Unión Morteros Henares \(PTU-20\)$|^Aplica primer TOP 5KG$|^weberpral prisma$|^Guardavivos metálico$/.test(row[0])));
+    return !['20261012-auditoria','20261019-cal-morteros',CALCULATION_VERSION].includes(part.calculationVersion)&&(/techo|caravista 24x12x5/i.test(part.title)||items.some(row=>/^SikaTop-(10|30|50)$|^Puente de unión PLUS \(MH\)$|^Puente de Unión Morteros Henares \(PTU-20\)$|^Aplica primer TOP 5KG$|^weberpral prisma$|^Guardavivos metálico$/.test(row[0])));
   }
   function budgetTotals(pricing=jobPricing){
     const rows = budgetRows(pricing);

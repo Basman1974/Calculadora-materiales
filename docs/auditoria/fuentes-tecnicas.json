@@ -244,14 +244,25 @@
       "page_or_section": "p. 1 aplicación; p. 2 características; presentación en página del producto",
       "url": "https://capa.es/wp-content/uploads/2024/12/AplicaRev-Cal-Nature-Pro-blanco_12-24.pdf",
       "verified_on": "2026-10-12",
-      "unit": "Unidad del consumo pendiente de confirmar visualmente",
-      "conditions": "Página oficial confirma 25 kg, 42 sacos/palé, máximo 20 mm por capa. El texto del PDF muestra 19±2 sin unidad extraída: no se certifica aquí el coeficiente histórico 1,9 kg/m²/mm.",
+      "unit": "kg/m²/mm (consumo confirmado por el propietario)",
+      "conditions": "Consumo activo 1,8 kg/m²/mm confirmado por el propietario el 19/10/2026. La ficha consultada sigue sin acreditar esa unidad de consumo. Se conservan los datos documentales de presentación y espesor máximo.",
       "verified_values": {
         "max": 20,
         "maxLayer": 20,
         "p": 42
       },
-      "status": "contraste_parcial"
+      "status": "consumo_confirmado_por_propietario",
+      "owner_confirmation": {
+        "confirmed_on": "2026-10-19",
+        "source_kind": "confirmacion_del_propietario",
+        "reference": "../auditoria-rendimientos-20261019/aclaracion-morteros-cal.md",
+        "values": {
+          "kg": 1.8
+        },
+        "unit": "kg/m²/mm para kg; mm para max y maxLayer",
+        "note": "Datos facilitados por el propietario. No se atribuyen a una nueva verificación documental del fabricante."
+      },
+      "document_unit": "La ficha de 12/2024 expresa 19±2 kg sin superficie ni espesor de referencia."
     },
     "capa-base-2025": {
       "manufacturer": "Cementos Capa",
@@ -279,14 +290,26 @@
       "page_or_section": "páginas impresas 178–179; lectura visual de p. 179",
       "url": "https://github.com/Basman1974/Calculadora-materiales/blob/cdc20a230cf8b925ea7963ba128e247316614d99/cal%20revoco.pdf",
       "verified_on": "2026-10-12",
-      "unit": "kg/m²/cm",
-      "conditions": "14±1 kg/m²/cm => nominal 1,4 kg/m²/mm; 7–9 mm por capa. La aplicación permite capas adicionales: el control actual máximo 9 mm es conservador para una capa.",
+      "unit": "kg/m²/mm (consumo confirmado por el propietario)",
+      "conditions": "El propietario confirma 1,4 kg/m²/mm y espesor máximo recomendado 9 mm el 19/10/2026. El consumo no se certifica a partir de la errata de la ficha local. Se conserva el intervalo de cálculo 7–9 mm y el máximo 9 mm.",
       "verified_values": {
-        "kg": 1.4,
         "min": 7,
         "max": 9
       },
-      "status": "verificado_condicional"
+      "status": "consumo_confirmado_por_propietario",
+      "owner_confirmation": {
+        "confirmed_on": "2026-10-19",
+        "source_kind": "confirmacion_del_propietario",
+        "reference": "../auditoria-rendimientos-20261019/aclaracion-morteros-cal.md",
+        "values": {
+          "kg": 1.4,
+          "max": 9,
+          "maxLayer": 9
+        },
+        "unit": "kg/m²/mm para kg; mm para max y maxLayer",
+        "note": "Datos facilitados por el propietario. No se atribuyen a una nueva verificación documental del fabricante."
+      },
+      "document_unit": "El PDF local imprime kg/cm² y cm de espesor; errata dimensional observada en auditoría."
     }
   },
   "catalogue": [
@@ -540,11 +563,9 @@
       "family": "revestimientos",
       "name": "APLICAREV Cal Nature Pro",
       "source_id": "capa-nature-2024",
-      "status": "contraste_parcial",
-      "unverified_fields": [
-        "kg"
-      ],
-      "notes": "No certificar datos sin fuente; los pesos y unidades por palé no se usan como prestaciones normativas."
+      "status": "consumo_confirmado_por_propietario",
+      "unverified_fields": [],
+      "notes": "Consumo confirmado por el propietario el 19/10/2026; referencia y valores en sources.capa-nature-2024.owner_confirmation. La ficha del fabricante mantiene la ambigüedad documental descrita."
     },
     {
       "family": "revestimientos",
@@ -560,12 +581,11 @@
       "family": "revestimientos",
       "name": "Mortero Cal revoco Aplicarev 25kg BCO",
       "source_id": "capa-revoco-2023",
-      "status": "verificado_condicional",
+      "status": "consumo_confirmado_por_propietario",
       "unverified_fields": [
-        "maxLayer",
         "p"
       ],
-      "notes": "No certificar datos sin fuente; los pesos y unidades por palé no se usan como prestaciones normativas."
+      "notes": "Consumo confirmado por el propietario el 19/10/2026; referencia y valores en sources.capa-revoco-2023.owner_confirmation. La ficha del fabricante mantiene la ambigüedad documental descrita."
     },
     {
       "family": "puentes",
@@ -834,5 +854,6 @@
       "url": null,
       "verified_on": null
     }
-  ]
+  ],
+  "last_updated_on": "2026-10-19"
 }

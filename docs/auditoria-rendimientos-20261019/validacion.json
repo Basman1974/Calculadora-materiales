@@ -1,0 +1,85 @@
+{
+  "date": "2026-10-19",
+  "node": "v24.19.0",
+  "ci_node_version": "20 (no instalado aquí; ejecución local con Node 24)",
+  "ci_blocks": [
+    {
+      "block": 1,
+      "exit_code": 0
+    },
+    {
+      "block": 2,
+      "exit_code": 0
+    },
+    {
+      "block": 3,
+      "exit_code": 0
+    },
+    {
+      "block": 4,
+      "exit_code": 0
+    }
+  ],
+  "tests_per_file": [
+    {
+      "file": "tests/budget-flows.test.js",
+      "tests": 16,
+      "pass": 16,
+      "fail": 0,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/budget.test.js",
+      "tests": 22,
+      "pass": 22,
+      "fail": 0,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/interface-modules.test.js",
+      "tests": 28,
+      "pass": 28,
+      "fail": 0,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/interface.test.js",
+      "tests": 15,
+      "pass": 15,
+      "fail": 0,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/materials.test.js",
+      "tests": 33,
+      "pass": 33,
+      "fail": 0,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/prices.test.js",
+      "tests": 51,
+      "pass": 51,
+      "fail": 0,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/pwa.test.js",
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "exit_code": 0
+    },
+    {
+      "file": "tests/sources.test.js",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "exit_code": 0
+    }
+  ],
+  "total_tests": 181,
+  "passed": 181,
+  "failed": 0,
+  "scope": "CI local y DOM simulado. No prueba visual Android ni validación de rendimientos."
+}

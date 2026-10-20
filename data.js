@@ -23,7 +23,7 @@ window.CALC_DATA = {
       'weber.rev fino':{kg:1.7,min:2,max:5,sourceId:'weber-fino-2025',p:48,img:'weberrev-fino.jpg',spec:'WEBER · saco 25 kg'},
       'weberpral prisma':{kg:1.5,min:12,max:30,maxLayer:15,sourceId:'weber-prisma-2026',p:48,img:'weberpral-prisma.jpg',spec:'WEBER · monocapa · ficha 12/01/2026: 1,5 kg/m²/mm',url:'https://www.es.weber/files/es/2025-01/GUIA%20WEBER%202025_26_web_12%2C5mb_0.pdf'},
       'weberev hidro PLUS':{kg:1.8,min:10,max:20,maxLayer:10,sourceId:'weber-hidro-2026',p:48,img:'weberev-hidro-plus.jpg',spec:'WEBER · revoco hidrófugo'},
-      'APLICAREV Cal Nature Pro':{kg:1.9,max:20,maxLayer:20,p:42,sourceId:'capa-nature-2024',img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · Nature Pro'},
+      'APLICAREV Cal Nature Pro':{kg:1.8,max:20,maxLayer:20,p:42,sourceId:'capa-nature-2024',img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · Nature Pro'},
       'Mortero Cal base Aplicarev 25kg BCO':{kg:1.4,min:10,max:50,maxLayer:15,sourceId:'capa-base-2025',p:48,img:'mortero-cal-base-aplicarev-25kg-bco.jpg',spec:'CAPA · base cal'},
       'Mortero Cal revoco Aplicarev 25kg BCO':{kg:1.4,min:7,max:9,maxLayer:9,sourceId:'capa-revoco-2023',p:48,img:'aplicarev-cal-nature-pro.jpg',spec:'CAPA · revoco cal'}
     },
@@ -37,3 +37,13 @@ window.CALC_DATA = {
       'Imprimacion Aplica Level Primer 5 L':{k:'level_primer',sourceId:'capa-level-2023',img:'aplica-primer-top-5kg.jpg',spec:'CAPA · 5 L'}
     }
   };
+
+// Parámetros de referencia de techos: trazabilidad en docs/techos-20261019/fuentes.json.
+window.CALC_ROOF_DATA = {
+  sourceId:'knauf-d11-2025',
+  standardWeight:{'1x12.5':10,'1x15':12.5,'2x12.5':18.1},
+  f47:{simple:[{load:.15,secondary:.5,hanger:1.2},{load:.30,secondary:.5,hanger:1}],
+       double:[{load:.15,primary:.9,secondary:.5,hanger:.9},{load:.30,primary:.9,secondary:.5,hanger:.75}]},
+  perimeterFixing:.6,profileEdge:.1,hangerEdge:.15,
+  t24:{sourceId:'rockfon-t24-2023',module:.6,primary:1.2,hanger:1.2,hangerEdge:.45,perimeterFixing:.45}
+};

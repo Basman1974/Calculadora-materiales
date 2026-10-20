@@ -23,3 +23,13 @@ test('Los parámetros sin ficha identificada permanecen marcados como pendientes
   assert.ok(ledger.orientative_parameters.length>=10);
   for(const parameter of ledger.orientative_parameters){assert.equal(parameter.status,'pendiente_de_documentar');assert.equal(parameter.url,null);}
 });
+test('Los consumos de cal distinguen la confirmación del propietario de la ficha del fabricante',()=>{
+  for(const name of ['APLICAREV Cal Nature Pro','Mortero Cal revoco Aplicarev 25kg BCO']){
+    const item=catalogue.revestimientos[name],source=ledger.sources[item.sourceId],confirmation=source.owner_confirmation;
+    assert.equal(source.status,'consumo_confirmado_por_propietario');
+    assert.equal(confirmation.source_kind,'confirmacion_del_propietario');assert.equal(confirmation.confirmed_on,'2026-10-19');
+    assert.ok(source.document_unit);assert.ok(fs.existsSync(path.join(root,'docs/auditoria',confirmation.reference)));
+    for(const [field,value]of Object.entries(confirmation.values))assert.equal(item[field],value,name+' '+field);
+    assert.equal(Object.hasOwn(source.verified_values,'kg'),false,'El consumo no se atribuye a la ficha ambigua');
+  }
+});

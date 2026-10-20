@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-10-19",
+  "calculation_version": "20261019-techos",
+  "scope": "Parámetros de referencia y criterios del despiece. No certificación del sistema construido ni de perfiles genéricos.",
+  "sources": {
+    "knauf-d11-2025": {
+      "manufacturer": "Knauf",
+      "product_or_system": "D112a.es F47/17; referencias de montaje de D11.es",
+      "document": "D11.es Techos suspendidos",
+      "document_version": "10/2025",
+      "page_or_section": "pp. 5–7 carga; p. 15 encuentro; pp. 30–35 montaje y consumos",
+      "url": "https://knauf.com/api/download-center/v1/assets/59ac9b50-6faa-47a7-b13a-6a01035b2e1e?country=es&download=true",
+      "verified_on": "2026-10-19",
+      "unit": "kN/m²; m; kg/m²; ud",
+      "conditions": "Modelo sin resistencia al fuego, encuentro no portante y secundarios a 500 mm. Compatibilidad del sistema real pendiente. Se cargan solo los dos primeros rangos; no se extrapola sobre 0,30 kN/m². Los pesos son de variantes estándar de referencia, no una medición del paño. Los consumos de pasta son medias orientativas de un ejemplo de 100 m².",
+      "verified_values": {
+        "standardWeight": {
+          "1x12.5": 10,
+          "1x15": 12.5,
+          "2x12.5": 18.1
+        },
+        "f47": {
+          "simple": [
+            {
+              "load": 0.15,
+              "secondary": 0.5,
+              "hanger": 1.2
+            },
+            {
+              "load": 0.3,
+              "secondary": 0.5,
+              "hanger": 1
+            }
+          ],
+          "double": [
+            {
+              "load": 0.15,
+              "primary": 0.9,
+              "secondary": 0.5,
+              "hanger": 0.9
+            },
+            {
+              "load": 0.3,
+              "primary": 0.9,
+              "secondary": 0.5,
+              "hanger": 0.75
+            }
+          ]
+        },
+        "perimeterFixing": 0.6,
+        "profileEdge": 0.1,
+        "hangerEdge": 0.15,
+        "screwPitch1200": 0.2,
+        "pivotUniversalAnchorsPerHanger": 2,
+        "pasteReferenceSingle": 0.3,
+        "pasteReferenceDouble": 0.5
+      },
+      "status": "referencia_condicional"
+    },
+    "knauf-k612-2025": {
+      "manufacturer": "Knauf",
+      "product_or_system": "Maestra F47/17 y perfiles perimetrales",
+      "document": "K612.es Perfiles de interior para techos y trasdosados",
+      "document_version": "10/2025",
+      "page_or_section": "p. 3, características y longitudes",
+      "url": "https://knauf.com/api/download-center/v1/assets/4e9c00df-ccf0-450d-afae-d6fcecc12cd2?country=es&download=true",
+      "verified_on": "2026-10-19",
+      "unit": "m por barra",
+      "conditions": "La compra adopta barras de 3 m. El perfil comercial concreto y sus accesorios deben corresponder al sistema. No valida un sierra genérico.",
+      "verified_values": {
+        "f47Bar": 3,
+        "perimeterBar": 3
+      },
+      "status": "referencia_condicional"
+    },
+    "rockfon-t24-2023": {
+      "manufacturer": "Rockfon",
+      "product_or_system": "System T24 A, E; Chicago Metallic T24 Click 2890",
+      "document": "Guía de instalación",
+      "document_version": "10/2023",
+      "page_or_section": "pp. PDF 2–5: esquema y cargas; página PDF 13: Recomendaciones generales para la instalación",
+      "url": "https://www.rockfon.es/siteassets/commerce/es/grids/documents/documentation/gu%C3%ADas-de-instalaci%C3%B3n/es-installation-guide-rockfon-system-t24-a-click-51_d_10_2023.pdf",
+      "verified_on": "2026-10-19",
+      "unit": "m; ud",
+      "conditions": "Replanteo centrado para 600×600 y 1200×600. Revisar panel, cargas, conectores, recortes y refuerzos de instalaciones. No se utiliza 0,70 cuelgues/m² ni se presenta el sistema como universal para cualquier perfilería T24.",
+      "verified_values": {
+        "module": 0.6,
+        "primary": 1.2,
+        "hanger": 1.2,
+        "hangerEdge": 0.45,
+        "perimeterFixing": 0.45
+      },
+      "status": "referencia_condicional"
+    }
+  },
+  "implementation_criteria": {
+    "geometry": "Modelo rectangular propio. Perfiles en juntas cortas; contrapeo propuesto de placas; compra por recorrido sin reutilizar retales de perfiles con empalmes adicionales. Perímetro con aprovechamiento de cortes entre paredes.",
+    "screw_600": "Paso adoptado conservador de 150 mm; pendiente de ficha para la placa de 600 mm. No se atribuye a una prescripción universal del fabricante.",
+    "rod": "Longitud comercial configurable; corte igual a plenum más margen real introducido. Sin margen no se estima compra; el 0 requiere entrada explícita.",
+    "waste": "Merma comercial de tornillos y juntas editable, inicialmente 10 %, heredada del comportamiento anterior; no es un consumo normativo.",
+    "sierra": "Sin tabla transferible a un producto genérico: cantidades de plano introducidas y accesorios pendientes de dimensionar.",
+    "gypsum": "Consumos y fijaciones configurables según placa y montaje; valores iniciales vacíos. Sin ratios técnicos inventados.",
+    "autoportante": "Montantes y fijaciones de apoyo pendientes de tabla de luz y sistema. No se calcula suspensión."
+  }
+}

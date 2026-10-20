@@ -216,6 +216,7 @@
     c.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{
       const index=Number(b.dataset.edit),item=work[index],cfg=item.editor;if(!cfg)return;
       editingPart=index;currentCat=cfg.cat||currentCat;currentCerBody=cfg.body||currentCerBody;
+      if(cfg.screen==='roof')Object.entries(roofDefaults).forEach(([id,value])=>{if(el(id)&&!Object.hasOwn(cfg.values||{},id))el(id).value=id==='rBoardThick'?'15':value;});
       show(cfg.screen);
       for(const id of ['wEdges','lEdges'])if(el(id)&&!Object.hasOwn(cfg.values||{},id))el(id).value='0';
       $all('[data-cer-body]').forEach(b=>b.classList.toggle('active',b.dataset.cerBody===currentCerBody));
@@ -621,7 +622,7 @@
   renderPriceProviders();resetTariffEditor();
 
   // Recuperar las medidas del último uso sin alterar los presupuestos guardados.
-  try{const draft=JSON.parse(localStorage.getItem('calc-form-draft')||'{}');if(data[draft.__cat])currentCat=draft.__cat;else if(draft.wetProduct){const cat=Object.keys(data).find(k=>data[k][draft.wetProduct]);if(cat)currentCat=cat;}if(['porcelanico','pasta_roja','pasta_blanca'].includes(draft.__body))currentCerBody=draft.__body;if(el('wetProduct'))renderProducts();if(el('wetMortarWaste')&&!Object.hasOwn(draft,'wetMortarWaste')&&draft.wetWaste!==undefined)el('wetMortarWaste').value=draft.wetWaste;Object.entries(draft).forEach(([id,v])=>{const node=el(id);if(node&&node.closest('form')&&typeof v==='string')node.value=v;});}catch(e){}
+  try{const draft=JSON.parse(localStorage.getItem('calc-form-draft')||'{}');if(data[draft.__cat])currentCat=draft.__cat;else if(draft.wetProduct){const cat=Object.keys(data).find(k=>data[k][draft.wetProduct]);if(cat)currentCat=cat;}if(['porcelanico','pasta_roja','pasta_blanca'].includes(draft.__body))currentCerBody=draft.__body;if(el('wetProduct'))renderProducts();if(el('wetMortarWaste')&&!Object.hasOwn(draft,'wetMortarWaste')&&draft.wetWaste!==undefined)el('wetMortarWaste').value=draft.wetWaste;if(draft.rSys&&!Object.hasOwn(draft,'rBoardThick'))el('rBoardThick').value='15';Object.entries(draft).forEach(([id,v])=>{const node=el(id);if(node&&node.closest('form')&&typeof v==='string')node.value=v;});}catch(e){}
   document.addEventListener('input',saveDraft);
   document.addEventListener('change',saveDraft);
   function saveDraft(e){if(!e.target.closest('form')||!['wall','lining','roof','wet','ceramic'].includes(e.target.closest('.screen')?.id))return;const draft={__cat:currentCat,__body:currentCerBody};$all('form input[id],form select[id]').filter(n=>['wall','lining','roof','wet','ceramic'].includes(n.closest('.screen')?.id)).forEach(n=>draft[n.id]=n.value);persist('calc-form-draft',draft);}
