@@ -45,11 +45,11 @@
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261020-techos-visibles');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261122-revision-materiales');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261020-techos-visibles')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261122-revision-materiales')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
@@ -652,6 +652,12 @@
       : 'Estimación de fijaciones pendiente de contraste · anclaje de canales al soporte · paso máx. 600 mm · primer y último cerca del extremo';
     return ['Tacos de golpeo', n + ' uds · ' + Math.ceil(n / 100) + ' caja(s) de 100', detail];
   }
+  // Canal: techo continuo + suelo interrumpido por las puertas (0,80 m cada una).
+  function channelBars(L, doors){
+    const len=Math.max(0,Number(L)||0), doorWidth=Math.max(0,Math.round(Number(doors)||0))*0.80;
+    const need=len+Math.max(0,len-doorWidth);
+    return {need:need,bars:Math.ceil(need/3-1e-9)};
+  }
   function screwBoxes(n){ return Math.ceil(Math.max(0, n) / 1000); }
   function pylScrewLength(totalBoardMm){
     const need = Math.max(0, Number(totalBoardMm)||0) + 10;
@@ -682,8 +688,8 @@
     const rows = [];
     if(w.firstNeed) rows.push([w.hasSecond ? 'Tornillos 1.ª placa ' + w.firstType : 'Tornillos placa-metal ' + w.firstType, w.firstNeed + ' uds · ' + screwBoxes(w.firstNeed) + ' caja(s) de 1.000', w.hasSecond ? 'Estimación orientativa · capa interior · ≈8 ud/m²·cara · paso amplio · +10% merma · UNE-EN 14566' : 'Estimación orientativa · cara vista · 15 ud/m² · paso orientativo de pared 250 mm; comprobar el sistema y el uso en techo · largo = espesor + 10 mm · +10% merma']);
     if(w.hasSecond && w.secondNeed) rows.push(['Tornillos 2.ª placa ' + w.secondType, w.secondNeed + ' uds · ' + screwBoxes(w.secondNeed) + ' caja(s) de 1.000', 'Estimación orientativa · cara vista · 15 ud/m² · paso orientativo de pared 250 mm; comprobar el sistema y el uso en techo · largo = 2 placas + 10 mm · UNE-EN 14566 · +10% merma']);
-    if(w.hasInner && w.tapeInner) rows.push(['Cinta de papel 1.ª capa', w.tapeInner.toFixed(2) + ' m · ' + Math.ceil(w.tapeInner / 150) + ' rollo(s) de 150 m', 'Estimación orientativa · juntas de todas las capas · 1,6 m/m² · UNE-EN 13963']);
-    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner.toFixed(2) + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'Estimación orientativa · acabado Q1 interior · ≈0,20 kg/m² · UNE-EN 13963']);
+    // Capas interiores: solo relleno de juntas con pasta; la cinta depende del sistema (ver docs/auditoria-rendimientos-20261019, R10).
+    if(w.hasInner && w.pasteInner) rows.push(['Pasta de juntas 1.ª capa', w.pasteInner.toFixed(2) + ' kg · ' + Math.ceil(w.pasteInner / 20) + ' saco(s) de 20 kg', 'Estimación orientativa · relleno de juntas de capas interiores sin cinta · ≈0,20 kg/m² · verificar si el sistema exige cinta en capas interiores · UNE-EN 13963']);
     if(w.hasVisible && w.tapeVisible) rows.push(['Cinta de papel cara vista', w.tapeVisible.toFixed(2) + ' m · ' + Math.ceil(w.tapeVisible / 150) + ' rollo(s) de 150 m', 'Estimación orientativa · junta de última placa · 1,6 m/m² · +10% merma · UNE-EN 13963']);
     if(w.hasVisible && w.pasteVisible) rows.push(['Pasta de juntas cara vista', w.pasteVisible.toFixed(2) + ' kg · ' + Math.ceil(w.pasteVisible / 20) + ' saco(s) de 20 kg', 'Estimación orientativa · acabado Q2 · juntas + cabezas · ≈0,40 kg/m² · +10% merma']);
     return rows;
