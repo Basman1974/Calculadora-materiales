@@ -43,7 +43,7 @@ test('Obra húmeda: peso de ladrillos según catálogo y sacos de mortero',()=>{
 test('Inicio sin imágenes externas y modo Básico/Pro disponible',()=>{
   const html=['ui-a.html','ui-b.html','ui-c.html'].map(p=>readFileSync(join(root,p),'utf8')).join('');
   assert.doesNotMatch(html,/wixstatic|squarespace|unsplash|gyproclatenplaatsen/);
-  for(const n of ['tabique','trasdosado','techo','humeda','ceramica'])assert.match(html,new RegExp('tile-'+n+'\\.svg'));
+  for(const n of ['tabique','trasdosado','techo','humeda','ceramica'])assert.match(html,new RegExp('tile-'+n+'\\.jpg'));
   assert.match(html,/id="levelToggle"/);
   const f=fixture();assert.equal(f.nodes.levelToggle.textContent,'Básico');
 });
