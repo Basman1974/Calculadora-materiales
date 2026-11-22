@@ -205,7 +205,8 @@
       rows.push(['ALTURA FUERA DE TABLA','Requiere sistema de gran altura','No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+layersGov+' capa(s) de '+thick.toString().replace('.',',')+' mm. Revisar documentación técnica específica del sistema.']);
       rows.push(['Montantes','No dimensionados','No se genera una cantidad estructural falsa fuera de la tabla verificada.']);
     }
-    rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo · barra 3 m']);
+    const channel=channelBars(L,num('wDoors'));
+    rows.push(['Canal R'+useP,channel.bars+' barras','UNE-EN 14195 · suelo y techo · '+channel.need.toFixed(2)+' m (se descuenta 0,80 m de suelo por puerta) · barra 3 m']);
     rows.push.apply(rows,pylJoinRows(finish));
     rows.push(mmRow(A,'wall'));
     rows.push(['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','Estimación orientativa · perímetro de canales y arranques']);
@@ -232,10 +233,6 @@
   on(el('wMembrane'),'change',calcWall);
   ['wL','wH','wDoors','wWins','wEdges','wLabor','wMembraneWaste'].forEach(id=>on(el(id),'input',calcWall));
   ['wL','wH'].forEach((id,index)=>on(el(id),'keydown',event=>{if(event.key!=='Enter')return;event.preventDefault();if(index===0)focusInput(el('wH'));else{el(id).blur?.();el('wallForm').requestSubmit?.();}}));
-  document.addEventListener('change', e => {
-    const id=e.target && e.target.id;
-    if(['wA','wB','wP','wS','wBoardThick','wWool','wBoardType'].includes(id)) calcWall();
-  });
   $all('[data-wall-preset]').forEach(btn=>on(btn,'click',()=>{
     const p=btn.dataset.wallPreset;
     const set=(id,v)=>{if(el(id)) el(id).value=String(v);};
@@ -308,10 +305,12 @@
         rows.push(['ALTURA / CONFIGURACIÓN FUERA DE TABLA','Revisar documentación técnica del sistema',bad125?'La tabla cargada no da valor para 1×12,5 mm en trasdosado autoportante.':'No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm.']);
         rows.push(['Montantes','No dimensionados','No se genera una cantidad estructural falsa fuera de la tabla verificada.']);
       }
-      rows.push(['Canal R'+useP,Math.ceil(2*L/3)+' barras','UNE-EN 14195 · suelo y techo'],['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','Estimación orientativa · perímetro'],tacoRow(L,2));
+      const channel=channelBars(L,num('lDoors'));
+      rows.push(['Canal R'+useP,channel.bars+' barras','UNE-EN 14195 · suelo y techo · '+channel.need.toFixed(2)+' m (se descuenta 0,80 m de suelo por puerta) · barra 3 m'],['Banda acústica',bandNeed.toFixed(1)+' m · '+Math.ceil(bandNeed/30)+' rollo(s) de 30 m','Estimación orientativa · perímetro'],tacoRow(L,2));
       if(useWool)rows.push(woolRow(net,woolThick(useP,'auto'),'auto'));
     }
-    if(t!=='direct'){rows.push.apply(rows,pylJoinRows(finish));rows.push(mmRow(A,'lining'));}else rows.push.apply(rows,pylJoinRows(finish).filter(r=>r[0].indexOf('Tornillos')!==0));
+    // El semidirecto (omega fijada al soporte) no tiene uniones perfil-perfil: sin tornillos metal-metal.
+    if(t!=='direct'){rows.push.apply(rows,pylJoinRows(finish));if(t==='auto')rows.push(mmRow(A,'lining'));}else rows.push.apply(rows,pylJoinRows(finish).filter(r=>r[0].indexOf('Tornillos')!==0));
     if(holes)rows.push(['Huecos descontados',holes.toFixed(2)+' m²',(num('lDoors')||0)+' puerta(s) · '+(num('lWins')||0)+' ventana(s) · restan placa y acabado']);
     if(num('lEdges'))rows.push(cornerBeadRow(num('lEdges')));
     const lab=laborRow(net,num('lLabor'),'trasdosado');if(lab)rows.push(lab);
