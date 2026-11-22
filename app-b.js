@@ -211,7 +211,7 @@
     renderSavedJobs();
     const c = el('workContent');
     if(!c) return;
-    c.innerHTML = work.length ? work.map((x,i) => '<div class="workItem"><b>' + (i + 1) + '. ' + esc(x.title) + '</b><div class="small">Zona: ' + esc(x.zone||'General') + ' · ' + (x.items||[]).length + ' líneas</div><button class="btn" data-edit="' + i + '" type="button" '+(x.editor?'':'disabled')+'>Editar</button> <button class="btn" data-duplicate="' + i + '" type="button">Duplicar</button> <button class="btn" data-del="' + i + '" style="margin-top:8px">Eliminar</button></div>').join('') : '<div class="empty">Todavía no has añadido partidas.</div>';
+    c.innerHTML = work.length ? work.map((x,i) => '<div class="workItem"><b>' + (i + 1) + '. ' + esc(x.title) + '</b><div class="small">Zona: ' + esc(x.zone||'General') + ' · ' + (x.items||[]).length + ' líneas' + (partWeight(x).kg>0?' · ≈ '+esc(weightText(partWeight(x).kg)):'') + '</div><button class="btn" data-edit="' + i + '" type="button" '+(x.editor?'':'disabled')+'>Editar</button> <button class="btn" data-duplicate="' + i + '" type="button">Duplicar</button> <button class="btn" data-del="' + i + '" style="margin-top:8px">Eliminar</button></div>').join('') : '<div class="empty">Todavía no has añadido partidas.</div>';
     c.querySelectorAll('[data-duplicate]').forEach(b=>b.onclick=()=>{work.push(JSON.parse(JSON.stringify(work[Number(b.dataset.duplicate)])));saveWork();renderWork();});
     c.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{
       const index=Number(b.dataset.edit),item=work[index],cfg=item.editor;if(!cfg)return;
@@ -242,12 +242,18 @@
     const parts = '<div class="groupHead">PARTIDAS POR ESTANCIA</div>' + work.map((x,i) => '<div class="listLine"><span><b>' + esc(x.zone||'General') + '</b> · ' + (i+1) + '. ' + esc(x.title) + '</span><strong>' + (x.items||[]).length + '</strong></div>').join('');
     const table = '<div class="groupHead">MATERIALES Y PRECIOS</div><div class="budgetHead"><span>Concepto</span><span>Ud</span><span>€/unidad sin IVA</span><span>Importe</span></div>' +
       tot.rows.map(budgetLineHTML).join('');
-    const sums = '<div data-budget-totals>'+budgetSummaryHTML(tot)+'</div>';
+    const sums = '<div data-budget-totals>'+budgetSummaryHTML(tot)+'</div>'+jobWeightHTML();
     const notes = jobMeta.notes ? '<div class="info">' + esc(jobMeta.notes) + '</div>' : '';
     const valid = jobMeta.valid ? '<div class="small" style="margin-top:8px">Validez: ' + esc(jobMeta.valid) + ' días. Cantidades orientativas; verificar el sistema y la medición. Precios introducidos por el usuario.</div>' : '';
     c.innerHTML = '<div class="info" data-budget-warning role="status"'+(tot.provisional?'':' hidden')+'>'+(tot.provisional?'Presupuesto provisional: '+esc(provisionalText(tot))+'.':'')+'</div>' + head + parts + table + sums + notes + valid;
     bindBudgetPrices(c,tot.rows);
     refreshBudgetOverview(tot);
+  }
+  function jobWeightHTML(){
+    const kg=work.reduce((sum,part)=>sum+partWeight(part).kg,0);
+    if(!(kg>0))return '';
+    const without=[...new Set(work.flatMap(part=>partWeight(part).without))];
+    return '<div class="budgetWeight"><span>Peso orientativo del material</span><strong>≈ '+esc(weightText(kg))+'</strong><p class="small">Placas, perfiles, sacos, envases y piezas con peso de ficha.'+(without.length?' No incluye: '+esc(without.map(prettyText).join(', '))+'.':'')+' Para carga y transporte, confirma con el proveedor.</p></div>';
   }
   function budgetLineHTML(row,index){
     const id=esc(encodeURIComponent(row.id)),quantity=esc(String(row.qty).replace('.',',')+' '+row.unit),priceId='budgetPrice'+index,errorId=priceId+'Error';
@@ -631,6 +637,49 @@
   $all('[data-cer-body]').forEach(b=>b.classList.toggle('active',b.dataset.cerBody===currentCerBody));
   if(el('lType'))setLiningType(el('lType').value);
   if(el('rSys'))setRoofSys(el('rSys').value);
+    // ── Modo Básico / Pro: Básico oculta normas, fórmulas y fuentes. Los avisos técnicos siempre se muestran. ──
+  function setLevel(level){
+    document.body.dataset.level=level;
+    const button=el('levelToggle');
+    if(button){button.textContent=level==='pro'?'Pro':'Básico';button.setAttribute('aria-pressed',String(level==='pro'));}
+    try{localStorage.setItem('calc-level',level);}catch(e){}
+  }
+  (function(){let level='basic';try{if(localStorage.getItem('calc-level')==='pro')level='pro';}catch(e){}setLevel(level);})();
+  on(el('levelToggle'),'click',e=>{e.preventDefault();e.stopPropagation();setLevel(document.body.dataset.level==='pro'?'basic':'pro');});
+
+  // ── Entrada rápida: botones + / − y alturas habituales ──
+  function nudgeInput(input,value){
+    input.value=String(value).replace('.',',');
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+  function enhanceMeasures(){
+    const steps={wL:.1,wH:.1,lRoomA:.1,lRoomB:.1,lL:.1,lH:.1,rL:.1,rW:.1,wetL:.1,wetH:.1,wetArea:1,cArea:1};
+    const heights=[2.5,2.6,2.7,2.8,3];
+    Object.entries(steps).forEach(([id,step])=>{
+      const input=el(id);
+      if(!input||typeof input.insertAdjacentElement!=='function'||input.dataset.enhanced)return;
+      input.dataset.enhanced='1';
+      const label=input.closest('label');
+      const wrap=document.createElement('span');wrap.className='stepper';
+      input.insertAdjacentElement('beforebegin',wrap);wrap.appendChild(input);
+      // El campo va primero en el DOM para que la etiqueta siga apuntando a él; el orden visual lo da el CSS.
+      const unit=step<1?'0,10 m':'1 m²';
+      [['−',-1,'stepMinus','Restar '+unit],['+',1,'stepPlus','Sumar '+unit]].forEach(([text,sign,cls,aria])=>{
+        const b=document.createElement('button');b.type='button';b.className='stepBtn '+cls;b.textContent=text;b.setAttribute('aria-label',aria);
+        b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(input.readOnly)return;const v=finiteAmount(input.value);nudgeInput(input,Math.max(0,Math.round((v+sign*step)*100)/100));});
+        wrap.appendChild(b);
+      });
+      if((id==='wH'||id==='lH')&&label){
+        const chips=document.createElement('div');chips.className='heightChips';chips.setAttribute('role','group');chips.setAttribute('aria-label','Alturas habituales');
+        heights.forEach(h=>{const b=document.createElement('button');b.type='button';b.className='heightChip';b.textContent=esNumberText(h.toFixed(2))+' m';b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();nudgeInput(input,h);syncChips();});chips.appendChild(b);});
+        const syncChips=()=>chips.querySelectorAll('.heightChip').forEach((b,i)=>b.setAttribute('aria-pressed',String(Math.abs(finiteAmount(input.value)-heights[i])<1e-9)));
+        input.addEventListener('input',syncChips);syncChips();
+        label.insertAdjacentElement('afterend',chips);
+      }
+    });
+  }
+  enhanceMeasures();
+
   fillJobFields();
 })();
-

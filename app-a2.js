@@ -47,21 +47,53 @@
     const conditionalHeight=rows.some(row=>row[0]==='Comprobación de altura');
     const warning=pending?'Hay elementos sin dimensionar o un despiece pendiente. El presupuesto será provisional.':conditionalHeight?'Altura orientativa según tabla del sistema. Confirma perfiles, placas y condiciones: este cálculo no acredita la validez de perfiles genéricos.':'';
     const quick=rows.filter(x=>!isTechnicalRow(x)||missing.includes(x));
-    const quickHtml=quick.map(x=>missing.includes(x)?
-      '<div class="quickPending"><div class="quickLine"><span>'+esc(x[0])+'</span><strong>Pendiente de calcular</strong></div><p>'+esc(x[2]||'Completa los datos del sistema para calcular este material.')+'</p></div>':
-      '<div class="quickLine"><span>'+esc(x[0])+'</span><strong>'+esc(x[1])+'</strong></div>').join('');
+    const quickHtml=quick.map(x=>{
+      if(missing.includes(x))return '<div class="quickPending"><div class="quickLine"><span>'+esc(x[0])+'</span><strong>Pendiente de calcular</strong></div><p>'+esc(x[2]||'Completa los datos del sistema para calcular este material.')+'</p></div>';
+      const q=splitQty(x[1]);
+      return '<div class="quickLine matCard" data-kind="'+materialKind(x[0])+'">'+materialIcon(x[0])+'<span class="matName">'+esc(prettyText(x[0]))+'</span><strong class="matQty">'+esc(q.main)+(q.rest?'<small>'+esc(q.rest)+'</small>':'')+'</strong></div>';
+    }).join('');
     const completion=missing.length?'<div class="roofCompletion" role="status"><b>Faltan cantidades en este despiece</b><p>'+esc(missing[0][2])+'</p>'+
       (options.actions||[]).map(action=>'<button class="btn" type="button" data-roof-complete="'+esc(action.field)+'">'+esc(action.label)+'</button>').join('')+
       '<p class="small">El presupuesto será provisional. Los elementos pendientes aparecen en la lista. Puedes guardar el despiece para completarlo después.</p></div>':'';
-    const tech=rows.map(x=>{const q=rowConfidence(x);return '<div class="row"><div class="rowName">'+esc(x[0])+' <span class="trust '+q.c+'">'+q.t+'</span></div><div class="rowVal">'+esc(x[1])+'</div>'+(x[2]?'<div class="rowDetail">'+esc(x[2])+'</div>':'')+'</div>';}).join('');
-    return '<div class="resultHead"><div class="eyebrow">'+(missing.length?'DESPIECE INCOMPLETO':'MATERIALES CALCULADOS')+'</div><div class="resultTitle">'+esc(title)+'</div><div class="resultMeta">'+esc(meta)+'</div></div>'+
+    const weight=partWeight({items:rows});
+    const materialCount=quick.filter(x=>!missing.includes(x)&&!/^mano de obra/i.test(x[0])).length;
+    const chips='<div class="resultChips">'+(materialCount?'<span class="chip">'+materialCount+' material'+(materialCount===1?'':'es')+'</span>':'')+(weight.kg>0?'<span class="chip chipWeight" title="Peso orientativo de los materiales con peso de ficha">≈ '+esc(weightText(weight.kg))+'</span>':'')+'</div>';
+    const weightRow=weight.kg>0?'<div class="row"><div class="rowName">Peso orientativo <span class="trust estimate">ESTIMACIÓN</span></div><div class="rowVal">≈ '+esc(weightText(weight.kg))+'</div><div class="rowDetail">Placas (kg/m² de ficha según tipo y espesor), perfiles de 0,6 mm (kg/m de ficha), sacos y envases por su peso nominal y piezas con peso unitario en catálogo.'+(weight.without.length?' Sin peso en el total: '+esc(weight.without.map(prettyText).join(', '))+'.':'')+'</div></div>':'';
+    const tech=rows.map(x=>{const q=rowConfidence(x);return '<div class="row"><div class="rowName">'+esc(x[0])+' <span class="trust '+q.c+'">'+q.t+'</span></div><div class="rowVal">'+esc(x[1])+'</div>'+(x[2]?'<div class="rowDetail">'+esc(x[2])+'</div>':'')+'</div>';}).join('')+weightRow;
+    return '<div class="resultHead"><div class="eyebrow">'+(missing.length?'DESPIECE INCOMPLETO':'MATERIALES CALCULADOS')+'</div><div class="resultTitle">'+esc(prettyText(title))+'</div><div class="resultMeta">'+esc(meta)+'</div>'+chips+'</div>'+
+      (options.plan||'')+
       completion+(!completion&&warning?'<div class="info" role="status">'+esc(warning)+'</div>':'')+'<div class="quickResult">'+quickHtml+'</div>'+
       '<details class="techDetails"><summary>Ver cálculo técnico, fórmulas y fuentes</summary><div class="groupHead">DETALLE TÉCNICO</div>'+tech+'</details>'+
       (canAdd?'<div class="workZoneWrap"><label>Estancia / zona<input class="workZone" placeholder="Ej. Baño principal"></label></div>'+
       '<div class="actions"><button class="btn addWork" type="button">Añadir a Obra</button></div>':'');
   }
+  // Barra fija con el resumen en vivo: placas, peso y € orientativos de la partida actual.
+  function livePrice(obj){
+    let total=0,priced=0,missingPrice=0;
+    mergedLines([obj]).forEach(line=>{
+      if(line.labor){total+=line.amount;return;}
+      const id=materialPriceId(line.name,line.unit),held=jobPricing.entries.find(e=>e.materialId===id);
+      const price=held?held.price:(catalogMaterialRate(id,jobPricing.defaultProviderId)?.price??legacyLinePrice(line)?.price);
+      if(typeof price==='number'&&Number.isFinite(price)&&price>=0){total+=line.qty*price;priced++;}else missingPrice++;
+    });
+    return {total:roundEuros(total),priced,missingPrice};
+  }
+  function updateLive(resultId,obj){
+    const bar=el(String(resultId).replace('Result','Live'));if(!bar)return;
+    if(!obj){bar.textContent='Revisa los datos marcados';bar.hidden=false;bar.classList.add('liveError');return;}
+    bar.classList.remove('liveError');
+    const items=obj.items||[],parts=[];
+    const boards=items.filter(r=>/^Placa/.test(r[0])).reduce((a,r)=>a+lineQty(r[1]),0);
+    if(boards)parts.push(boards+' placa'+(boards===1?'':'s'));
+    if(obj.net||obj.area)parts.push(money(obj.net||obj.area)+' m²');
+    const w=partWeight(obj);if(w.kg>0)parts.push('≈ '+weightText(w.kg));
+    const p=livePrice(obj);
+    if(p.priced)parts.push(money(p.total)+' €'+(p.missingPrice?' + '+p.missingPrice+' sin precio':''));
+    bar.innerHTML=parts.map(x=>'<span>'+esc(x)+'</span>').join('');bar.hidden=!parts.length;
+  }
   function bindAdd(node, obj){
     if(!node) return;
+    updateLive(node.id,obj);
     const b=node.querySelector('.addWork');
     if(b) b.onclick=e=>{
       const section=node.closest('.screen');
@@ -144,6 +176,51 @@
     box.innerHTML=mountingSheet(paths[sys]||'assets/montaje-techo.svg',m.name,m.famName,m.hint);
   }
 
+  // ── Dibujo generado con las medidas: alzado del paño y sección de capas ──
+  function planNumber(v){return esNumberText(Number(v).toFixed(2));}
+  function elevationPlan(cfg){
+    const L=Math.max(0.1,cfg.L),H=Math.max(0.1,cfg.H),VW=360,ml=30,mr=8,mt=26,mb=30;
+    const s=Math.min((VW-ml-mr)/L,170/H),w=L*s,h=H*s,VH=mt+h+mb,x0=ml,y0=mt;
+    const X=m=>x0+m*s,Y=m=>y0+h-m*s;
+    const out=[];
+    out.push('<rect class="pWall" x="'+x0+'" y="'+y0+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'"/>');
+    if(cfg.wool)out.push('<rect class="pWool" x="'+x0+'" y="'+y0+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'"/>');
+    // Juntas de placa: cada 1,20 m en vertical y junta horizontal a 3,00 m si la placa no llega.
+    if(cfg.boards){
+      for(let b=1.2;b<L-0.01;b+=1.2)out.push('<line class="pJoint" x1="'+X(b).toFixed(1)+'" y1="'+y0+'" x2="'+X(b).toFixed(1)+'" y2="'+(y0+h).toFixed(1)+'"/>');
+      if(H>3.0005)out.push('<line class="pJoint" x1="'+x0+'" y1="'+Y(3).toFixed(1)+'" x2="'+(x0+w).toFixed(1)+'" y2="'+Y(3).toFixed(1)+'"/>');
+    }
+    // Huecos repartidos a lo largo del paño (posición orientativa).
+    const holes=[];for(let i=0;i<cfg.doors;i++)holes.push('door');for(let i=0;i<cfg.wins;i++)holes.push('win');
+    const holeRects=holes.map((t,i)=>{const cx=L*(i+1)/(holes.length+1),hw=t==='door'?0.8:1.2,hh=t==='door'?Math.min(2.1,H):Math.min(1.2,Math.max(0,H-0.9)),y=t==='door'?0:Math.min(0.9,H);return {t,x:cx-hw/2,w:hw,y,h:hh};});
+    // Estructura: montantes (tabique/autoportante), omegas (semidirecto) o pelladas (directo).
+    if(cfg.studs){
+      const xs=[];for(let a=0;a<L-0.001;a+=cfg.sp)xs.push(a);xs.push(L);
+      holeRects.forEach(r=>{if(cfg.jambs){xs.push(Math.max(0,r.x));xs.push(Math.min(L,r.x+r.w));}});
+      [...new Set(xs.map(v=>v.toFixed(3)))].map(Number).forEach(a=>out.push('<line class="'+(cfg.studs==='omega'?'pOmega':'pStud')+(cfg.doubled?' pDouble':'')+'" x1="'+X(a).toFixed(1)+'" y1="'+y0+'" x2="'+X(a).toFixed(1)+'" y2="'+(y0+h).toFixed(1)+'"/>'));
+      if(cfg.studs==='stud'){out.push('<line class="pTrack" x1="'+x0+'" y1="'+(y0+1.5)+'" x2="'+(x0+w).toFixed(1)+'" y2="'+(y0+1.5)+'"/>');out.push('<line class="pTrack" x1="'+x0+'" y1="'+(y0+h-1.5).toFixed(1)+'" x2="'+(x0+w).toFixed(1)+'" y2="'+(y0+h-1.5).toFixed(1)+'"/>');}
+    }else if(cfg.dabs){
+      for(let a=0.3;a<L;a+=0.4)for(let b=0.3;b<H;b+=0.4)out.push('<circle class="pDab" cx="'+X(a).toFixed(1)+'" cy="'+Y(b).toFixed(1)+'" r="'+Math.max(1.6,0.06*s).toFixed(1)+'"/>');
+    }
+    holeRects.forEach(r=>out.push('<rect class="pHole" x="'+X(r.x).toFixed(1)+'" y="'+Y(r.y+r.h).toFixed(1)+'" width="'+(r.w*s).toFixed(1)+'" height="'+(r.h*s).toFixed(1)+'"/><text class="pHoleTxt" x="'+X(r.x+r.w/2).toFixed(1)+'" y="'+(Y(r.y+r.h/2)+3).toFixed(1)+'">'+(r.t==='door'?'P':'V')+'</text>'));
+    out.push('<rect class="pFrame" x="'+x0+'" y="'+y0+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'"/>');
+    // Cotas
+    out.push('<path class="pDim" d="M'+x0+' '+(y0+h+12).toFixed(1)+'h'+w.toFixed(1)+'M'+x0+' '+(y0+h+8).toFixed(1)+'v8M'+(x0+w).toFixed(1)+' '+(y0+h+8).toFixed(1)+'v8"/><text class="pDimTxt" x="'+(x0+w/2).toFixed(1)+'" y="'+(y0+h+25).toFixed(1)+'">'+planNumber(L)+' m</text>');
+    out.push('<path class="pDim" d="M'+(x0-12)+' '+y0+'v'+h.toFixed(1)+'M'+(x0-16)+' '+y0+'h8M'+(x0-16)+' '+(y0+h).toFixed(1)+'h8"/><text class="pDimTxt" transform="translate('+(x0-17)+' '+(y0+h/2).toFixed(1)+') rotate(-90)">'+planNumber(H)+' m</text>');
+    out.push('<text class="pTop" x="'+x0+'" y="16">'+esc(cfg.caption)+'</text>');
+    const legend=[cfg.boards?'<span><i class="lgJoint"></i>Junta de placa</span>':'',cfg.studs==='stud'?'<span><i class="lgStud"></i>Montante'+(cfg.doubled?' doble':'')+'</span>':'',cfg.studs==='omega'?'<span><i class="lgOmega"></i>Omega</span>':'',cfg.dabs?'<span><i class="lgDab"></i>Pasta de agarre</span>':'',cfg.wool?'<span><i class="lgWool"></i>Lana</span>':'',holes.length?'<span><i class="lgHole"></i>Hueco (P/V)</span>':''].join('');
+    return '<figure class="planBox"><figcaption>Tu '+esc(cfg.label)+'</figcaption><svg class="plan" viewBox="0 0 '+VW+' '+VH.toFixed(0)+'" role="img" aria-label="Alzado de '+esc(cfg.label)+' de '+planNumber(L)+' por '+planNumber(H)+' metros">'+out.join('')+'</svg>'+(cfg.section||'')+'<div class="planLegend">'+legend+'</div><p class="planNote">Esquema a escala del paño. La posición de puertas y ventanas es orientativa.</p></figure>';
+  }
+  // Sección horizontal: capas de placa a cada lado de la estructura.
+  function sectionPlan(left,core,right,label){
+    const parts=[];let x=10;const H=26,y=4,bw=9;
+    for(let i=0;i<left;i++){parts.push('<rect class="sBoard" x="'+x+'" y="'+y+'" width="'+bw+'" height="'+H+'"/>');x+=bw+1;}
+    if(core){parts.push('<rect class="sCore'+(core.wool?' sWool':'')+'" x="'+x+'" y="'+y+'" width="'+core.w+'" height="'+H+'"/><text class="sTxt" x="'+(x+core.w/2)+'" y="'+(y+H/2+4)+'">'+esc(core.text)+'</text>');x+=core.w;}
+    if(core&&core.support){parts.push('<rect class="sSupport" x="'+x+'" y="'+y+'" width="26" height="'+H+'"/>');x+=26;}
+    for(let i=0;i<right;i++){x+=1;parts.push('<rect class="sBoard" x="'+x+'" y="'+y+'" width="'+bw+'" height="'+H+'"/>');x+=bw;}
+    return '<div class="sectionPlan"><svg viewBox="0 0 '+(x+10)+' 34" aria-hidden="true">'+parts.join('')+'</svg><span>'+esc(label)+'</span></div>';
+  }
+
   function updateWallOverview(){
     const ids=['wL','wH','wDoors','wWins','wEdges','wLabor',...(el('wMembrane')?.value!=='none'?['wMembraneWaste']:[])];
     const valid=ids.every(id=>{const text=String(el(id)?.value??'').trim(),n=Number(text.replace(',','.'));return el(id)?.checkValidity()&&text!==''&&Number.isFinite(n)&&n>=0&&(!['wL','wH'].includes(id)||n>0)&&(!['wDoors','wWins'].includes(id)||Number.isInteger(n));});
@@ -220,7 +297,8 @@
     renderWallSketch(a,b,useP,useSp,useWool);
     const box=el('wallResult');
     const metaStruct=structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA';
-    if(box){box.innerHTML=resultHTML(obj.title,'Familia Tabique PYL · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,'wall')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows);bindAdd(box,obj);}
+    const plan=elevationPlan({label:'tabique',L,H,sp:useSp,doors:num('wDoors'),wins:num('wWins'),boards:true,studs:structural?'stud':'',jambs:true,doubled,wool:useWool,caption:(structural?'M'+useP+(doubled?' doble':'')+' cada '+Math.round(useSp*1000)+' mm':'Estructura sin dimensionar')+' · '+plateUds+' placas '+board.label,section:sectionPlan(a,{w:46,text:'M'+useP,wool:useWool},b,'Sección: '+a+' placa'+(a>1?'s':'')+' · M'+useP+(useWool?' con lana':'')+' · '+b+' placa'+(b>1?'s':''))});
+    if(box){box.innerHTML=resultHTML(obj.title,'Familia Tabique PYL · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,'wall')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows,true,{plan});bindAdd(box,obj);}
   }
   on(el('wallForm'),'submit',e=>{
     e.preventDefault();calcWall();
@@ -262,18 +340,29 @@
   }
   function updateLiningOverview(valid,structural){
     const type=el('lType').value,direct=type==='direct',layers=direct?1:num('lLayers'),area=num('lL')*num('lH'),holes=openingsM2(num('lDoors'),num('lWins'));
-    setOverview('liningMeasureSummary',valid?inputNumberText('lL')+' × '+inputNumberText('lH')+' m · '+money(area)+' m² brutos · '+money(area-holes)+' m² netos':'Revisa los datos señalados para calcular los materiales.');
+    setOverview('liningMeasureSummary',valid?(liningRoomMode()?'Estancia '+inputNumberText('lRoomA')+' × '+inputNumberText('lRoomB')+' m → perímetro ':'')+inputNumberText('lL')+' × '+inputNumberText('lH')+' m · '+money(area)+' m² brutos · '+money(area-holes)+' m² netos':'Revisa los datos señalados para calcular los materiales.');
     setOverview('liningSystemSummary',({direct:'Directo · placas adheridas, sin perfilería',semi:'Semidirecto · perfiles omega',auto:'Autoportante · M'+inputNumberText('lP')})[type]+' · '+layers+' placa(s) '+boardTypeLabel('lBoardType')+' '+inputNumberText('lBoardThick')+' mm'+(direct?' · pasta '+inputNumberText('lPasteRate')+' kg/m² configurados':' · separación '+Math.round(num('lS')*1000)+' mm · '+(el('lWool').value==='0'?'sin lana':'con lana mineral')+' · '+(el('lMembrane').value==='1'?'con lámina (merma '+inputNumberText('lMembraneWaste')+' %)':'sin lámina')));
     setOverview('liningOpeningsSummary',inputNumberText('lDoors')+' puerta(s) · '+inputNumberText('lWins')+' ventana(s) · '+inputNumberText('lEdges')+' m de aristas · merma '+inputNumberText('lWaste')+' %');
     setOverview('liningLaborSummary',num('lLabor')?inputNumberText('lLabor')+' €/m² sin IVA':el('lLabor').checkValidity()?'Sin añadir':'Revisar precio');
     const notice=direct?'Pasta de agarre: consumo aproximado configurable; comprueba producto y soporte.':type==='semi'?'Verifica la compatibilidad de omega, aislamiento, placa y fijaciones del sistema.':!structural?'Altura o configuración fuera de tabla: montantes sin dimensionar. Presupuesto provisional.':((structural.profile!==num('lP')||structural.spacing!==Math.round(num('lS')*1000)||structural.double)?'El resultado propone M'+structural.profile+' '+(structural.double?'doble H/cajón':'simple')+' cada '+structural.spacing+' mm. ':'')+'La comprobación de altura es condicional: verifica los perfiles y condiciones del sistema.';
     setOverview('liningTechnicalNotice',valid?notice:'Hay datos por corregir. No se pueden añadir estos materiales a la obra.');
   }
+  // Estancia completa: el largo del trasdosado es el perímetro 2 × (largo + ancho), con 4 esquinas.
+  function liningRoomMode(){return el('lMeasure')?.value==='room';}
+  function syncLiningRoom(){
+    const room=liningRoomMode();
+    el('lRoomWrap')?.classList.toggle('hidden',!room);
+    if(el('lLLabel'))el('lLLabel').textContent=room?'Perímetro calculado (m)':'Largo (m)';
+    const input=el('lL');if(!input)return;
+    input.readOnly=room;
+    if(room){const a=num('lRoomA'),b=num('lRoomB');input.value=a>0&&b>0?String(Math.round(2*(a+b)*1000)/1000):'';}
+  }
   function calcLining(){
+    syncLiningRoom();
     syncLiningControls();
     const eligible=el('lType').value!=='direct'&&num('lLayers')>=2;
     const membraneRow=singleFaceMembrane('l',eligible,netArea(num('lL')*num('lH'),openingsM2(num('lDoors'),num('lWins'))));
-    if(!validCalculation('liningResult',[['lL',0.000001],['lH',0.000001],...(el('lType').value!=='direct'?[['lLayers',1,true]]:[]),['lDoors',0,true],['lWins',0,true],['lEdges'],['lWaste'],['lLabor'],...(membraneRow?[['lMembraneWaste']]:[]),...(el('lType').value==='direct'?[['lPasteRate',0.000001]]:[])],openingsM2(num('lDoors'),num('lWins'))>num('lL')*num('lH')?'Los huecos superan la superficie del trasdosado.':'','lDoors')){updateLiningOverview(false);return;}
+    if(!validCalculation('liningResult',[...(liningRoomMode()?[['lRoomA',0.000001],['lRoomB',0.000001]]:[]),['lL',0.000001],['lH',0.000001],...(el('lType').value!=='direct'?[['lLayers',1,true]]:[]),['lDoors',0,true],['lWins',0,true],['lEdges'],['lWaste'],['lLabor'],...(membraneRow?[['lMembraneWaste']]:[]),...(el('lType').value==='direct'?[['lPasteRate',0.000001]]:[])],openingsM2(num('lDoors'),num('lWins'))>num('lL')*num('lH')?'Los huecos superan la superficie del trasdosado.':'','lDoors')){updateLiningOverview(false);return;}
     const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=t==='direct'?1:num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15,waste=Math.max(0,num('lWaste')||0),wf=1+waste/100;
     const holes=openingsM2(num('lDoors'),num('lWins')),net=netArea(A,holes),board=bestPylBoard(H),kind=boardTypeLabel('lBoardType');
     const liningPlates=Math.ceil(net*l/board.area*wf);
@@ -295,11 +384,11 @@
       title='Trasdosado autoportante';
       structural=choosePlacoHeight('lining',H,p,sp,l,thick);
       if(structural){useP=structural.profile;useSp=structural.spacing/1000;doubled=!!structural.double;}
-      const jambs=jambStuds(num('lDoors'),num('lWins')),axes=Math.ceil(L/useSp)+1+jambs,bandNeed=2*L+2*H;
+      const corners=liningRoomMode()?4:0,jambs=jambStuds(num('lDoors'),num('lWins')),axes=Math.ceil(L/useSp)+1+jambs+corners,bandNeed=2*L+2*H;
       if(structural){
         const mult=doubled?2:1,seg=profileSegments(H,useP),bars=axes*mult*seg.segments,mode=doubled?'doble H/cajón':'simple';
         rows.push(['Comprobación de altura',H.toFixed(2)+' m ≤ '+structural.limit.toFixed(2)+' m','Tabla condicional de trasdosado sin arriostrar; perfiles del sistema de 0,60 mm, comprobar inercia y compatibilidad · M'+useP+' · '+structural.spacing+' mm · '+mode+' · '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm']);
-        rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),bars+' barras de 3 m',axes+' ejes/jambas × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
+        rows.push(['Montante M'+useP+(doubled?' doble H/cajón':''),bars+' barras de 3 m',axes+' ejes/jambas'+(corners?' (incluye '+corners+' de esquina de la estancia)':'')+' × '+mult+' perfil(es) por eje × '+seg.segments+' tramo(s) · solape mínimo '+Math.round(seg.overlap*100)+' cm cuando haya prolongación']);
       }else{
         const bad125=(l===1&&thick<14);
         rows.push(['ALTURA / CONFIGURACIÓN FUERA DE TABLA','Revisar documentación técnica del sistema',bad125?'La tabla cargada no da valor para 1×12,5 mm en trasdosado autoportante.':'No hay combinación M48/M70/M90 · 400/600 mm · simple/H-cajón que cumpla '+H.toFixed(2)+' m con '+l+' capa(s) de '+thick.toString().replace('.',',')+' mm.']);
@@ -320,7 +409,9 @@
     renderLiningSketch(t,l,useP,useSp,useWool);
     const box=el('liningResult');
     const metaStruct=t==='auto'?(structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA'):t==='semi'?(' · intereje '+Math.round(sp*1000)+' mm'):' · fijación directa sin perfilería';
-    if(box){box.innerHTML=resultHTML(obj.title,famNote+' · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,t==='semi'?'semi':'auto')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows);bindAdd(box,obj);}
+    const core=t==='direct'?{w:14,text:'',support:true}:t==='semi'?{w:22,text:'Ω',wool:useWool,support:true}:{w:46,text:'M'+useP,wool:useWool,support:true};
+    const plan=elevationPlan({label:'trasdosado',L,H,sp:t==='auto'?useSp:sp,doors:num('lDoors'),wins:num('lWins'),boards:true,studs:t==='auto'?(structural?'stud':''):t==='semi'?'omega':'',jambs:t==='auto',doubled,wool:useWool,dabs:t==='direct',caption:(t==='direct'?'Directo con pasta de agarre':t==='semi'?'Omegas cada '+Math.round(sp*1000)+' mm':(structural?'M'+useP+(doubled?' doble':'')+' cada '+Math.round(useSp*1000)+' mm':'Estructura sin dimensionar'))+' · '+liningPlates+' placas '+board.label+(liningRoomMode()?' · perímetro desplegado':''),section:sectionPlan(l,core,0,'Sección: '+l+' placa'+(l>1?'s':'')+' · '+(t==='direct'?'pasta':t==='semi'?'omega':'M'+useP)+(useWool?' con lana':'')+' · muro')});
+    if(box){box.innerHTML=resultHTML(obj.title,famNote+' · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,t==='semi'?'semi':'auto')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows,true,{plan});bindAdd(box,obj);}
   }
   function setLiningType(t){
     const names = {
@@ -348,8 +439,8 @@
   }));
   on(el('liningForm'), 'submit', e => submitProgressiveCalculation(e,'liningForm','liningResult',calcLining));
   ['lType','lLayers','lS','lP','lBoardThick','lWool','lWaste','lBoardType','lDoors','lWins','lLabor'].forEach(id => on(el(id), 'change', calcLining));
-  on(el('lMembrane'),'change',calcLining);
-  ['lL','lH','lDoors','lWins','lEdges','lLabor','lPasteRate','lMembraneWaste'].forEach(id => on(el(id), 'input', calcLining));
+  on(el('lMembrane'),'change',calcLining);on(el('lMeasure'),'change',calcLining);
+  ['lRoomA','lRoomB','lL','lH','lDoors','lWins','lEdges','lLabor','lPasteRate','lMembraneWaste'].forEach(id => on(el(id), 'input', calcLining));
   const roofMeta = {
     double:{fam:'continuo',famName:'Continuo PYL',name:'Doble TC47',hint:'Primaria + secundaria · 47/500'},
     simple:{fam:'continuo',famName:'Continuo PYL',name:'TC47 simple',hint:'Una estructura 47/500 suspendida'},

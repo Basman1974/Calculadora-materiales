@@ -1,8 +1,8 @@
-const CACHE='calculadora-construccion-20261122-revision-materiales';
+const CACHE='calculadora-construccion-20261122-mejora-visual';
 const CORE=[
   'SikaTop-50.jpg','aplica-primer-top-5kg.jpg','aplicarev-cal-nature-pro.jpg','mortero-cal-base-aplicarev-25kg-bco.jpg','puente-de-union-morteros-henares-ptu-20.jpg','puente-union-plus.jpg','sikatop-10.jpg','sikatop-30.jpg','weberev-hidro-plus.jpg','weberpral-prisma.jpg','weberrev-fino.jpg',
   './','index.html','style.css','data.js','app.js','app-a1.js','app-a2.js','app-b.js',
-  'ui-a.html','ui-b.html','ui-c.html','manifest.json','logo.png','icon-192.png','icon-512.png','assets/mount-sprite-01.js','assets/mount-sprite-02.js','assets/mount-sprite-03.js','assets/mount-sprite-04.js','assets/mount-sprite-05.js','assets/mount-sprite-06.js','assets/mount-sprite-07.js','assets/mount-sprite-08.js',
+  'ui-a.html','ui-b.html','ui-c.html','manifest.json','logo.png','icon-192.png','icon-512.png','tile-tabique.svg','tile-trasdosado.svg','tile-techo.svg','tile-humeda.svg','tile-ceramica.svg','assets/mount-sprite-01.js','assets/mount-sprite-02.js','assets/mount-sprite-03.js','assets/mount-sprite-04.js','assets/mount-sprite-05.js','assets/mount-sprite-06.js','assets/mount-sprite-07.js','assets/mount-sprite-08.js',
   'assets/montaje-tabique.svg','assets/montaje-directo.svg','assets/montaje-semidirecto.svg','assets/montaje-autoportante.svg','assets/montaje-techo.svg','assets/montaje-techo-simple.svg','assets/montaje-techo-doble.svg','assets/montaje-techo-sierra.svg','assets/montaje-techo-biapoyado.svg','assets/montaje-registrable-60.svg','assets/montaje-registrable-120.svg','assets/montaje-escayola.svg'
 ];
 self.addEventListener('install',event=>{

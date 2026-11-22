@@ -413,3 +413,76 @@ body[data-mode="dark"] :is(.rowVal,.quickLine strong,.groupHead,.eyebrow,.budget
 @media print{
   .budgetOverview,.budgetViews,.budgetExports,#budgetAdjustments,#budgetTariffOptions,.priceSaveStatus,.budgetSupplier,.formActionBar{display:none!important}
 }
+
+/* ── Mejora visual 2026-11-22 ── */
+/* Novedades compactas */
+.updateNotice.compact{padding:10px 12px;border-width:1px;border-radius:14px}
+.updateNotice.compact .updateNoticeTop{flex-wrap:nowrap;align-items:flex-start}
+.updateNotice.compact .btn{min-height:40px;min-width:40px;padding:4px 10px;border:1px solid var(--line);font-size:1.1rem}
+.noticeDetails{flex:1;min-width:0}.noticeDetails summary{cursor:pointer;font-weight:850;font-size:.9rem;line-height:1.35;list-style:none;padding:8px 0}
+.noticeDetails summary::-webkit-details-marker{display:none}.noticeDetails summary::after{content:' ▾';color:var(--muted)}
+.noticeDetails[open] summary::after{content:' ▴'}.noticeDetails ul{margin:4px 0 6px;padding-left:20px;font-size:.84rem}
+.noticeBadge{display:inline-block;background:var(--accent);color:var(--on);border-radius:999px;padding:2px 8px;font-size:.62rem;font-weight:950;letter-spacing:.06em;vertical-align:2px}
+/* Resultado: chips y tarjetas de material */
+.resultChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.resultChips:empty{display:none}
+.chip{display:inline-flex;align-items:center;min-height:28px;padding:3px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.75rem;font-weight:850}
+.chipWeight{border-color:var(--accent);color:var(--accent)}
+.quickResult{display:grid;gap:8px;padding:12px;background:var(--soft)}
+.quickLine.matCard{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--card);font-size:.86rem}
+.quickLine.matCard:last-child{border-bottom:1px solid var(--line)}
+.matIcon{width:38px;height:38px;padding:7px;border-radius:11px;background:var(--accentSoft);color:var(--accent)}
+.matName{font-weight:800;line-height:1.3}
+.matQty{text-align:right;color:var(--accent);font-weight:950;font-size:1.02rem;line-height:1.2}
+.matQty small{display:block;font-size:.7rem;font-weight:700;color:var(--muted);margin-top:2px}
+.matCard[data-kind="labor"] .matIcon{background:var(--soft)}
+.quickPending{border-radius:14px;background:var(--card)}
+@media(max-width:380px){.quickLine.matCard{grid-template-columns:32px minmax(0,1fr);}.matIcon{width:32px;height:32px;padding:5px}.matQty{grid-column:2;text-align:left}}
+/* Dibujo del paño */
+.planBox{margin:0;padding:12px 12px 6px;border-bottom:1px solid var(--line);background:var(--card)}
+.planBox figcaption{font-size:.67rem;font-weight:950;letter-spacing:.09em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
+.plan{display:block;width:100%;height:auto;max-height:300px}
+.plan .pWall{fill:var(--soft)}.plan .pWool{fill:#f2c46d;opacity:.16}
+.plan .pJoint{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 3;opacity:.7}
+.plan .pStud{stroke:#7d8b92;stroke-width:3}.plan .pStud.pDouble{stroke-width:5}.plan .pOmega{stroke:#7d8b92;stroke-width:2;stroke-dasharray:6 3}
+.plan .pTrack{stroke:#7d8b92;stroke-width:3}.plan .pDab{fill:#c9a66b}
+.plan .pHole{fill:var(--card);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 2}
+.plan .pHoleTxt{fill:var(--accent);font:800 10px system-ui;text-anchor:middle}
+.plan .pFrame{fill:none;stroke:var(--text);stroke-width:1.5}
+.plan .pDim{stroke:var(--muted);stroke-width:1;fill:none}.plan .pDimTxt{fill:var(--text);font:800 11px system-ui;text-anchor:middle}
+.plan .pTop{fill:var(--muted);font:700 10.5px system-ui}
+.sectionPlan{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:.74rem;font-weight:750;color:var(--muted)}
+.sectionPlan svg{height:30px;width:auto;flex:0 0 auto}
+.sectionPlan .sBoard{fill:#eef1ec;stroke:#59655d;stroke-width:1.2}.sectionPlan .sCore{fill:var(--soft);stroke:#7d8b92;stroke-width:1.5}.sectionPlan .sCore.sWool{fill:#f6dfac}
+.sectionPlan .sSupport{fill:#b4603f;opacity:.8}.sectionPlan .sTxt{font:800 9px system-ui;fill:var(--text);text-anchor:middle}
+.planLegend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:.7rem;font-weight:750;color:var(--muted)}
+.planLegend span{display:inline-flex;align-items:center;gap:5px}.planLegend i{display:inline-block;width:16px;height:10px;border-radius:2px}
+.lgJoint{border-top:2px dashed var(--muted)}.lgStud{background:#7d8b92}.lgOmega{border-top:2px dashed #7d8b92}.lgDab{background:#c9a66b;border-radius:50%!important;width:10px!important}
+.lgWool{background:#f2c46d}.lgHole{border:1.5px dashed var(--accent)}
+.planNote{margin:6px 0 4px;font-size:.68rem;color:var(--muted)}
+/* Barra en vivo */
+.liveBar{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:center;margin:0 0 8px;font-size:.8rem;font-weight:850;color:var(--accent)}
+.liveBar[hidden]{display:none}.liveBar span+span::before{content:'·';margin-right:12px;color:var(--muted)}
+.liveBar.liveError{color:#b42318}
+/* Entrada rápida */
+.stepper{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;gap:6px;align-items:stretch;margin-top:6px}
+.stepper>input{order:2;margin-top:0!important;min-width:0}.stepper .stepMinus{order:1}.stepper .stepPlus{order:3}
+.stepBtn{min-height:48px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--text);font-size:1.35rem;font-weight:800;cursor:pointer}
+.stepBtn:active{background:var(--accentSoft)}
+.stepper>input[readonly]~.stepBtn{opacity:.35;pointer-events:none}
+.heightChips{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 4px}
+.heightChip{min-height:38px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--text);font-weight:800;font-size:.8rem;cursor:pointer}
+.heightChip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.measureMode{display:block;margin-bottom:8px}
+/* Modo Básico */
+body[data-level="basic"] .resultMeta,body[data-level="basic"] .techDetails,body[data-level="basic"] .trust{display:none!important}
+#levelToggle[aria-pressed="true"]{background:var(--accent);color:var(--on);border-color:var(--accent)}
+@media print{.liveBar,.stepBtn,.heightChips,#levelToggle{display:none!important}body[data-level="basic"] .techDetails{display:block!important}}
+.budgetWeight{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;margin-top:10px;padding:10px 12px;border:1px dashed var(--accent);border-radius:12px;font-weight:800}
+.budgetWeight strong{color:var(--accent)}.budgetWeight p{grid-column:1/-1;margin:0}
+body[data-mode="dark"] :is(.chip,.chipWeight,.matIcon,.planBox figcaption,.liveBar,.budgetWeight strong,.plan .pHoleTxt){color:var(--text)}
+body[data-mode="dark"] .chipWeight,body[data-mode="dark"] .budgetWeight{border-color:var(--line)}
+body[data-mode="dark"] .matIcon{background:var(--soft)}
+body[data-mode="dark"] .plan .pHole{stroke:var(--text)}
+body[data-mode="dark"] .heightChip[aria-pressed="true"],body[data-mode="dark"] #levelToggle[aria-pressed="true"],body[data-mode="dark"] .noticeBadge{background:var(--text);color:var(--bg);border-color:var(--text)}
+body[data-mode="contrast"] .plan .pWool,body[data-mode="contrast"] .plan .pWall{fill:#000}
+body[data-mode="contrast"] :is(.plan .pStud,.plan .pTrack,.plan .pOmega){stroke:#fff}
