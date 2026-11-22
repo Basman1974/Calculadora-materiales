@@ -39,17 +39,17 @@
       if(!valid)errors.push(error);
     });
     if(message){errors.push(message);const input=el(messageField);if(input){input.setCustomValidity(message);input.setAttribute('aria-invalid','true');const hint=el(messageField+'Error');if(hint){hint.textContent=message;hint.hidden=false;}}}
-    if(errors.length){const box=el(resultId);if(box)box.innerHTML='<div class="info" role="alert">'+esc(message||errors[0])+'</div>';return false;}
+    if(errors.length){const box=el(resultId);if(box)box.innerHTML='<div class="info" role="alert">'+esc(message||errors[0])+'</div>';updateLive(resultId,null);return false;}
     return true;
   }
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261122-revision-materiales');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261122-mejora-visual');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261122-revision-materiales')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261122-mejora-visual')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
@@ -575,6 +575,95 @@
     return {catalog:next,imported,pending,omitted};
   }
   initializePricing();
+
+  // ── Presentación (solo visual: no altera las filas guardadas ni el presupuesto) ──
+  // Coma decimal es-ES. «1.000» (miles) se conserva; «0.150» y «35.20» pasan a coma.
+  function esNumberText(text){
+    return String(text==null?'':text).replace(/(\d+)\.(\d+)/g,(m,a,b)=>(b.length===3&&a!=='0')?m:a+','+b);
+  }
+  // «1 caja(s)» → «1 caja»; «3 caja(s)» → «3 cajas»; «2 panel(es)» → «2 paneles».
+  function esPlural(text){
+    return String(text).replace(/(\d+(?:[.,]\d+)?)(\s+)([A-Za-záéíóúñ]+)\((s|es)\)/g,(m,n,sp,word,suf)=>n+sp+(Number(n.replace(',','.'))===1?word:word+suf));
+  }
+  function prettyText(text){return esPlural(esNumberText(text));}
+  // Cantidad principal y secundaria: «330 uds · 1 caja(s) de 1.000» → ['330 uds','1 caja de 1.000'].
+  function splitQty(text){
+    const parts=prettyText(text).split(' · ');
+    return {main:parts[0],rest:parts.slice(1).join(' · ')};
+  }
+  const MAT_ICONS={
+    board:'<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 3v18M5 12h14" opacity=".45"/>',
+    profile:'<path d="M6 3v18M18 3v18M6 5h4M6 19h4M14 5h4M14 19h4"/>',
+    screw:'<path d="M9 4h6M12 4v4M10 8h4l-1 12h-2z"/><path d="M10 11h4M10 14h4M10 17h4" opacity=".5"/>',
+    tape:'<circle cx="11" cy="12" r="7"/><circle cx="11" cy="12" r="2.5"/><path d="M18 12h3v6"/>',
+    bag:'<path d="M6 7h12l1 13H5z"/><path d="M8 7l1-3h6l1 3"/><path d="M9 12h6" opacity=".5"/>',
+    wool:'<path d="M3 8c2-2 4 2 6 0s4 2 6 0 4 2 6 0M3 13c2-2 4 2 6 0s4 2 6 0 4 2 6 0M3 18c2-2 4 2 6 0s4 2 6 0 4 2 6 0"/>',
+    brick:'<rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 12h18M10 5v7M14 12v7"/>',
+    bucket:'<path d="M5 8h14l-1.5 12h-11z"/><path d="M5 8c0-3 14-3 14 0"/><path d="M8 13h8" opacity=".5"/>',
+    corner:'<path d="M5 19V5h14"/><path d="M8 19V8h11" opacity=".5"/>',
+    tile:'<rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/>',
+    labor:'<path d="M7 11V6a2 2 0 0 1 4 0v4M11 10V5a2 2 0 0 1 4 0v6M15 11V8a2 2 0 0 1 4 0v6a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-3l-3-5a2 2 0 0 1 3-2l2 2"/>',
+    item:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12h8" opacity=".5"/>'
+  };
+  function materialKind(name){
+    const n=String(name||'').toLowerCase();
+    if(/^mano de obra/.test(n))return 'labor';
+    if(/guardavivos/.test(n))return 'corner';
+    if(/tornillo|taco|fijaci|horquilla|cuelgue|varilla|empalme|anclaje|pívot|caballete/.test(n))return 'screw';
+    if(/placa|escayola 1000/.test(n))return 'board';
+    if(/montante|canal|perfil|omega|tc47|primario|secundario|angular|perimetral/.test(n))return 'profile';
+    if(/cinta|banda/.test(n))return 'tape';
+    if(/lana|lámina|estopa/.test(n))return 'wool';
+    if(/ladrillo|bloque|termocer|perforado|caravista/.test(n))return 'brick';
+    if(/puente|sika|primer|imprim/.test(n))return 'bucket';
+    if(/baldosa|calzo|cruceta/.test(n))return 'tile';
+    if(/pasta|mortero|cola|saco|revoco|weber|cal |cal$|aplicarev|yeso|junta/.test(n))return 'bag';
+    return 'item';
+  }
+  function materialIcon(name){
+    return '<svg class="matIcon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+MAT_ICONS[materialKind(name)]+'</svg>';
+  }
+
+  // ── Peso orientativo del pedido ──
+  // Placas (kg/m² aprox., fichas Pladur N, H1, I y Placo PPF 15). Valores marcados «ref» sin ficha
+  // propia para esa combinación: se usa el valor mayor conocido para el espesor (cota superior).
+  const BOARD_KG_M2={
+    'Estándar BA':{12.5:8.7,15:10.8,18:13.8},
+    'Hidrófuga H':{12.5:9.5,15:11.5,18:16},
+    'Alta dureza I':{12.5:11.5,15:13.5,18:16},
+    'RF / F':{12.5:11.5,15:12.5,18:16}
+  };
+  // Perfiles de 0,6 mm (kg/m aprox., fichas Pladur montante M y canal C). Canal 90: cota superior (peso del montante 90).
+  const PROFILE_KG_M={montante:{48:0.58,70:0.70,90:0.91},canal:{48:0.45,70:0.55,90:0.91}};
+  function rowWeightKg(row){
+    if(!Array.isArray(row)||isTechnicalRow(row)||/^mano de obra/i.test(row[0]))return null;
+    const name=String(row[0]),qty=String(row[1]),n=lineQty(qty);
+    if(!(n>0))return null;
+    let m=name.match(/^Placa PYL (Estándar BA|Hidrófuga H|Alta dureza I|RF \/ F) (\d+(?:,\d+)?) mm · (\d+) × (\d+)/);
+    if(m){
+      const t=Number(m[2].replace(',','.')),kg=BOARD_KG_M2[m[1]]?.[t];
+      return kg?n*(Number(m[3])/1000)*(Number(m[4])/1000)*kg:null;
+    }
+    m=name.match(/^(Montante|Canal) [MR](48|70|90)\b/);
+    if(m&&/barras de 3 m|barras$/.test(qty)){const kg=PROFILE_KG_M[m[1].toLowerCase()][m[2]];return kg?n*3*kg:null;}
+    m=qty.match(/(?:^|·\s*)(\d+)\s+(?:sacos?|saco\(s\)|envases?|envase\(s\))\s+de\s+(\d+(?:[.,]\d+)?)\s*kg/);
+    if(m)return Number(m[1])*Number(m[2].replace(',','.'));
+    if(/^\s*\d+\s+sacos?\s*$/.test(qty)&&(window.CALC_DATA||{}).revestimientos?.[name])return n*25;
+    if(/^\s*\d+(?:[.,]\d+)?\s*kg\s*$/.test(qty))return n;
+    const brick=Object.entries((window.CALC_DATA||{}).ladrillos||{}).find(([key])=>name.indexOf(key)>=0)||Object.entries((window.CALC_DATA||{}).bloques||{}).find(([key])=>name===key);
+    if(brick&&/uds/.test(qty)&&Number(brick[1].w)>0)return n*Number(brick[1].w);
+    return null;
+  }
+  function partWeight(part){
+    let kg=0;const without=[];
+    (part.items||[]).forEach(row=>{
+      if(!Array.isArray(row)||isTechnicalRow(row)||/^mano de obra/i.test(row[0])||lineQty(row[1])===0)return;
+      const w=rowWeightKg(row);
+      if(w===null)without.push(row[0]);else kg+=w;
+    });
+    return {kg:Math.round(kg),without};
+  }
+  function weightText(kg){return kg>=1000?esNumberText((kg/1000).toFixed(2))+' t':kg.toLocaleString('es-ES')+' kg';}
 
   const screens = $all('.screen');
   const nav = $all('[data-nav]');
