@@ -67,8 +67,9 @@ test('Cambiar el encuentro no portante no reduce los cuelgues',()=>{
   assert.equal(find(without,'Ángulo perimetral L 30/25'),undefined);assert.equal(without.roofLayout.hangers,54);
   assert.match(find(without,'Comprobación de perímetro')[2],/no se descuentan cuelgues/);
 });
-test('Varilla: se exige margen explícito y el corte usa plenum más margen',()=>{
-  assert.equal(find(roof().part,'Varilla roscada M6')[1],'No dimensionados');
+test('Varilla: margen por defecto 10 cm; vacío queda pendiente y el corte usa plenum más margen',()=>{
+  assert.equal(find(roof('double',{rRodMargin:''}).part,'Varilla roscada M6')[1],'No dimensionados');
+  assert.ok(find(roof().part,'Varilla roscada M6 1 m'));
   assert.equal(qty(roof('double',{rDrop:20,rRodMargin:5}).part,'Varilla roscada M6 1 m'),12);
   assert.equal(qty(roof('double',{rDrop:20,rRodMargin:0}).part,'Varilla roscada M6 1 m'),10);
   assert.equal(find(roof('double',{rDrop:100,rRodMargin:5}).part,'Varilla roscada M6')[1],'No dimensionados');
@@ -165,8 +166,8 @@ test('Una obra antigua conserva cantidades, precio y copia; editar no hereda nue
   const old={title:'Techo doble TC47 · 20 m²',calculationVersion:'20261012-auditoria',items:[['Horquillas','21 uds','']],editor:{screen:'roof',values:{rSys:'double',rL:'5',rW:'4',rLayers:'2'}}};
   const f=fixture({'calculadora-work-v1':JSON.stringify([old]),'calculadora-prices-v1':JSON.stringify({'Horquillas [ud]':2}),'calculadora-job-v1':JSON.stringify({vat:0}),'calculadora-jobs-v1':JSON.stringify([{meta:{vat:0},work:[old],prices:{'Horquillas [ud]':2}}])});
   assert.equal(f.api.rows()[0].items[0][1],'21 uds');assert.equal(f.api.totals().mat,42);assert.equal(f.api.totals().provisional,true);
-  f.set({rWeight:20,rExtraLoad:5,rRodMargin:10,rPerimeter:'none'});f.api.show('work');f.nodes.workContent.querySelectorAll('[data-edit]')[0].click();
-  assert.equal(f.nodes.rBoardThick.value,'15');assert.equal(f.nodes.rWeight.value,'');assert.equal(f.nodes.rExtraLoad.value,'0');assert.equal(f.nodes.rRodMargin.value,'');assert.equal(f.nodes.rPerimeter.value,'angle');
+  f.set({rWeight:20,rExtraLoad:5,rRodMargin:7,rPerimeter:'none'});f.api.show('work');f.nodes.workContent.querySelectorAll('[data-edit]')[0].click();
+  assert.equal(f.nodes.rBoardThick.value,'15');assert.equal(f.nodes.rWeight.value,'');assert.equal(f.nodes.rExtraLoad.value,'0');assert.equal(f.nodes.rRodMargin.value,'10');assert.equal(f.nodes.rPerimeter.value,'angle');
   f.set({rWeight:25,rRodMargin:5});f.api.roof();f.add('roofResult');
   assert.equal(f.api.rows().length,1);assert.equal(f.api.rows()[0].roofLayout.hangers,48);
   assert.equal(f.api.state().savedJobs[0].work[0].items[0][1],'21 uds');
@@ -189,4 +190,20 @@ test('Persistencia y todas las exportaciones incluyen perímetro y suspensiones 
   const restored=fixture();restored.nodes.backupImport.files=[{size:10000,text:async()=>JSON.stringify(backup)}];
   await restored.fire('backupImport','change');assert.equal(restored.nodes.backupStatus.textContent,'Copia restaurada.');
   assert.equal(restored.api.rows()[0].roofLayout.hangers,48);assert.equal(restored.api.totals().grand,totals.grand);
+});
+
+test('Techo TC47 simple 10 × 10 m (comparativa Obramat): perfiles con recortes, suspensiones, tuercas, pasta y lana',()=>{
+  const base={rL:10,rW:10,rDrop:70,rLayers:1,rBoardThick:'12.5',rBoard:'2,1.2',rPerimeter:'clip'};
+  const {part}=roof('simple',base);
+  assert.equal(find(part,'TC47 portante 3000')[1],'70 barras');       // 21 recorridos × 10 m = 210 m
+  assert.equal(qty(part,'Empalme TC47'),63);
+  assert.equal(qty(part,'Horquillas / cuelgues Pívot F47/17'),210);
+  assert.equal(qty(part,'Fijaciones al forjado F47/17'),420);         // Knauf D11: dos fijaciones por anclaje universal
+  assert.equal(qty(part,'Varilla roscada M6 1 m'),210);              // 70 + 10 cm por defecto
+  assert.equal(qty(part,'Tuercas M6'),210);
+  assert.match(find(part,'Pasta de juntas')[1],/^44 kg/);             // 0,40 kg/m² × 100 m² × 1,10
+  assert.equal(find(part,'Lana mineral 40 mm en plenum'),undefined);
+  const wool=roof('simple',{...base,rWool:40}).part;
+  assert.equal(find(wool,'Lana mineral 40 mm en plenum')[1],'124 paneles · 8 paquete(s) de 16');
+  assert.match(find(wool,'Comprobación de carga')[2],/\+ lana 2\.8 kg\/m²/);
 });
