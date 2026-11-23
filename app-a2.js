@@ -314,9 +314,9 @@
   $all('[data-wall-preset]').forEach(btn=>on(btn,'click',()=>{
     const p=btn.dataset.wallPreset;
     const set=(id,v)=>{if(el(id)) el(id).value=String(v);};
-    if(p==='vivienda'){set('wA',1);set('wB',1);set('wP',70);set('wS',.6);set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
-    if(p==='bano'){set('wA',1);set('wB',1);set('wP',70);set('wS',.4);set('wBoardThick',15);set('wBoardType','hidro');set('wWool',1);}
-    if(p==='doble'){set('wA',2);set('wB',2);set('wP',70);set('wS',.6);set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
+    if(p==='vivienda'){set('wA',1);set('wB',1);set('wP',70);set('wS','.6');set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
+    if(p==='bano'){set('wA',1);set('wB',1);set('wP',70);set('wS','.4');set('wBoardThick',15);set('wBoardType','hidro');set('wWool',1);}
+    if(p==='doble'){set('wA',2);set('wB',2);set('wP',70);set('wS','.6');set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
     calcWall();saveDraft({target:el('wA')});
   }));
 
