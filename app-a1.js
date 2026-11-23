@@ -45,11 +45,11 @@
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261122-fotos');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261123-pestanas');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261122-fotos')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261123-pestanas')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
@@ -797,10 +797,12 @@
     e.preventDefault(); e.stopPropagation();
     const ap=el('appearance'); if(ap) ap.classList.toggle('open');
   });
-  $all('[data-mode]').forEach(btn => on(btn, 'click', e => {
+  // Solo los botones de tema: <body data-mode> también coincide con [data-mode] y, si recibe este
+  // manejador, su preventDefault() anula todos los desplegables <details> nativos de la página.
+  $all('button[data-mode]').forEach(btn => on(btn, 'click', e => {
     e.preventDefault(); e.stopPropagation();
     document.body.dataset.mode=btn.dataset.mode;
-    $all('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));
+    $all('button[data-mode]').forEach(x=>x.setAttribute('aria-pressed',String(x===btn)));
   }));
   $all('[data-ac]').forEach(btn => on(btn, 'click', e => {
     e.preventDefault(); e.stopPropagation();
@@ -835,7 +837,7 @@
   }));
 
   // Ayuda y desplegables: control directo para evitar fallos de <details> en Android/WebView.
-  $all('.helpAcc > summary, .moreBox > summary').forEach(summary => on(summary, 'click', e => {
+  $all('details > summary').forEach(summary => on(summary, 'click', e => {
     e.preventDefault();
     e.stopPropagation();
     const details=summary.parentElement;
@@ -853,10 +855,10 @@
     if(navBtn){ show(navBtn.dataset.nav); return; }
     const look = e.target.closest('#look');
     if(look){ const ap = el('appearance'); if(ap) ap.classList.toggle('open'); return; }
-    const mode = e.target.closest('[data-mode]');
+    const mode = e.target.closest('button[data-mode]');
     if(mode && mode.dataset.mode){
       document.body.dataset.mode = mode.dataset.mode;
-      $all('[data-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === mode)));
+      $all('button[data-mode]').forEach(x => x.setAttribute('aria-pressed', String(x === mode)));
       return;
     }
     const color = e.target.closest('[data-ac]');

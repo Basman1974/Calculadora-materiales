@@ -261,7 +261,7 @@
     const membraneArea=net*membraneFaces*(1+membraneWaste/100);
     if(el('wMembraneWasteWrap')) el('wMembraneWasteWrap').classList.toggle('hidden',!membraneFaces);
     if(el('wMembraneHint')) el('wMembraneHint').textContent=membraneFaces
-      ? 'Lámina: '+membraneArea.toFixed(2)+' m² · '+net.toFixed(2)+' m² netos × '+membraneFaces+' cara(s) × (1 + '+membraneWaste+' %). Introduce el precio por m² en el presupuesto. La merma no incluye un solape de producto predeterminado.'
+      ? 'Lámina: '+money(membraneArea)+' m² · '+money(net)+' m² netos × '+membraneFaces+' cara(s) × (1 + '+membraneWaste+' %). Introduce el precio por m² en el presupuesto. La merma no incluye un solape de producto predeterminado.'
       : 'Sin lámina en el presupuesto. Solo se puede seleccionar en caras con dos placas; si quitas una placa, la selección incompatible se desactiva.';
     const board=bestPylBoard(H),kind=boardTypeLabel('wBoardType'),layersGov=Math.min(a,b);
     const structural=choosePlacoHeight('wall',H,p,sp,layersGov,thick);
@@ -297,7 +297,7 @@
     renderWallSketch(a,b,useP,useSp,useWool);
     const box=el('wallResult');
     const metaStruct=structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA';
-    const plan=elevationPlan({label:'tabique',L,H,sp:useSp,doors:num('wDoors'),wins:num('wWins'),boards:true,studs:structural?'stud':'',jambs:true,doubled,wool:useWool,caption:(structural?'M'+useP+(doubled?' doble':'')+' cada '+Math.round(useSp*1000)+' mm':'Estructura sin dimensionar')+' · '+plateUds+' placas '+board.label,section:sectionPlan(a,{w:46,text:'M'+useP,wool:useWool},b,'Sección: '+a+' placa'+(a>1?'s':'')+' · M'+useP+(useWool?' con lana':'')+' · '+b+' placa'+(b>1?'s':''))});
+    const plan=elevationPlan({label:'tabique',L,H,sp:useSp,doors:num('wDoors'),wins:num('wWins'),boards:true,studs:structural?'stud':'',jambs:true,doubled,wool:useWool,caption:(structural?'M'+useP+(doubled?' doble':'')+' cada '+Math.round(useSp*1000)+' mm':'Estructura sin dimensionar')+' · '+plateUds+' placas '+board.label,section:sectionPlan(a,{w:46,text:'M'+useP,wool:useWool},b,'Sección: '+a+' placa'+(a>1?'s':'')+(['1','both'].includes(membrane.value)&&membraneFaces?' con lámina':'')+' · M'+useP+(useWool?' con lana':'')+' · '+b+' placa'+(b>1?'s':'')+(['2','both'].includes(membrane.value)&&membraneFaces?' con lámina':''))});
     if(box){box.innerHTML=resultHTML(obj.title,'Familia Tabique PYL · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,'wall')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows,true,{plan});bindAdd(box,obj);}
   }
   on(el('wallForm'),'submit',e=>{
@@ -314,9 +314,9 @@
   $all('[data-wall-preset]').forEach(btn=>on(btn,'click',()=>{
     const p=btn.dataset.wallPreset;
     const set=(id,v)=>{if(el(id)) el(id).value=String(v);};
-    if(p==='vivienda'){set('wA',1);set('wB',1);set('wP',70);set('wS',.6);set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
-    if(p==='bano'){set('wA',1);set('wB',1);set('wP',70);set('wS',.4);set('wBoardThick',15);set('wBoardType','hidro');set('wWool',1);}
-    if(p==='doble'){set('wA',2);set('wB',2);set('wP',70);set('wS',.6);set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
+    if(p==='vivienda'){set('wA',1);set('wB',1);set('wP',70);set('wS','.6');set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
+    if(p==='bano'){set('wA',1);set('wB',1);set('wP',70);set('wS','.4');set('wBoardThick',15);set('wBoardType','hidro');set('wWool',1);}
+    if(p==='doble'){set('wA',2);set('wB',2);set('wP',70);set('wS','.6');set('wBoardThick',15);set('wBoardType','normal');set('wWool',1);}
     calcWall();saveDraft({target:el('wA')});
   }));
 
@@ -329,7 +329,7 @@
     const area=net*(1+waste/100);
     el(prefix+'MembraneWasteWrap').classList.toggle('hidden',!active);
     el(prefix+'MembraneHint').textContent=active
-      ? 'Lámina: '+area.toFixed(2)+' m² · '+net.toFixed(2)+' m² netos × (1 + '+waste+' %). Una lámina entre las dos placas. Introduce el precio por m² en el presupuesto.'
+      ? 'Lámina: '+money(area)+' m² · '+money(net)+' m² netos × (1 + '+waste+' %). Una lámina entre las dos placas. Introduce el precio por m² en el presupuesto.'
       : eligible?'Sin lámina en el presupuesto. Puedes añadir una lámina entre las dos placas.'
       :'Disponible solo con doble placa PYL. Al cambiar a una placa o a otro material se desactiva.';
     return active?['Lámina acústica entre placas',area.toFixed(2)+' m²',net.toFixed(2)+' m² netos · una lámina entre dos placas · merma '+waste+' % · precio por m² a introducir']:null;
@@ -410,7 +410,7 @@
     const box=el('liningResult');
     const metaStruct=t==='auto'?(structural?' · M'+useP+' '+(doubled?'doble H/cajón':'simple')+' @'+structural.spacing+' · límite '+structural.limit.toFixed(2)+' m':' · FUERA DE TABLA'):t==='semi'?(' · intereje '+Math.round(sp*1000)+' mm'):' · fijación directa sin perfilería';
     const core=t==='direct'?{w:14,text:'',support:true}:t==='semi'?{w:22,text:'Ω',wool:useWool,support:true}:{w:46,text:'M'+useP,wool:useWool,support:true};
-    const plan=elevationPlan({label:'trasdosado',L,H,sp:t==='auto'?useSp:sp,doors:num('lDoors'),wins:num('lWins'),boards:true,studs:t==='auto'?(structural?'stud':''):t==='semi'?'omega':'',jambs:t==='auto',doubled,wool:useWool,dabs:t==='direct',caption:(t==='direct'?'Directo con pasta de agarre':t==='semi'?'Omegas cada '+Math.round(sp*1000)+' mm':(structural?'M'+useP+(doubled?' doble':'')+' cada '+Math.round(useSp*1000)+' mm':'Estructura sin dimensionar'))+' · '+liningPlates+' placas '+board.label+(liningRoomMode()?' · perímetro desplegado':''),section:sectionPlan(l,core,0,'Sección: '+l+' placa'+(l>1?'s':'')+' · '+(t==='direct'?'pasta':t==='semi'?'omega':'M'+useP)+(useWool?' con lana':'')+' · muro')});
+    const plan=elevationPlan({label:'trasdosado',L,H,sp:t==='auto'?useSp:sp,doors:num('lDoors'),wins:num('lWins'),boards:true,studs:t==='auto'?(structural?'stud':''):t==='semi'?'omega':'',jambs:t==='auto',doubled,wool:useWool,dabs:t==='direct',caption:(t==='direct'?'Directo con pasta de agarre':t==='semi'?'Omegas cada '+Math.round(sp*1000)+' mm':(structural?'M'+useP+(doubled?' doble':'')+' cada '+Math.round(useSp*1000)+' mm':'Estructura sin dimensionar'))+' · '+liningPlates+' placas '+board.label+(liningRoomMode()?' · perímetro desplegado':''),section:sectionPlan(l,core,0,'Sección: '+l+' placa'+(l>1?'s':'')+' · '+(t==='direct'?'pasta':t==='semi'?'omega':'M'+useP)+(useWool?' con lana':'')+' · muro'+(membraneRow?' · lámina entre placas':''))});
     if(box){box.innerHTML=resultHTML(obj.title,famNote+' · UNE 102043'+metaStruct+(useWool?' · lana '+woolThick(useP,t==='semi'?'semi':'auto')+' mm':'')+' · neto '+net.toFixed(2)+' m²',rows,true,{plan});bindAdd(box,obj);}
   }
   function setLiningType(t){
