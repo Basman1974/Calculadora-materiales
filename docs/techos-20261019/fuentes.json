@@ -53,7 +53,7 @@
         "hangerEdge": 0.15,
         "screwPitch1200": 0.2,
         "pivotUniversalAnchorsPerHanger": 2,
-        "pasteReferenceSingle": 0.3,
+        "pasteReferenceSingle": 0.4,
         "pasteReferenceDouble": 0.5
       },
       "status": "referencia_condicional"
@@ -92,6 +92,40 @@
         "perimeterFixing": 0.45
       },
       "status": "referencia_condicional"
+    },
+    "obramat-tc-2026": {
+      "manufacturer": "Obramat",
+      "product_or_system": "Techo PYL 47/500, placa 12,5 mm",
+      "document": "Sistemas de placa de yeso laminado (PYL) en techos · consumos aproximados",
+      "document_version": "web 2026-11",
+      "page_or_section": "Techo continuo simple TC",
+      "url": "https://www.obramat.es/asesoramiento-profesional/consejos-y-guias-de-instalacion/recomendaciones-pro/sistemas-de-placa-de-yeso-laminado-pyl-en-techos.html",
+      "verified_on": "2026-11-23",
+      "unit": "kg/m²",
+      "conditions": "Pasta 0,40 kg/m² para una placa; se adopta como referencia de compra (antes 0,30 de Knauf D11). Doble placa se mantiene en 0,50.",
+      "verified_values": {
+        "pasteSingle": 0.4
+      },
+      "status": "referencia_condicional"
+    },
+    "criterio-lana-techo-2026": {
+      "manufacturer": "Criterio interno",
+      "product_or_system": "Lana mineral en plenum",
+      "document": "Formato de referencia 1350 × 600 mm, 16 uds/paquete (p. ej. panel Sonrock ECO 40 mm de la calculadora Obramat)",
+      "document_version": "2026-11-23",
+      "page_or_section": "-",
+      "url": "n/a · criterio interno a sustituir por la ficha del producto",
+      "verified_on": "2026-11-23",
+      "unit": "m²; kg/m³",
+      "conditions": "Densidad de 70 kg/m³ adoptada para estimar peso en la comprobación de carga; sustituir por la ficha del producto.",
+      "verified_values": {
+        "woolPanel": {
+          "m2": 0.81,
+          "pack": 16
+        },
+        "woolDensity": 70
+      },
+      "status": "supuesto_a_verificar"
     }
   },
   "implementation_criteria": {

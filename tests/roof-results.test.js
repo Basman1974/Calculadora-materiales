@@ -69,12 +69,12 @@ test('Completar un peso de prueba recalcula perfiles y cuelgues; los auxiliares 
   assert.match(visible,/Pasta de juntas/);
   const part=f.add('roofResult');
   assert.equal(part.roofLayout.hangers,24); // 6 recorridos × 4 cuelgues a paso <= 1 m.
-  assert.equal(part.items.find(r=>r[0]==='TC47 portante 3000')[1],'12 barras');
+  assert.equal(part.items.find(r=>r[0]==='TC47 portante 3000')[1],'7 barras'); // 6 recorridos × 3,5 m = 21 m: colas de 0,5 m aprovechadas.
   assert.equal(part.incomplete,true);
 });
 
 test('Acciones de varilla y pasta abren sus bloques; completarlas retira el estado de cantidades incompletas',async()=>{
-  const f=screenshotCase();f.set({rWeight:25});f.api.roof();
+  const f=screenshotCase();f.set({rWeight:25,rRodMargin:''});f.api.roof(); // Margen borrado: la varilla vuelve a quedar pendiente.
   await f.nodes.roofResult.querySelector('[data-roof-complete="rRodMargin"]').click();
   assert.equal(f.nodes.roofSuspensionOptions.open,true);
   assert.equal(f.nodes.rRodMargin.focused,true);

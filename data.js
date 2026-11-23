@@ -45,5 +45,6 @@ window.CALC_ROOF_DATA = {
   f47:{simple:[{load:.15,secondary:.5,hanger:1.2},{load:.30,secondary:.5,hanger:1}],
        double:[{load:.15,primary:.9,secondary:.5,hanger:.9},{load:.30,primary:.9,secondary:.5,hanger:.75}]},
   perimeterFixing:.6,profileEdge:.1,hangerEdge:.15,
+  pasteSingle:.4,pasteDouble:.5,woolDensity:70,woolPanel:{m2:.81,pack:16},
   t24:{sourceId:'rockfon-t24-2023',module:.6,primary:1.2,hanger:1.2,hangerEdge:.45,perimeterFixing:.45}
 };
