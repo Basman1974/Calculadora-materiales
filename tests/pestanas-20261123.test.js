@@ -24,3 +24,8 @@ test('Las plantillas del tabique usan valores que existen en el desplegable de s
 test('Un borrador con desplegables vacíos vuelve al valor por defecto',()=>{
   assert.match(js,/s\.selectedIndex<0/);
 });
+test('Aviso de lámina con coma decimal y sección que indica la lámina',()=>{
+  assert.doesNotMatch(js,/'Lámina: '\+[a-zA-Z]+\.toFixed\(2\)/);
+  assert.match(js,/' con lámina'/);
+  assert.match(js,/' · lámina entre placas'/);
+});
