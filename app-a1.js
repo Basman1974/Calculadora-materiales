@@ -45,11 +45,11 @@
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261125-placas');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261126-consumos');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261125-placas')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261126-consumos')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
@@ -208,7 +208,7 @@
   function nextQuoteNum(){
     return 'P-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Date.now()).slice(-4);
   }
-  function isTechnicalRow(row){return !Array.isArray(row)||/comprobación|huecos descontados|aviso|fuera de tabla|volumen geométrico/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]) || !/^\s*\d+(?:[.,]\d+)?\s*(?:m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|saco\(s\)|rollos?\b|cajas?\b|panel(?:es)?\b|botes?\b|envases?\b|envase\(s\)|L\b|€)/i.test(String(row[1]));}
+  function isTechnicalRow(row){return !Array.isArray(row)||/comprobación|huecos descontados|aviso|fuera de tabla|volumen geométrico|referencia de catálogo/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]) || !/^\s*\d+(?:[.,]\d+)?\s*(?:m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|saco\(s\)|rollos?\b|cajas?\b|panel(?:es)?\b|botes?\b|envases?\b|envase\(s\)|L\b|€)/i.test(String(row[1]));}
   function mergedLines(parts=work){
     const map = Object.create(null);
     const brickFormats=new Set(parts.flatMap(part=>(part.items||[]).filter(row=>row[0]==='Ladrillo cerámico').map(row=>String(row[2]||'').match(/formato ([^·]+)/)?.[1].trim()||'')));

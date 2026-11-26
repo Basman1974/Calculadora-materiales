@@ -24,3 +24,16 @@ test('Trasdosado 2,60 × 2,50 m con dos capas: 6 placas por geometría',()=>{
   const f=fixture();f.set({lL:'2,60',lH:'2,5'});f.api.lining();
   assert.equal(row(f.add('liningResult'),'Placa PYL')[1],'6 uds');
 });
+test('Ladrillo: referencia de catálogo 86 kg/m² × 10 m² = 860 kg, marcada como no contrastada',()=>{
+  const f=fixture();f.set({wetArea:10,wetWaste:0,wetMortarWaste:0});f.select('ladrillos','Termocerámico 24 cm');f.api.wet();
+  const r=row(f.add('wetResult'),'Referencia de catálogo');
+  assert.equal(r[1],'860.0 kg');assert.match(r[0],/no contrastada/);
+});
+test('Ladrillo 4 cm: catálogo corregido a 15 kg/m² (foto del punto de venta)',()=>{
+  const f=fixture();f.data.ladrillos;const d=f.data.ladrillos['Hueco sencillo 33x16.5x4'];assert.equal(d.m,15);
+});
+test('Revestimientos sin ficha verificada quedan marcados como no contrastados',()=>{
+  const f=fixture();const d=f.data.revestimientos;
+  assert.match(d['weber.rev fino'].spec,/no contrastado/);assert.match(d['APLICAREV Cal Nature Pro'].spec,/no contrastado/);
+  assert.equal(d['weberpral prisma'].kg,1.5);assert.equal(d['weberev hidro PLUS'].kg,1.8);
+});
