@@ -45,11 +45,11 @@
   function on(node, ev, fn){ if(node) node.addEventListener(ev, fn); }
   on(el('closeUpdateNotice'),'click',()=>{
     el('updateNotice').hidden=true;
-    try{localStorage.setItem('calc-notice-seen','20261123-techo');}catch(e){}
+    try{localStorage.setItem('calc-notice-seen','20261126-consumos');}catch(e){}
     const heading=document.querySelector('#home .hero h2');
     if(heading){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
   });
-  try{if(localStorage.getItem('calc-notice-seen')==='20261123-techo')el('updateNotice').hidden=true;}catch(e){}
+  try{if(localStorage.getItem('calc-notice-seen')==='20261126-consumos')el('updateNotice').hidden=true;}catch(e){}
   let editingPart=null;
   let currentCat = 'ladrillos';
   let currentCerBody = 'porcelanico';
@@ -208,7 +208,7 @@
   function nextQuoteNum(){
     return 'P-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(Date.now()).slice(-4);
   }
-  function isTechnicalRow(row){return !Array.isArray(row)||/comprobación|huecos descontados|aviso|fuera de tabla|volumen geométrico/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]) || !/^\s*\d+(?:[.,]\d+)?\s*(?:m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|saco\(s\)|rollos?\b|cajas?\b|panel(?:es)?\b|botes?\b|envases?\b|envase\(s\)|L\b|€)/i.test(String(row[1]));}
+  function isTechnicalRow(row){return !Array.isArray(row)||/comprobación|huecos descontados|aviso|fuera de tabla|volumen geométrico|referencia de catálogo/i.test(row[0]) || /no dimensionados|requiere sistema/i.test(row[1]) || !/^\s*\d+(?:[.,]\d+)?\s*(?:m²|m2|kg|m\b|uds?\b|barras?\b|sacos?\b|saco\(s\)|rollos?\b|cajas?\b|panel(?:es)?\b|botes?\b|envases?\b|envase\(s\)|L\b|€)/i.test(String(row[1]));}
   function mergedLines(parts=work){
     const map = Object.create(null);
     const brickFormats=new Set(parts.flatMap(part=>(part.items||[]).filter(row=>row[0]==='Ladrillo cerámico').map(row=>String(row[2]||'').match(/formato ([^·]+)/)?.[1].trim()||'')));
@@ -710,6 +710,10 @@
     const w = 1.2;
     return {w:w,h:len,area:w*len,label:'1200 × '+Math.round(len*1000),stacked:stacked,note:stacked?'Altura > 3 m · usar 3000 mm y junta horizontal':(Math.abs(len-h)<0.02?'Ajuste a la altura, casi sin recorte de largo':'Recorte de largo ≈ '+Math.round(Math.max(0,len-h)*1000)+' mm')};
   }
+  // Redondeo hacia arriba tolerante a error de coma flotante (10,8 / 0,72 no debe dar 16).
+  function ceilSafe(value){const near=Math.round(value);return Math.abs(value-near)<=32*Number.EPSILON*Math.max(1,Math.abs(value))?near:Math.ceil(value);}
+  // Placas mínimas por geometría: columnas de 1,20 m por cara × filas de la longitud de placa, por capa.
+  function geometricBoards(L,H,board,layers){return ceilSafe(L/board.w)*ceilSafe(H/board.h)*layers;}
   function mmScrews(area, kind){
     const rate = kind === 'roof' ? 5 : 3;
     const n = Math.ceil(Math.max(0, area) * rate * 1.10);
@@ -730,7 +734,7 @@
   function woolRow(area, thickMm, kind){
     const need = Math.max(0, area) * 1.08;
     const panel = 1.2 * 0.6;
-    const uds = Math.ceil(need / panel);
+    const uds = ceilSafe(need / panel);
     const where = kind === 'semi' ? 'entre perfiles omega' : 'relleno de cámara entre montantes';
     return ['Lana mineral ' + thickMm + ' mm', need.toFixed(1) + ' m² · ' + uds + ' panel(es) 1200 × 600', 'Estimación orientativa · ' + where + ' · 1 m²/m² · merma corte 8 % · panel 0,72 m² · UNE-EN 13162'];
   }

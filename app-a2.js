@@ -268,7 +268,7 @@
     if(el('wallHeightNotice'))el('wallHeightNotice').textContent=!structural?'Altura fuera de tabla: la estructura no está dimensionada. Requiere revisión técnica.':((structural.profile!==p||structural.spacing!==Math.round(sp*1000)||structural.double)?'El resultado propone M'+structural.profile+' '+(structural.double?'doble H/cajón':'simple')+' cada '+structural.spacing+' mm para esta altura. ':'')+'La comprobación de altura es condicional al sistema y sus perfiles; revisa los avisos del resultado.';
     const useP=structural?structural.profile:p, useSp=structural?structural.spacing/1000:sp, doubled=!!(structural&&structural.double);
     const axes=Math.ceil(L/useSp)+1+jambs, mult=doubled?2:1, seg=profileSegments(H,useP), totalStudBars=axes*mult*seg.segments;
-    const totalLayers=a+b,plateUds=Math.ceil(net*totalLayers/board.area*1.08),bandNeed=2*L+2*H;
+    const totalLayers=a+b,plateUds=Math.max(ceilSafe(net*totalLayers/board.area*1.08),geometricBoards(L,H,board,totalLayers)),bandNeed=2*L+2*H;
     const finish=mergeFaceWork([pylFaceWork(net,a,thick),pylFaceWork(net,b,thick)]);
     const rows=[
       ['Placa PYL '+kind+' '+thick.toString().replace('.',',')+' mm · '+board.label,plateUds+' uds','UNE-EN 520 · '+kind+' · altura '+H.toFixed(2)+' m · '+board.note+' · merma 8 % · cara 1: '+a+' · cara 2: '+b+' · neto '+net.toFixed(2)+' m²']
@@ -365,7 +365,7 @@
     if(!validCalculation('liningResult',[...(liningRoomMode()?[['lRoomA',0.000001],['lRoomB',0.000001]]:[]),['lL',0.000001],['lH',0.000001],...(el('lType').value!=='direct'?[['lLayers',1,true]]:[]),['lDoors',0,true],['lWins',0,true],['lEdges'],['lWaste'],['lLabor'],...(membraneRow?[['lMembraneWaste']]:[]),...(el('lType').value==='direct'?[['lPasteRate',0.000001]]:[])],openingsM2(num('lDoors'),num('lWins'))>num('lL')*num('lH')?'Los huecos superan la superficie del trasdosado.':'','lDoors')){updateLiningOverview(false);return;}
     const L=num('lL'),H=num('lH'),A=L*H,t=el('lType')?el('lType').value:'auto',l=t==='direct'?1:num('lLayers'),sp=num('lS')||.6,p=num('lP'),thick=num('lBoardThick')||15,waste=Math.max(0,num('lWaste')||0),wf=1+waste/100;
     const holes=openingsM2(num('lDoors'),num('lWins')),net=netArea(A,holes),board=bestPylBoard(H),kind=boardTypeLabel('lBoardType');
-    const liningPlates=Math.ceil(net*l/board.area*wf);
+    const liningPlates=Math.max(ceilSafe(net*l/board.area*wf),geometricBoards(L,H,board,l));
     const rows=[['Placa PYL '+kind+' '+thick.toString().replace('.',',')+' mm · '+board.label,liningPlates+' uds','UNE-EN 520 · '+kind+' · altura '+H.toFixed(2)+' m · '+board.note+' · merma '+waste+' % · '+l+' capa(s) · neto '+net.toFixed(2)+' m²']];
     let title='', structural=null, useP=p, useSp=sp, doubled=false;
     if(membraneRow) rows.push(membraneRow);

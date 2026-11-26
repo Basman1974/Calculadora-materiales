@@ -27,6 +27,7 @@
       const mortarM3=Math.max(0,wallVolM3-(base*unitVolM3));
       const mortarL=mortarM3*1000*(1+num('wetMortarWaste')/100);
       rows.push(['Ladrillo cerámico '+name+' · '+L+'×'+H+'×'+T+' cm',uds+' uds',unitsM2.toFixed(2)+' ud/m² · formato '+L.toString().replace('.',',')+' × '+H.toString().replace('.',',')+' × '+T.toString().replace('.',',')+' cm · junta '+jointMm.toFixed(0)+' mm · merma '+w+' %']);
+      if(it.m) rows.push(['Referencia de catálogo (no contrastada)',(it.m*A).toFixed(1)+' kg',it.m+' kg/m² según catálogo del punto de venta · sin ficha técnica · el cálculo geométrico es el de referencia']);
       rows.push(['Volumen geométrico de mortero',mortarL.toFixed(1)+' L', 'Volumen geométrico de tendeles y llagas para '+A.toFixed(2)+' m² · antes de merma '+(mortarM3*1000).toFixed(1)+' L']);
       if(el('wetMortar') && el('wetMortar').value === 'predosificado'){
         const yieldL=num('wetMortarYield');
